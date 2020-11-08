@@ -3,7 +3,8 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - canvas_mode_button
   layers:
   - Default
   - TransparentFX
