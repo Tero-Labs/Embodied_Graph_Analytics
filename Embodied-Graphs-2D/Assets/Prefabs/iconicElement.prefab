@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 6047713414169321300}
   - component: {fileID: 6047713414169321323}
   - component: {fileID: 6047713414169321322}
-  - component: {fileID: 375371100194814158}
   - component: {fileID: 1675982206330334959}
+  - component: {fileID: -8537103720117986283}
   m_Layer: 0
   m_Name: iconicElement
   m_TagString: Untagged
@@ -79,25 +79,34 @@ LineRenderer:
   - {x: 0, y: 0, z: 1}
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 1
+    widthMultiplier: 2
     widthCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0.52083397
         inSlope: 0
         outSlope: 0
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.99085355
+        value: 1.0138888
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0, g: 0, b: 0, a: 1}
       key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -144,7 +153,7 @@ TrailRenderer:
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
-  m_MotionVectors: 0
+  m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 0
@@ -175,25 +184,34 @@ TrailRenderer:
   m_Time: Infinity
   m_Parameters:
     serializedVersion: 3
-    widthMultiplier: 1
+    widthMultiplier: 2
     widthCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0.5347214
         inSlope: 0
         outSlope: 0
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0
+        outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 1, g: 1, b: 1, a: 1}
+      key0: {r: 0, g: 0, b: 0, a: 1}
       key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
@@ -241,16 +259,48 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d25450cf4bac064b8ce290ff5f97017, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  points: []
   _mesh: {fileID: 0}
---- !u!33 &375371100194814158
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6047713414169321321}
-  m_Mesh: {fileID: 0}
+  points: []
+  centroid: {x: 0, y: 0, z: 0}
+  maxx: -100000
+  maxy: -100000
+  minx: 100000
+  miny: 100000
+  draggable_now: 0
+  icon_elem_material: {fileID: 2100000, guid: eed04dd1a9ac1ec41b0e758c4373d1bb, type: 2}
+  paintable_object: {fileID: 0}
+  current_attribute: 0
+  previous_position: {x: 0, y: 0, z: 0}
+  recorded_path: []
+  record_path_enable: 0
+  position_before_record: {x: 0, y: 0, z: 0}
+  position_before_translation: {x: 0, y: 0, z: 0}
+  translation_path: []
+  path_index: 0
+  eps_path_radius: 10
+  has_continuous_path: 1
+  heightScale: 20
+  xScale: 100
+  max_possible_scale: 2
+  max_possible_rotation: 360
+  rotation_angle: 0
+  scale_value: 0
+  min_rotation_val: 0
+  max_rotation_val: 5
+  min_scale_val: 1
+  max_scale_val: 5
+  apply_rotation: 0
+  apply_scale: 0
+  pressureValues: []
+  widthcurve:
+    serializedVersion: 2
+    m_Curve: []
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  is_this_double_function_operand: 0
+  details_dropdown: {fileID: 0}
+  global_details_on_path: 1
 --- !u!23 &1675982206330334959
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -269,7 +319,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: eed04dd1a9ac1ec41b0e758c4373d1bb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -290,3 +340,11 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!33 &-8537103720117986283
+MeshFilter:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6047713414169321321}
+  m_Mesh: {fileID: 0}

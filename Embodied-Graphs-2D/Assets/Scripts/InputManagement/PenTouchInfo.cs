@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.EnhancedTouch;
 
 public class PenTouchInfo : MonoBehaviour
 {
@@ -21,7 +22,7 @@ public class PenTouchInfo : MonoBehaviour
 	{
 		currentpen = Pen.current;
 
-		if (currentpen.tip.wasPressedThisFrame ||
+		if ((currentpen != null && currentpen.tip.wasPressedThisFrame) ||
 			Input.GetMouseButtonDown(0))
 		{
 			PressedThisFrame = true;
@@ -31,7 +32,7 @@ public class PenTouchInfo : MonoBehaviour
 			PressedThisFrame = false;
 		}
 
-		if (currentpen.tip.wasReleasedThisFrame ||
+		if ((currentpen != null && currentpen.tip.wasReleasedThisFrame) ||
 			Input.GetMouseButtonUp(0))
 		{
 			ReleasedThisFrame = true;
@@ -41,7 +42,7 @@ public class PenTouchInfo : MonoBehaviour
 			ReleasedThisFrame = false;
 		}
 
-		if (currentpen.tip.isPressed ||
+		if ((currentpen != null && currentpen.tip.isPressed) ||
 			Input.GetMouseButton(0))
 		{
 			PressedNow = true;
@@ -53,11 +54,11 @@ public class PenTouchInfo : MonoBehaviour
 
 		if (Input.GetMouseButtonDown(0) || Input.GetMouseButtonUp(0) || Input.GetMouseButton(0))
 		{
-			penPosition = (Vector2)Input.mousePosition;
+            penPosition = (Vector2)Input.mousePosition;
 			isPen = false;
 			pressureValue = 1;
 		}
-		else if (currentpen.tip.isPressed || currentpen.tip.wasPressedThisFrame || currentpen.tip.wasReleasedThisFrame)
+		else if (currentpen != null && (currentpen.tip.isPressed || currentpen.tip.wasPressedThisFrame || currentpen.tip.wasReleasedThisFrame))
 		{
 			penPosition = currentpen.position.ReadValue();
 			isPen = true;

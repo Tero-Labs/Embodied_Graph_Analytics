@@ -134,9 +134,11 @@ GameObject:
   - component: {fileID: 86345607}
   - component: {fileID: 86345606}
   - component: {fileID: 86345610}
+  - component: {fileID: 86345611}
+  - component: {fileID: 86345612}
   m_Layer: 0
   m_Name: Paintable
-  m_TagString: Untagged
+  m_TagString: paintable_canvas_object
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -227,18 +229,56 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffcf3c339b13be4478b5ea736903df43, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  main_camera: {fileID: 0}
+  main_camera: {fileID: 519420031}
   finger_move_tolerance: 100
   pan_amount: 5
   panTouchStart: {x: 0, y: 0}
   previousTouchEnded: 0
-  okayToPan: 1
+  okayToPan: 0
   panZoomLocked: 0
   IconicElement: {fileID: 6047713414169321321, guid: 75286930b4830af4f8d0baa900a8fd61,
     type: 3}
-  iconicElementButton: {fileID: 1061117258}
   templine: {fileID: 0}
   totalLines: 0
+  Objects_parent: {fileID: 1296054728}
+--- !u!114 &86345611
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 86345605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: edcfe66f26275fe44a4f27ef8bd55ca1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &86345612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 86345605}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3f1ced99529abc4882daef34b2ac5b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  PenLine: {fileID: 0}
+  SetLine: {fileID: 0}
+  EdgeLinePrefab: {fileID: 0}
+  FunctionLine: {fileID: 0}
+  StaticPenLine: {fileID: 0}
+  ParameterUIField: {fileID: 0}
+  EdgeUIField: {fileID: 0}
+  IconicElement: {fileID: 0}
+  paintable_object: {fileID: 0}
+  default_background_material: {fileID: 0}
+  grid_material: {fileID: 0}
+  set_line_material: {fileID: 0}
+  function_line_material: {fileID: 0}
+  commonShapes: []
 --- !u!1 &358445982
 GameObject:
   m_ObjectHideFlags: 0
@@ -819,7 +859,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1296054728}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 316.39505, y: 51.805748, z: 1229.647}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

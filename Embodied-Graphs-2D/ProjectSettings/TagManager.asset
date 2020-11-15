@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 2
   tags:
   - canvas_mode_button
+  - iconic
+  - paintable_canvas_object
   layers:
   - Default
   - TransparentFX
