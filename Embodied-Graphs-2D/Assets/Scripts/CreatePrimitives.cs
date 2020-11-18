@@ -99,11 +99,7 @@ public class CreatePrimitives : MonoBehaviour
     // Assumes templine has been initialized in pointer.start and pointer.moved
     public GameObject FinishPenLine(GameObject templine, Mesh combinedMesh = null)
     {
-        // set the gesture/legible layer fields: no prediction was done. Set \ space as default.
-        // templine.GetComponent<iconicElementScript>().isPredictionDone = true;
-        // templine.GetComponent<iconicElementScript>().gestureTemplate = "legrectangle";
-
-
+        
         // compute centroid and bounds
         templine.GetComponent<iconicElementScript>().computeCentroid();
         templine.GetComponent<iconicElementScript>().computeBounds();
@@ -118,9 +114,9 @@ public class CreatePrimitives : MonoBehaviour
         templine.GetComponent<LineRenderer>().SetPositions(templine.GetComponent<iconicElementScript>().points.ToArray());
 
         // attached with the parent, so no need of initialization any further
-        GameObject meshObj = new GameObject("_meshobj");
+        /*GameObject meshObj = new GameObject("_meshobj");
         meshObj.AddComponent<MeshFilter>();
-        meshObj.AddComponent<MeshRenderer>();
+        meshObj.AddComponent<MeshRenderer>();*/
 
         var lineRenderer = templine.GetComponent<LineRenderer>();
         var meshFilter = templine.GetComponent<MeshFilter>();
@@ -142,7 +138,7 @@ public class CreatePrimitives : MonoBehaviour
 
         templine.GetComponent<iconicElementScript>()._mesh = mesh;
 
-        meshObj.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
+        //meshObj.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
         templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
 
         
@@ -170,7 +166,7 @@ public class CreatePrimitives : MonoBehaviour
 
         // set transform position
         //templine.transform.position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
-        templine.transform.position = meshObj.transform.position;
+        templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
         //templine.transform.position = meshObj.GetComponent<MeshFilter>().sharedMesh.bounds.center;
 
         // update the previous_position variable for templine for checkMove()
@@ -178,13 +174,70 @@ public class CreatePrimitives : MonoBehaviour
 
 
         // set mesh renderer color
-        Debug.Log(templine.GetComponent<MeshRenderer>().material.color);
+        /*Debug.Log(templine.GetComponent<MeshRenderer>().material.color);
         Debug.Log(meshObj.GetComponent<MeshRenderer>().material.color);
         Debug.Log("templine"+templine.transform.position.ToString());
         //Debug.Log("meshobj new" + paintable_object.GetComponent<Paintable>().Objects_parent.transform.TransformPoint(meshObj.GetComponent<MeshFilter>().sharedMesh.bounds.center).ToString());
         //Debug.Log("meshobj local" + paintable_object.GetComponent<Paintable>().Objects_parent.transform.TransformPoint(templine.GetComponent<MeshFilter>().sharedMesh.bounds.center).ToString());
-        Debug.Log(templine.transform.position);
-        Destroy(meshObj);        
+        Debug.Log(templine.transform.position);*/
+        //Destroy(meshObj);        
+
+        // Save the area of the bounding box 
+        templine.GetComponent<iconicElementScript>().attribute.Area =
+            templine.GetComponent<MeshFilter>().sharedMesh.bounds.size.x *
+            templine.GetComponent<MeshFilter>().sharedMesh.bounds.size.y * unitScale * unitScale;
+
+        // set current_attribute of penLine
+        templine.GetComponent<iconicElementScript>().current_attribute =
+            templine.GetComponent<iconicElementScript>().attribute.Length;
+        
+        return templine;
+    }
+
+    // Assumes templine has been initialized in pointer.start and pointer.moved
+    public GameObject FinishEdgeLine(GameObject templine, Mesh combinedMesh = null)
+    {
+        var lineRenderer = templine.GetComponent<LineRenderer>();
+        var meshFilter = templine.GetComponent<MeshFilter>();
+
+        Mesh mesh = new Mesh();
+        lineRenderer.BakeMesh(mesh, true);
+
+        // If a combined mesh is not passed, use the line renderer mesh (default case)
+        if (combinedMesh == null)
+        {
+            meshFilter.sharedMesh = mesh;
+        }
+        else
+        {
+            meshFilter.sharedMesh = combinedMesh;
+        }
+
+        templine.GetComponent<iconicElementScript>()._mesh = mesh;
+
+        templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
+
+        // get rid of the line renderer?
+        //Destroy(templine.GetComponent<LineRenderer>());
+        templine.GetComponent<LineRenderer>().enabled = false;
+
+        // add a collider
+        templine.AddComponent<BoxCollider>();
+
+        templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+        templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+
+        // set collider trigger
+        templine.GetComponent<BoxCollider>().isTrigger = true;
+
+        // disable the collider because we are in the pen mode right now. Pan mode enables back all colliders.
+        templine.GetComponent<BoxCollider>().enabled = false;
+
+        // set transform position
+        templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
+
+        // update the previous_position variable for templine for checkMove()
+        templine.GetComponent<iconicElementScript>().previous_position = templine.transform.position;
 
         // Save the area of the bounding box 
         templine.GetComponent<iconicElementScript>().attribute.Area =
@@ -195,56 +248,6 @@ public class CreatePrimitives : MonoBehaviour
         templine.GetComponent<iconicElementScript>().current_attribute =
             templine.GetComponent<iconicElementScript>().attribute.Length;
 
-        // set the _name field of penline
-        /*templine.GetComponent<iconicElementScript>()._name = "line";
-        templine.GetComponent<iconicElementScript>().symbol_name = new Symbol("line");
-        */
-
-        // now transform all points in the line script to local positions
-        //templine.GetComponent<iconicElementScript>().fromGlobalToLocalPoints();
-
-        // set up the text labels for transformation GUI (param_text)
-        /*templine.transform.GetChild(1).localScale = new Vector3(4, 4, 1);
-        templine.transform.GetChild(2).localScale = new Vector3(4, 4, 1);
-        templine.transform.GetChild(4).GetChild(0).localScale = new Vector3(4, 4, 1);
-        
-
-        // set the box collider as the size of the rect transform
-        templine.transform.GetChild(4).GetChild(0).GetComponent<BoxCollider2D>().size =
-            templine.transform.GetChild(4).GetChild(0).GetComponent<RectTransform>().sizeDelta;
-
-        templine.transform.GetChild(4).GetChild(0).GetComponent<MeshRenderer>().enabled = false;
-        templine.transform.GetChild(4).GetChild(0).GetComponent<BoxCollider2D>().enabled = false;
-
-        templine.transform.GetChild(2).GetComponent<MeshRenderer>().enabled = false;
-        templine.transform.GetChild(2).GetComponent<BoxCollider2D>().enabled = false;
-
-        templine.transform.GetChild(1).GetComponent<MeshRenderer>().enabled = false;
-        templine.transform.GetChild(1).GetComponent<BoxCollider2D>().enabled = false;
-        // turn off the length (temporary display) text
-        templine.transform.GetChild(2).GetComponent<TextMeshPro>().text = "0.";
-
-        // Set up the argument_label button and text.
-        // get the highest point on the pen line, in local coordinates
-        templine.transform.GetChild(3).gameObject.SetActive(true);
-        */
-
-        //templine.GetComponent<iconicElementScript>().computeBounds();
-        //templine.GetComponent<iconicElementScript>().computeCentroid();
-
-        /*templine.transform.GetChild(3).transform.localPosition =
-            new Vector3(templine.GetComponent<iconicElementScript>().centroid.x,
-            templine.GetComponent<iconicElementScript>().maxy, 0);   // z is already -40, hence putting 0 here in local.
-        
-        templine.transform.GetChild(3).GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20);
-
-        templine.transform.GetChild(3).GetChild(0).GetComponent<TextMeshProUGUI>().text = "";
-
-        templine.transform.GetChild(3).gameObject.SetActive(false); // turn it off now. Needed only for double function.
-        
-        // Finally, check membership. Does this belong to any set or function?
-        templine.GetComponent<penLine_script>().checkAndUpdateMembership();
-        */
         return templine;
     }
 

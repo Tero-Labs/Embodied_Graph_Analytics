@@ -7,6 +7,7 @@ TagManager:
   - canvas_mode_button
   - iconic
   - paintable_canvas_object
+  - edge
   layers:
   - Default
   - TransparentFX

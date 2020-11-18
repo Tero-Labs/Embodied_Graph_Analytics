@@ -238,9 +238,13 @@ MonoBehaviour:
   panZoomLocked: 0
   IconicElement: {fileID: 6047713414169321321, guid: 75286930b4830af4f8d0baa900a8fd61,
     type: 3}
+  EdgeElement: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
+    type: 3}
   templine: {fileID: 0}
   totalLines: 0
   Objects_parent: {fileID: 1296054728}
+  selected_obj: []
+  history: []
 --- !u!114 &86345611
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -27,17 +27,26 @@ public class Paintable : MonoBehaviour
 
 	// Prefabs
 	public GameObject IconicElement;
+    public GameObject EdgeElement;
 
-	// Canvas buttons
-	public static GameObject iconicElementButton;
+    // Canvas buttons
+    public static GameObject iconicElementButton;
     public static GameObject pan_button;
+    public static GameObject graph_pen_button;
 
     // needed for drawing
     public GameObject templine;
 	public int totalLines = 0;
+    private static int min_point_count = 30;
 
     // holder of all game objects
     public GameObject Objects_parent;
+
+    // edge paint control
+    // box collider control
+    public static bool enablecollider = false;
+    public static int selected_obj_count = 0;
+    public List<GameObject> selected_obj = new List<GameObject>();
 
     // objects history
     public List<GameObject> history = new List<GameObject>();
@@ -50,6 +59,7 @@ public class Paintable : MonoBehaviour
 	{
         iconicElementButton = GameObject.Find("IconicPen");
         pan_button = GameObject.Find("Pan");
+        graph_pen_button = GameObject.Find("GraphPen");
     }
 
 	// Update is called once per frame
@@ -76,7 +86,6 @@ public class Paintable : MonoBehaviour
 			//!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
 		{
 			//Debug.Log("entered");
-			//Debug.Log(PenTouchInfo.penPosition.ToString());
 			if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
 			{
 				// start drawing a new line
@@ -84,7 +93,7 @@ public class Paintable : MonoBehaviour
 				RaycastHit Hit;
 				if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
 				{
-					//Debug.Log("entered");
+					//Debug.Log("instantiated_templine");
 
 					Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
 																	  //Debug.Log(vec);
@@ -165,10 +174,11 @@ public class Paintable : MonoBehaviour
 
 				if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
 				{
-					if (templine.GetComponent<iconicElementScript>().points.Count > 8)
+					if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
 					{
-						// TODO: FINISH THE ICONIC ELEMENT
-						templine = transform.GetComponent<CreatePrimitives>().FinishPenLine(templine);
+                        // Debug.Log("here_in_save_mode " + templine.GetComponent<iconicElementScript>().points.Count.ToString());
+                        // TODO: FINISH THE ICONIC ELEMENT
+                        templine = transform.GetComponent<CreatePrimitives>().FinishPenLine(templine);
 
 						// set templine to null, otherwise, if an existing touch from color picker makes it to the canvas,
 						// then the object jumps to the color picker (as a new templine hasn't been initialized from touch.begin).
@@ -176,19 +186,27 @@ public class Paintable : MonoBehaviour
 					}
 					else
 					{
-						// delete the templine, not enough points
-						Destroy(templine);
+                        // delete the templine, not enough points
+                        // Debug.Log("here_in_destroy");
+                        Destroy(templine);
 					}
 				}
 				else
 				{
-					// the touch didn't end on a line, destroy the line
-					Destroy(templine);
+                    // the touch didn't end on a line, destroy the line
+                    // Debug.Log("here_in_destroy_different_Hit");
+                    Destroy(templine);
 				}
 
 			}
 
 		}
+        // when a new button is selected, a templine might still exist. We need to destroy that as well.
+        else
+        {
+            if (templine != null)
+                Destroy(templine);
+        }
 
         #endregion
 
@@ -290,7 +308,132 @@ public class Paintable : MonoBehaviour
 
         #endregion
 
-        // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
+        #region Graph Pen
+        if (graph_pen_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            // just entered edge button, enable all collider 
+            if (enablecollider == false)
+            {
+                enablecollider = true;
+                GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+
+                foreach (GameObject icon in drawnlist)
+                {
+                    if (icon.GetComponent<BoxCollider>() != null)
+                        icon.GetComponent<BoxCollider>().enabled = true;
+                }
+            }
+
+
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                {
+                    Debug.Log("hit_iconic_elem_at"+ Hit.collider.gameObject.GetComponent<BoxCollider>().center.ToString());
+                    if (selected_obj.Count == 0)
+                    {
+                        GameObject cur = Hit.collider.gameObject;
+                        //selected_obj.Add(cur.GetComponent<Transform>().TransformPoint(Hit.collider.gameObject.GetComponent<BoxCollider>().center));
+                        selected_obj.Add(Hit.collider.gameObject);
+                        selected_obj_count++;
+                    }
+                    else if (selected_obj.Count > 0 &&
+                        (Hit.collider.gameObject.GetComponent<BoxCollider>().center - selected_obj[selected_obj.Count - 1].GetComponent<BoxCollider>().center).magnitude > 0f)
+                    {
+                        GameObject cur = Hit.collider.gameObject;
+                        //selected_obj.Add(cur.GetComponent<Transform>().TransformPoint(Hit.collider.gameObject.GetComponent<BoxCollider>().center));
+                        selected_obj.Add(Hit.collider.gameObject);
+                        selected_obj_count++;
+                    }
+
+                    if (selected_obj.Count == 2)
+                    {
+                        Debug.Log("two objects touched, now draw the edge");
+                        GameObject edgeline = Instantiate(EdgeElement, selected_obj[0].GetComponent<BoxCollider>().center, Quaternion.identity, Objects_parent.transform);
+                        edgeline.GetComponent<EdgeElementScript>().node_obj = selected_obj;
+
+                        //edgeline.GetComponent<TrailRenderer>().minVertexDistance = 10000f;
+                        //edgeline.GetComponent<TrailRenderer>().material.color = Color.black;
+
+                        edgeline.name = "edge_" + selected_obj_count.ToString();
+                        edgeline.tag = "edge";
+
+                        //edgeline.GetComponent<EdgeElementScript>().points.Add(selected_obj[0]);
+
+                        /*for (int i = 0; i < 100; i++)
+                        {
+                            Vector3 temp = Vector3.Lerp(selected_obj[0], selected_obj[1], i/100);
+                            edgeline.GetComponent<TrailRenderer>().transform.position = temp;
+                            edgeline.GetComponent<EdgeElementScript>().points.Add(temp);
+                        }*/
+
+
+                        //edgeline.GetComponent<TrailRenderer>().transform.position = selected_obj[1];
+                        //edgeline.GetComponent<EdgeElementScript>().points.Add(selected_obj[1]);
+
+                        List<Vector3> selected_vects = new List<Vector3>();
+
+                        foreach (GameObject each_obj in selected_obj)
+                        {
+                            selected_vects.Add(each_obj.GetComponent<BoxCollider>().center);
+                        }
+                        
+
+                        //https://generalistprogrammer.com/unity/unity-line-renderer-tutorial/
+                        edgeline.GetComponent<LineRenderer>().material.color = Color.black;
+                        LineRenderer l = edgeline.GetComponent<LineRenderer>();
+                        l.startWidth = 2f;
+                        l.endWidth = 2f;
+                        l.SetPositions(selected_vects.ToArray());
+                        l.useWorldSpace = true;
+
+                        /*foreach (Vector3 vec in selected_obj)
+                        {
+                            Debug.Log("printing points "+vec.ToString());
+                            edgeline.GetComponent<TrailRenderer>().transform.position = vec;
+                            edgeline.GetComponent<EdgeElementScript>().points.Add(vec);
+
+                            templine.GetComponent<EdgeElementScript>().calculateLengthAttributeFromPoints();
+                            
+                            // pressure based pen width
+                            templine.GetComponent<EdgeElementScript>().updateLengthFromPoints();
+                            templine.GetComponent<EdgeElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                            templine.GetComponent<EdgeElementScript>().reNormalizeCurveWidth();
+                            templine.GetComponent<TrailRenderer>().widthCurve = templine.GetComponent<EdgeElementScript>().widthcurve;
+                        }*/
+
+                        edgeline = edgeline.GetComponent<EdgeElementScript>().FinishEdgeLine();
+                        edgeline = null;
+
+                        selected_obj.Clear();
+                    }
+                }
+
+            }
+
+        }
+        else
+        {
+            // just disabled edge button, disable all collider
+            if (enablecollider == true)
+            {
+                enablecollider = false;
+                GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+
+                foreach (GameObject icon in drawnlist)
+                {
+                    if (icon.GetComponent<BoxCollider>() != null)
+                        icon.GetComponent<BoxCollider>().enabled = false;
+                }
+            }
+        }
+
+        #endregion
+
+       // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
     }
 
