@@ -8,6 +8,11 @@ TagManager:
   - iconic
   - paintable_canvas_object
   - edge
+  - temp_edge_primitive
+  - graph
+  - objects_parent
+  - edge_parent
+  - node_parent
   layers:
   - Default
   - TransparentFX

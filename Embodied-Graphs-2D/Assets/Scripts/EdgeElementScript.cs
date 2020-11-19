@@ -16,6 +16,7 @@ public class EdgeElementScript : MonoBehaviour
     public Mesh _mesh;
 
     public List<GameObject> node_obj = new List<GameObject>();
+    public GameObject edge_start, edge_end;
     // visual representation
     // public List<Vector2> points;
 

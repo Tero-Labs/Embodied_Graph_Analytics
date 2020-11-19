@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 1675982206330334959}
   - component: {fileID: -8537103720117986283}
   - component: {fileID: 67260432800351567}
+  - component: {fileID: -5722908831877841235}
   m_Layer: 0
   m_Name: EdgeElement
   m_TagString: Untagged
@@ -200,6 +201,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _mesh: {fileID: 0}
+  node_obj: []
   points: []
   centroid: {x: 0, y: 0, z: 0}
   maxx: -100000
@@ -241,3 +243,21 @@ MonoBehaviour:
   is_this_double_function_operand: 0
   details_dropdown: {fileID: 0}
   global_details_on_path: 1
+--- !u!68 &-5722908831877841235
+EdgeCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6047713414169321321}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_EdgeRadius: 0
+  m_Points:
+  - {x: -754, y: -234}
+  - {x: -752, y: -234}

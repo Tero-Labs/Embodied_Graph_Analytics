@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem;
+using System.Linq;
 
 public class Paintable : MonoBehaviour
 {
@@ -33,6 +34,7 @@ public class Paintable : MonoBehaviour
     public static GameObject iconicElementButton;
     public static GameObject pan_button;
     public static GameObject graph_pen_button;
+    public GameObject edgeline;
 
     // needed for drawing
     public GameObject templine;
@@ -47,6 +49,10 @@ public class Paintable : MonoBehaviour
     public static bool enablecollider = false;
     public static int selected_obj_count = 0;
     public List<GameObject> selected_obj = new List<GameObject>();
+    public GameObject edge_start, edge_end;
+
+    // needed for graph
+    public static int graph_count = 0;
 
     // objects history
     public List<GameObject> history = new List<GameObject>();
@@ -205,7 +211,11 @@ public class Paintable : MonoBehaviour
         else
         {
             if (templine != null)
+            {
                 Destroy(templine);
+                templine = null;
+            }
+                
         }
 
         #endregion
@@ -332,86 +342,144 @@ public class Paintable : MonoBehaviour
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
                 {
-                    Debug.Log("hit_iconic_elem_at"+ Hit.collider.gameObject.GetComponent<BoxCollider>().center.ToString());
-                    if (selected_obj.Count == 0)
+                    //Debug.Log("hit_iconic_elem_at"+ Hit.collider.gameObject.GetComponent<BoxCollider>().center.ToString());
+                    GameObject cur = Hit.collider.gameObject;
+                    selected_obj_count++;
+
+                    edgeline = Instantiate(EdgeElement, cur.GetComponent<BoxCollider>().center, Quaternion.identity, Objects_parent.transform);
+                    edgeline.name = "edge_" + selected_obj_count.ToString();
+                    edgeline.tag = "edge";
+
+                    edgeline.GetComponent<EdgeElementScript>().points.Add(cur.GetComponent<BoxCollider>().center);
+                    edge_start = cur;
+                    CreateEmptyEdgeObjects();
+
+                    //https://generalistprogrammer.com/unity/unity-line-renderer-tutorial/
+                    LineRenderer l = edgeline.GetComponent<LineRenderer>();
+                    l.material.color = Color.black;
+                    l.startWidth = 2f;
+                    l.endWidth = 2f;
+
+                    // set up the line renderer
+                    l.positionCount = 2;
+                    l.SetPosition(0, cur.GetComponent<BoxCollider>().center);// + new Vector3(0, 0, -2f));
+                    l.SetPosition(1, cur.GetComponent<BoxCollider>().center);// + new Vector3(1f, 0, -2f));
+                                          
+                }
+
+            }
+            else if (PenTouchInfo.PressedNow)
+            {
+                // add points to the last line, but check that if an edge line has been created already
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "paintable_canvas_object" && edge_start != null)
+                {
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+                    edgeline.GetComponent<LineRenderer>().SetPosition(1, vec);// + new Vector3(0, 0, -2f));
+                    edgeline.GetComponent<EdgeElementScript>().points.Add(vec);
+                }
+            }
+
+            else if (PenTouchInfo.ReleasedThisFrame)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+
+                RaycastHit Hit1;
+                Physics.Raycast(ray, out Hit1);
+
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && (Hit.collider.gameObject.tag == "temp_edge_primitive" || Hit.collider.gameObject.tag == "iconic")
+                    && edge_start != null)
+                {
+
+                    if (edgeline.GetComponent<EdgeElementScript>().points.Count > 2)
                     {
-                        GameObject cur = Hit.collider.gameObject;
-                        //selected_obj.Add(cur.GetComponent<Transform>().TransformPoint(Hit.collider.gameObject.GetComponent<BoxCollider>().center));
-                        selected_obj.Add(Hit.collider.gameObject);
-                        selected_obj_count++;
-                    }
-                    else if (selected_obj.Count > 0 &&
-                        (Hit.collider.gameObject.GetComponent<BoxCollider>().center - selected_obj[selected_obj.Count - 1].GetComponent<BoxCollider>().center).magnitude > 0f)
-                    {
-                        GameObject cur = Hit.collider.gameObject;
-                        //selected_obj.Add(cur.GetComponent<Transform>().TransformPoint(Hit.collider.gameObject.GetComponent<BoxCollider>().center));
-                        selected_obj.Add(Hit.collider.gameObject);
-                        selected_obj_count++;
-                    }
+                        // assign the end of edge object
+                        if (Hit.collider.gameObject.tag == "temp_edge_primitive")
+                            edge_end = Hit.collider.transform.parent.gameObject;
+                        else
+                            edge_end = Hit.collider.gameObject;
 
-                    if (selected_obj.Count == 2)
-                    {
-                        Debug.Log("two objects touched, now draw the edge");
-                        GameObject edgeline = Instantiate(EdgeElement, selected_obj[0].GetComponent<BoxCollider>().center, Quaternion.identity, Objects_parent.transform);
-                        edgeline.GetComponent<EdgeElementScript>().node_obj = selected_obj;
+                        // compute centroid and bounds
+                        /*edgeline.GetComponent<EdgeElementScript>().computeCentroid();
+                        edgeline.GetComponent<EdgeElementScript>().computeBounds();
+                        */
 
-                        //edgeline.GetComponent<TrailRenderer>().minVertexDistance = 10000f;
-                        //edgeline.GetComponent<TrailRenderer>().material.color = Color.black;
-
-                        edgeline.name = "edge_" + selected_obj_count.ToString();
-                        edgeline.tag = "edge";
-
-                        //edgeline.GetComponent<EdgeElementScript>().points.Add(selected_obj[0]);
-
-                        /*for (int i = 0; i < 100; i++)
+                        // now create the edge in edge script
+                        if (edge_end != null && edge_start != null)
                         {
-                            Vector3 temp = Vector3.Lerp(selected_obj[0], selected_obj[1], i/100);
-                            edgeline.GetComponent<TrailRenderer>().transform.position = temp;
-                            edgeline.GetComponent<EdgeElementScript>().points.Add(temp);
-                        }*/
+                            // TODO: IF AN EDGELINE ALREADY EXISTS CONNECTING THESE TWO NODES, THEN DON'T CREATE ANOTHER ONE, DESTROY THE CURRENT.
+                            edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
+                            edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
 
+                            // set line renderer end point
+                            edgeline.GetComponent<LineRenderer>().SetPosition(1, edge_end.GetComponent<BoxCollider>().center);
 
-                        //edgeline.GetComponent<TrailRenderer>().transform.position = selected_obj[1];
-                        //edgeline.GetComponent<EdgeElementScript>().points.Add(selected_obj[1]);
+                            // assuming edge_start is always an anchor
+                            var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0),
+                                edgeline.GetComponent<LineRenderer>().GetPosition(1)};
 
-                        List<Vector3> selected_vects = new List<Vector3>();
+                            edgeline.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+                            {
+                                var pos = edgeline.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+                                return new Vector2(pos.x, pos.y);
+                            }).ToArray();
 
-                        foreach (GameObject each_obj in selected_obj)
-                        {
-                            selected_vects.Add(each_obj.GetComponent<BoxCollider>().center);
-                        }
-                        
-
-                        //https://generalistprogrammer.com/unity/unity-line-renderer-tutorial/
-                        edgeline.GetComponent<LineRenderer>().material.color = Color.black;
-                        LineRenderer l = edgeline.GetComponent<LineRenderer>();
-                        l.startWidth = 2f;
-                        l.endWidth = 2f;
-                        l.SetPositions(selected_vects.ToArray());
-                        l.useWorldSpace = true;
-
-                        /*foreach (Vector3 vec in selected_obj)
-                        {
-                            Debug.Log("printing points "+vec.ToString());
-                            edgeline.GetComponent<TrailRenderer>().transform.position = vec;
-                            edgeline.GetComponent<EdgeElementScript>().points.Add(vec);
-
-                            templine.GetComponent<EdgeElementScript>().calculateLengthAttributeFromPoints();
+                            edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;
                             
-                            // pressure based pen width
-                            templine.GetComponent<EdgeElementScript>().updateLengthFromPoints();
-                            templine.GetComponent<EdgeElementScript>().addPressureValue(PenTouchInfo.pressureValue);
-                            templine.GetComponent<EdgeElementScript>().reNormalizeCurveWidth();
-                            templine.GetComponent<TrailRenderer>().widthCurve = templine.GetComponent<EdgeElementScript>().widthcurve;
-                        }*/
+                            // set line renderer texture scale
+                            var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0),
+                                edgeline.GetComponent<LineRenderer>().GetPosition(1));
+                            edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
 
-                        edgeline = edgeline.GetComponent<EdgeElementScript>().FinishEdgeLine();
+                            //edgeline = edgeline.GetComponent<EdgeElementScript>().FinishEdgeLine();                            
+                            GraphCreation();
+
+                            // set edge_end and edge_start back to null
+                            edge_end = null;
+                            edge_start = null;
+                            edgeline = null;
+                        }
+
+                    }
+                    else
+                    {
+                        // delete the templine, not enough points
+                        Destroy(edgeline);
+                        edge_start = null;
+                        edge_end = null;
                         edgeline = null;
-
-                        selected_obj.Clear();
                     }
                 }
 
+                
+                // in case a touch was rendered on the canvas (or not on the blue cylinders) and a line didn't finish drawing from source
+                else if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "temp_edge_primitive"
+                    && edge_start != null)
+                {
+                    // delete the templine, not correctly drawn from feasible source to target
+                    Destroy(edgeline);
+                    edge_start = null;
+                    edge_end = null;
+                    edgeline = null;
+                }
+
+                // in all other cases, to be safe, just delete the entire edgeline structure
+                else if (edge_start != null)
+                {
+                    Destroy(edgeline);
+                    edge_start = null;
+                    edge_end = null;
+                    edgeline = null;
+                }
+
+                // the touch has ended, destroy all temp edge cylinders now
+                GameObject[] tempcyls = GameObject.FindGameObjectsWithTag("temp_edge_primitive");
+                for (int k = 0; k < tempcyls.Length; k++)
+                {
+                    Destroy(tempcyls[k]);
+                }
             }
 
         }
@@ -421,13 +489,8 @@ public class Paintable : MonoBehaviour
             if (enablecollider == true)
             {
                 enablecollider = false;
-                GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
-
-                foreach (GameObject icon in drawnlist)
-                {
-                    if (icon.GetComponent<BoxCollider>() != null)
-                        icon.GetComponent<BoxCollider>().enabled = false;
-                }
+                DisableIconicCollider();
+                edgeline = null;
             }
         }
 
@@ -435,6 +498,118 @@ public class Paintable : MonoBehaviour
 
        // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
+    }
+
+    void GraphCreation()
+    {
+        // if they are already under the same graph, no need to create a new one. Just assign the new edgeline to the previous parent
+        if (edge_start.transform.parent == edge_end.transform.parent && edge_start.transform.parent.tag == "node_parent")
+        {
+            Transform Prev_graph_parent = edge_start.transform.parent.transform.parent;
+            edgeline.transform.parent = Prev_graph_parent.GetChild(1);
+            return;
+        }
+
+        graph_count++;
+        GameObject tempgraph = new GameObject("graph_"+graph_count.ToString());
+        tempgraph.tag = "graph";
+        tempgraph.transform.parent = Objects_parent.transform;
+
+        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
+        tempnodeparent.tag = "node_parent";
+        tempnodeparent.transform.parent = tempgraph.transform;
+        tempnodeparent.transform.SetSiblingIndex(0);
+
+        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
+        tempedgeparent.tag = "edge_parent";
+        tempedgeparent.transform.parent = tempgraph.transform;
+        tempedgeparent.transform.SetSiblingIndex(1);
+
+        //assign_the_newly_created_Edge_to_temp_edge_parent_object
+        edgeline.transform.parent = tempedgeparent.transform;
+
+
+        //change_parent
+        if (edge_start.transform.parent.tag == "node_parent")
+        {
+            Transform Prev_node_parent = edge_start.transform.parent;
+            Transform Prev_graph_parent = Prev_node_parent.transform.parent;
+            Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+            Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+            Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+
+            foreach (Transform child in allChildrennode)
+            {
+                child.parent = tempnodeparent.transform;
+            }
+
+
+            foreach (Transform child in allChildrenedge)
+            {
+                child.parent = tempedgeparent.transform;
+            }
+            Destroy(Prev_graph_parent.gameObject);
+            Destroy(Prev_node_parent.gameObject);
+            Destroy(Prev_edge_parent.gameObject);
+        }
+        else
+        {
+            edge_start.transform.parent = tempnodeparent.transform;
+        }
+
+        if (edge_end.transform.parent.tag == "node_parent")
+        {
+            Transform Prev_node_parent = edge_end.transform.parent;
+            Transform Prev_graph_parent = Prev_node_parent.transform.parent;
+            Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+            Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+            Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+
+            foreach (Transform child in allChildrennode)
+            {
+                child.parent = tempnodeparent.transform;
+            }
+                        
+            
+            foreach (Transform child in allChildrenedge)
+            {
+                child.parent = tempedgeparent.transform;
+            }
+            Destroy(Prev_graph_parent.gameObject);
+            Destroy(Prev_node_parent.gameObject);
+            Destroy(Prev_edge_parent.gameObject);
+        }
+        else
+        {
+            edge_end.transform.parent = tempnodeparent.transform;
+        }             
+    }
+
+    void CreateEmptyEdgeObjects()
+    {
+        // for all penline objects, create an anchor on top of them for a possible edge end
+        GameObject[] penobjs = GameObject.FindGameObjectsWithTag("iconic");
+        for (int i = 0; i < penobjs.Length; i++)
+        {            
+                GameObject tempcyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+                tempcyl.tag = "temp_edge_primitive";
+                tempcyl.transform.position = penobjs[i].GetComponent<BoxCollider>().center + new Vector3(0f, 0f, 20f);
+                tempcyl.transform.localScale = new Vector3(20f, 20f, 20f);
+                tempcyl.transform.Rotate(new Vector3(90f, 0f, 0f));
+                tempcyl.transform.parent = penobjs[i].transform;
+                tempcyl.GetComponent<Renderer>().material.color = Color.blue;            
+        }
+    }
+
+    void DisableIconicCollider()
+    {
+        GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+
+        foreach (GameObject icon in drawnlist)
+        {
+            if (icon.GetComponent<BoxCollider>() != null)
+                icon.GetComponent<BoxCollider>().enabled = false;
+        }
     }
 
     void handleKeyInteractions()
