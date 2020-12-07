@@ -25,6 +25,7 @@ public class iconicElementScript : MonoBehaviour
 
     public Material icon_elem_material;
     public GameObject paintable_object;
+    public string icon_name;
 
     // get-able attributes
     public struct Attributes
@@ -43,6 +44,7 @@ public class iconicElementScript : MonoBehaviour
     public List<Vector3> recorded_path = new List<Vector3>();
     public bool record_path_enable = false;
     public Vector3 position_before_record;
+    public Vector3 edge_position;
 
     // path translate
     public Vector3 position_before_translation;
@@ -1298,5 +1300,23 @@ public class iconicElementScript : MonoBehaviour
 
         // should be called after abstraction layer changes.
         //applyGlobalStrokeDetails();
+    }
+
+    public bool isInsidePolygon(Vector3 p)
+    {
+        //Debug.Log("vector_"+p.ToString()+"_own_"+this.transform.position.ToString());
+        int j = points.Count - 1;
+        bool inside = false;
+        for (int i = 0; i < points.Count; j = i++)
+        {
+            if (((points[i].y <= p.y && p.y < points[j].y) || (points[j].y <= p.y && p.y < points[i].y)) &&
+               (p.x < (points[j].x - points[i].x) * (p.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
+            {
+                inside = !inside;
+
+            }
+                
+        }
+        return inside;
     }
 }

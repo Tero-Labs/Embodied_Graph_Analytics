@@ -11,21 +11,17 @@ public class AllButtonsBehaviors : MonoBehaviour
 
 	public bool selected = false;
 
-	public static bool isPointerOverStaticPen = false;
-	public static bool isPointerOverEdgeButton = false;
-	public static bool isPointerOverEraserButton = false;
+
 	public static bool isPointerOverGraphPen = false;
 	public static bool isPointerOverPan = false;
 	public static bool isPointerOverIconicPen = false;
-	public static bool isPointerOverSelect = false;
-	public static bool isPointerOverStrokeConvert = false;
-	public static bool isPointerOverPathDefinition = false;
+	public static bool isPointerOverEraser = false;
 	public static bool isPointerOverCopy = false;
-	public static bool isPointerOverTextInput = false;
 
 	GameObject[] buttons;
+    GameObject paint_canvas;
 
-	public void whenSelected()
+    public void whenSelected()
 	{
 		selected = true;
 
@@ -35,8 +31,42 @@ public class AllButtonsBehaviors : MonoBehaviour
 		// change scale
 		transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
 
-		// deselect all other buttons
-		for (int i = 0; i < buttons.Length; i++)
+        if (this.name == "Pan")
+        {
+            // enable all colliders to move primitives around
+            enableAllPenObjectColliders();
+            paint_canvas.GetComponent<Paintable>().okayToPan = true;
+        }
+
+        else if (this.name == "IconicPen")
+        {
+            // allow drawing over existing pen/set etc. objects without interfering
+            disableAllPenObjectColliders();
+        }
+
+        else if (this.name == "GraphPen")
+        {
+            enableAllPenObjectColliders();
+        }
+        else if (this.name == "Eraser")
+        {
+            enableAllPenObjectColliders();
+        }
+        else if (this.name == "Copy")
+        {
+            enableAllPenObjectColliders();
+            //paint_canvas.GetComponent<Paintable>().okayToPan = false;
+            this.transform.GetComponent<CopyIconicObject>().start_copying = false;
+        }
+
+        /*else if (this.name == "StrokeCombine")
+        {
+            GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+            paint_canvas.GetComponent<CreatePrimitives>().CreatePenLine(drawnlist);
+        }*/
+
+            // deselect all other buttons
+            for (int i = 0; i < buttons.Length; i++)
 		{
 			if (buttons[i].name == this.name) continue;
 
@@ -55,14 +85,55 @@ public class AllButtonsBehaviors : MonoBehaviour
 		// change scale
 		transform.localScale = new Vector3(1f, 1f, 1f);
 
+        // incase any temp cylinder is left, we will clear them up 
+        if (this.name == "GraphPen")
+        {
+            // the touch has ended, destroy all temp edge cylinders now
+            GameObject[] tempcyls = GameObject.FindGameObjectsWithTag("temp_edge_primitive");
+            for (int k = 0; k < tempcyls.Length; k++)
+            {
+                Destroy(tempcyls[k]);
+            }
+        }
 
-	}
+        if (this.name == "Pan")
+        {
+            paint_canvas.GetComponent<Paintable>().okayToPan = false;
+        }
 
-	// Start is called before the first frame update
-	void Start()
+    }
+
+    public void enableAllPenObjectColliders()
+    {
+        // disable the pen box colliders that are immediate children of the paintable object
+        GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+
+        foreach (GameObject icon in drawnlist)
+        {
+            if (icon.GetComponent<BoxCollider>() != null)
+                icon.GetComponent<BoxCollider>().enabled = true;
+        }
+    }
+
+    public void disableAllPenObjectColliders()
+    {
+        // disable the pen box colliders that are immediate children of the paintable object
+        GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+
+        foreach (GameObject icon in drawnlist)
+        {
+            if (icon.GetComponent<BoxCollider>() != null)
+                icon.GetComponent<BoxCollider>().enabled = false;
+        }
+    }
+
+    // Start is called before the first frame update
+    void Start()
 	{
 		buttons = GameObject.FindGameObjectsWithTag("canvas_mode_button");
-	}
+        paint_canvas = GameObject.FindGameObjectWithTag("paintable_canvas_object");
+
+    }
 
 	// Update is called once per frame
 	void Update()
@@ -73,54 +144,31 @@ public class AllButtonsBehaviors : MonoBehaviour
 				isPointerOverPan = true;
 			else isPointerOverPan = false;
 
-			if (this.name == "Select")
-				isPointerOverSelect = true;
-			else isPointerOverSelect = false;
+			if (this.name == "Eraser")
+                isPointerOverEraser = true;
+			else isPointerOverEraser = false;
 
 			if (this.name == "IconicPen")
 				isPointerOverIconicPen = true;
 			else isPointerOverIconicPen = false;
 
-			if (this.name == "Edge_draw")
-				isPointerOverEdgeButton = true;
-			else isPointerOverEdgeButton = false;
-
 			if (this.name == "GraphPen")
 				isPointerOverGraphPen = true;
 			else isPointerOverGraphPen = false;
-
-			if (this.name == "StaticPen")
-				isPointerOverStaticPen = true;
-			else isPointerOverStaticPen = false;
-
-			if (this.name == "Text_Input")
-				isPointerOverTextInput = true;
-			else isPointerOverTextInput = false;
-
+            
 			if (this.name == "Copy")
 				isPointerOverCopy = true;
 			else isPointerOverCopy = false;
 
-			if (this.name == "Path_Definition")
-				isPointerOverPathDefinition = true;
-			else isPointerOverPathDefinition = false;
-
-			if (this.name == "Stroke_Conversion")
-				isPointerOverStrokeConvert = true;
-			else isPointerOverStrokeConvert = false;
+			
 		}
 		else
 		{
 			isPointerOverPan = false;
-			isPointerOverSelect = false;
+            isPointerOverEraser = false;
 			isPointerOverIconicPen = false;
-			isPointerOverEdgeButton = false;
 			isPointerOverGraphPen = false;
-			isPointerOverStaticPen = false;
-			isPointerOverTextInput = false;
 			isPointerOverCopy = false;
-			isPointerOverPathDefinition = false;
-			isPointerOverStrokeConvert = false;
 		}
 	}
 }

@@ -11,6 +11,7 @@ public class EdgeElementScript : MonoBehaviour
 {
     // Length, area, distance units
     public static float unitScale = 0.025f;
+    public int edge_weight = 1;
 
     // previous first child, instead of creating a separate child, we now want to keep it in the script
     public Mesh _mesh;

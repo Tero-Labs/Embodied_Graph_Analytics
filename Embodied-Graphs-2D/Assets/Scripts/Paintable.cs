@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem;
 using System.Linq;
+using TMPro;
 
 public class Paintable : MonoBehaviour
 {
@@ -21,20 +22,31 @@ public class Paintable : MonoBehaviour
 	public static float zoom_max = 850;
 	public float pan_amount = 5f;
 	public Vector2 panTouchStart;
-	public bool previousTouchEnded;
-	public bool okayToPan = true;
+    public Vector2 moveTouchStart;
+    public bool previousTouchEnded;
+    public GameObject curtouched_obj = null;
+    public bool okayToPan = true;
 	public bool panZoomLocked = false;
 
 
 	// Prefabs
 	public GameObject IconicElement;
     public GameObject EdgeElement;
+    public GameObject CombineLineElement;
 
     // Canvas buttons
     public static GameObject iconicElementButton;
     public static GameObject pan_button;
     public static GameObject graph_pen_button;
+    public static GameObject eraser_button;
+    public static GameObject copy_button;
+    public static GameObject stroke_combine_button;
+    public static GameObject canvas_radial;
+
     public GameObject edgeline;
+    public GameObject setline;
+    public GameObject edge_radial_menu;
+    public GameObject node_radial_menu;
 
     // needed for drawing
     public GameObject templine;
@@ -54,6 +66,14 @@ public class Paintable : MonoBehaviour
     // needed for graph
     public static int graph_count = 0;
 
+    // needed for panning
+    private bool taping_flag;
+    int LastPhaseHappend; // 1 = S, 2 = M, 3 = E
+    float TouchTime; // Time elapsed between touch beginning and ending
+    float StartTouchTime; // Time.realtimeSinceStartup at start of touch
+    float EndTouchTime; // Time.realtimeSinceStartup at end of touch
+    public Vector2 startPos;
+
     // objects history
     public List<GameObject> history = new List<GameObject>();
 
@@ -66,6 +86,11 @@ public class Paintable : MonoBehaviour
         iconicElementButton = GameObject.Find("IconicPen");
         pan_button = GameObject.Find("Pan");
         graph_pen_button = GameObject.Find("GraphPen");
+        eraser_button = GameObject.Find("Eraser");
+        copy_button = GameObject.Find("Copy");
+        stroke_combine_button = GameObject.Find("StrokeCombine");
+        
+        canvas_radial = GameObject.Find("canvas_radial");
     }
 
 	// Update is called once per frame
@@ -225,19 +250,10 @@ public class Paintable : MonoBehaviour
         // Handle screen touches.                     
         //https://docs.unity3d.com/ScriptReference/TouchPhase.Moved.html
 
-        if (pan_button.GetComponent<AllButtonsBehaviors>().selected)
-        //!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
-        {
-            okayToPan = true;
-        }
-        else
-        {
-            okayToPan = false;
-        }
-
+        
         if (Input.touchCount == 2 && !panZoomLocked) // && pan_button.GetComponent<PanButtonBehavior>().selected)
         {
-            Debug.Log("double_finger_tap");
+            //Debug.Log("double_finger_tap");
             // NO ANCHOR TAPPED, JUST ZOOM IN/PAN
             //main_camera.GetComponent<MobileTouchCamera>().enabled = true;
 
@@ -252,59 +268,86 @@ public class Paintable : MonoBehaviour
 
             float difference = currmag - prevmag;
 
-            Debug.Log("diff: " + difference + ", multiplier: " + zoom_multiplier + ", camera size: " + (Camera.main.orthographicSize - zoom_multiplier * difference).ToString());
-            Debug.Log("Clamped: " + Mathf.Clamp(zoom_multiplier * (Camera.main.orthographicSize - difference), zoom_min, zoom_max));
+            //Debug.Log("diff: " + difference + ", multiplier: " + zoom_multiplier + ", camera size: " + (Camera.main.orthographicSize - zoom_multiplier * difference).ToString());
+            //Debug.Log("Clamped: " + Mathf.Clamp(zoom_multiplier * (Camera.main.orthographicSize - difference), zoom_min, zoom_max));
 
             Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);
 
             // CHECK AND DELETE INCOMPLETE LINES
-            //deleteTempLineIfDoubleFinger();
+            deleteTempLineIfDoubleFinger();
 
             int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
-           
+            GameObject.Find("text_message_worldspace").GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+
 
         }
         else if (Input.touchCount == 1 && !panZoomLocked)
-        {
+        {            
             UnityEngine.Touch activeTouches = Input.GetTouch(0);
 
             // Only pan when the touch is on top of the canvas. Otherwise,
             var ray = Camera.main.ScreenPointToRay(activeTouches.position);
             RaycastHit Hit;
 
-            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "paintable_canvas_object")
+            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "edge")
             {
                 
+                GameObject temp = Hit.collider.gameObject;
 
-                // EnhanchedTouch acts weirdly in the sense that the Start phase is not detected many times,
-                // only Moved, Stationary, and Ended phases are detected most of the times.
-                // So, introducing a bool that will only update the start pan position if a touch ended before.
-
-                if (activeTouches.phase == UnityEngine.TouchPhase.Ended)
+                if (activeTouches.phase == UnityEngine.TouchPhase.Ended && okayToPan)
                 {
                     previousTouchEnded = true;
+                    if (curtouched_obj.tag != "paintable_canvas_object")
+                        curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
                 }
 
-                //if (touchScreen.touches[0].phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began)
-                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan)
+                else if (activeTouches.phase == UnityEngine.TouchPhase.Began && okayToPan)
+                {
+                    curtouched_obj = temp;                   
+
+                    /*if (curtouched_obj.tag != "paintable_canvas_object")
+                    {
+                        //does_not_work
+                        temp.GetComponent<MeshRenderer>().material.color = Color.red;
+                        temp.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
+                    } */                       
+                }
+
+                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan && (curtouched_obj == temp))
                 {
                     panTouchStart = Camera.main.ScreenToWorldPoint(activeTouches.position);
-                    Debug.Log("touch start: " + panTouchStart.ToString());
+                    //Debug.Log("touch start: " + panTouchStart.ToString());
 
                     previousTouchEnded = false;
+
+                    if (curtouched_obj.tag != "paintable_canvas_object")
+                    {
+                        //does_not_work
+                        temp.GetComponent<MeshRenderer>().material.color = Color.red;
+                        temp.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
+                    }
                 }
 
-                //else if (touchScreen.touches[0].phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Moved)
-                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && !previousTouchEnded && okayToPan)
+                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && !previousTouchEnded && okayToPan && (curtouched_obj == temp))
                 {
                     Vector2 panDirection = panTouchStart - (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
-                    Debug.Log("position changed from "+ Camera.main.transform.position.ToString() + " to " + (Camera.main.transform.position + (Vector3)panDirection).ToString());
-                    Camera.main.transform.position += (Vector3)panDirection;
+                    //Debug.Log("position changed from "+ Camera.main.transform.position.ToString() + " to " + (Camera.main.transform.position + (Vector3)panDirection).ToString());
+                    
+                    if (curtouched_obj.tag == "paintable_canvas_object")
+                    {
+                        Camera.main.transform.position += (Vector3)panDirection;
+                    }
+                    else
+                    {
+                        temp.transform.position -= (Vector3)panDirection;
+                        temp.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
+                        searchNodeAndUpdateEdge(temp, panDirection);
+                    }
                 }
 
-                //Debug.Log("single_finger_tap " + activeTouches.phase + " " + previousTouchEnded + " " + okayToPan);
             }
 
+            OnShortTap();
             // if not panning, check for tap
             /*if (activeTouches.isTap)
             {
@@ -314,27 +357,19 @@ public class Paintable : MonoBehaviour
                 OnLongTap(activeTouches[0].screenPosition);
             }*/
         }
-
+        else
+        {
+            previousTouchEnded = true;
+            //main_camera.GetComponent<MobileTouchCamera>().enabled = false;
+            GameObject.Find("text_message_worldspace").GetComponent<TextMeshProUGUI>().text = "";
+        }
 
         #endregion
 
         #region Graph Pen
         if (graph_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            // just entered edge button, enable all collider 
-            if (enablecollider == false)
-            {
-                enablecollider = true;
-                GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
-
-                foreach (GameObject icon in drawnlist)
-                {
-                    if (icon.GetComponent<BoxCollider>() != null)
-                        icon.GetComponent<BoxCollider>().enabled = true;
-                }
-            }
-
-
+            
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
                 // start drawing a new line
@@ -346,11 +381,11 @@ public class Paintable : MonoBehaviour
                     GameObject cur = Hit.collider.gameObject;
                     selected_obj_count++;
 
-                    edgeline = Instantiate(EdgeElement, cur.GetComponent<BoxCollider>().center, Quaternion.identity, Objects_parent.transform);
+                    edgeline = Instantiate(EdgeElement, cur.GetComponent<iconicElementScript>().edge_position, Quaternion.identity, Objects_parent.transform);
                     edgeline.name = "edge_" + selected_obj_count.ToString();
                     edgeline.tag = "edge";
 
-                    edgeline.GetComponent<EdgeElementScript>().points.Add(cur.GetComponent<BoxCollider>().center);
+                    edgeline.GetComponent<EdgeElementScript>().points.Add(cur.GetComponent<iconicElementScript>().edge_position);
                     edge_start = cur;
                     CreateEmptyEdgeObjects();
 
@@ -362,8 +397,8 @@ public class Paintable : MonoBehaviour
 
                     // set up the line renderer
                     l.positionCount = 2;
-                    l.SetPosition(0, cur.GetComponent<BoxCollider>().center);// + new Vector3(0, 0, -2f));
-                    l.SetPosition(1, cur.GetComponent<BoxCollider>().center);// + new Vector3(1f, 0, -2f));
+                    l.SetPosition(0, cur.GetComponent<iconicElementScript>().edge_position);// + new Vector3(0, 0, -2f));
+                    l.SetPosition(1, cur.GetComponent<iconicElementScript>().edge_position + new Vector3(1f, 0, -2f));
                                           
                 }
 
@@ -375,7 +410,7 @@ public class Paintable : MonoBehaviour
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "paintable_canvas_object" && edge_start != null)
                 {
-                    Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -5f); // Vector3.up * 0.1f;                    
                     edgeline.GetComponent<LineRenderer>().SetPosition(1, vec);// + new Vector3(0, 0, -2f));
                     edgeline.GetComponent<EdgeElementScript>().points.Add(vec);
                 }
@@ -385,8 +420,6 @@ public class Paintable : MonoBehaviour
             {
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
 
-                RaycastHit Hit1;
-                Physics.Raycast(ray, out Hit1);
 
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) && (Hit.collider.gameObject.tag == "temp_edge_primitive" || Hit.collider.gameObject.tag == "iconic")
@@ -414,7 +447,7 @@ public class Paintable : MonoBehaviour
                             edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
 
                             // set line renderer end point
-                            edgeline.GetComponent<LineRenderer>().SetPosition(1, edge_end.GetComponent<BoxCollider>().center);
+                            edgeline.GetComponent<LineRenderer>().SetPosition(1, edge_end.GetComponent<iconicElementScript>().edge_position);
 
                             // assuming edge_start is always an anchor
                             var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0),
@@ -483,21 +516,311 @@ public class Paintable : MonoBehaviour
             }
 
         }
-        else
+        /*else
         {
             // just disabled edge button, disable all collider
             if (enablecollider == true)
             {
                 enablecollider = false;
                 DisableIconicCollider();
-                edgeline = null;
             }
+        }*/
+
+        #endregion
+
+        // ERASER BRUSH
+        #region eraser
+        if (PenTouchInfo.PressedNow && eraser_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            // just entered eraser button, enable all collider 
+            /*if (enablecollider == false)
+            {
+                enablecollider = true;
+                GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
+
+                foreach (GameObject icon in drawnlist)
+                {
+                    if (icon.GetComponent<BoxCollider>() != null)
+                        icon.GetComponent<BoxCollider>().enabled = true;
+                }
+            }*/
+
+            var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+
+            RaycastHit Hit;
+            RaycastHit2D hit2d;
+
+            if (Physics.Raycast(ray, out Hit))
+            {
+                // handle individually -- in case a type requires special treatment or extra code in the future
+                // delete edges which has ties to erased nodes (sets, penlines, functions etc.)
+
+                // set anchor
+                /*if (Hit.collider.gameObject.transform.parent.tag == "set")
+                {
+                    string possible_edge_node_name = Hit.collider.gameObject.transform.parent.name;
+                    //searchNodeAndDeleteEdge(possible_edge_node_name);
+                    Destroy(Hit.collider.gameObject.transform.parent.gameObject);
+                }
+                // pen line
+                else*/ if (Hit.collider.gameObject.tag == "iconic")
+                {
+                    string possible_edge_node_name = Hit.collider.gameObject.name;
+                    searchNodeAndDeleteEdge(possible_edge_node_name);
+                    Destroy(Hit.collider.gameObject);
+                }
+                // function anchor
+                /*else if (Hit.collider.gameObject.transform.parent.tag == "function")
+                {
+                    string possible_edge_node_name = Hit.collider.gameObject.transform.parent.name;
+                    //searchNodeAndDeleteEdge(possible_edge_node_name);
+                    Destroy(Hit.collider.gameObject.transform.parent.gameObject);
+                }*/
+                
+            }
+
+            hit2d = Physics2D.GetRayIntersection(ray);
+            if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
+            {
+                Destroy(hit2d.collider.gameObject);
+            }
+            /*else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "spawn_edge")
+            {
+                hit2d.collider.gameObject.GetComponent<SpawnEdgeScript>().cleanUp();    // clear all spawned elements, if any in the scene.
+                Destroy(hit2d.collider.gameObject);
+            }
+            else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "static_pen_line")
+            {
+                Destroy(hit2d.collider.gameObject);
+            }
+            else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "oop_property_edge" &&
+                hit2d.collider.transform.GetComponent<OOP_Property_Edge_script>().showPropertyEdge)
+            {
+                Destroy(hit2d.collider.transform.GetComponent<OOP_Property_Edge_script>().propertyTargetSet);
+                Destroy(hit2d.collider.gameObject);
+            }*/
+        }
+        /*else if (!eraser_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            // just disabled edge button, disable all collider
+            if (enablecollider == true)
+            {
+                enablecollider = false;
+                DisableIconicCollider();
+            }
+        }*/
+
+        #endregion
+
+        #region stroke combine brush
+
+        if (stroke_combine_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            //Debug.Log("entered");
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                {
+                    //Debug.Log("instantiated_templine");
+
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -5);
+                    setline = Instantiate(CombineLineElement, vec, Quaternion.identity, Objects_parent.transform);
+                    setline.GetComponent<TrailRenderer>().material.color = Color.black;
+
+                    setline.name = "temp_set_line";
+                    setline.GetComponent<iconicElementScript>().points.Add(vec);
+
+                }
+            }
+
+            else if (setline != null &&
+                PenTouchInfo.PressedNow //currentPen.tip.isPressed
+                && (PenTouchInfo.penPosition -
+                (Vector2)setline.GetComponent<iconicElementScript>().points[setline.GetComponent<iconicElementScript>().points.Count - 1]).magnitude > 0f)
+            {
+                // add points to the last line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                {
+
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+
+                    setline.GetComponent<TrailRenderer>().transform.position = vec;
+                    setline.GetComponent<iconicElementScript>().points.Add(vec);
+                    setline.GetComponent<iconicElementScript>().calculateLengthAttributeFromPoints();
+
+                    // pressure based pen width
+                    setline.GetComponent<iconicElementScript>().updateLengthFromPoints();
+                    setline.GetComponent<iconicElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                    setline.GetComponent<iconicElementScript>().reNormalizeCurveWidth();
+                    setline.GetComponent<TrailRenderer>().widthCurve = setline.GetComponent<iconicElementScript>().widthcurve;
+
+                }
+            }
+
+            else if (setline != null && PenTouchInfo.ReleasedThisFrame)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); //currentPen.position.ReadValue());// Input.GetTouch(0).position);
+                RaycastHit Hit;
+
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                {
+                    if (setline.GetComponent<iconicElementScript>().points.Count > min_point_count)
+                    {
+                        
+                        List<GameObject> icon_meshobjs = new List<GameObject>();
+                        GameObject[] iconarray = GameObject.FindGameObjectsWithTag("iconic");
+                                                
+                        for (int i = 0; i < iconarray.Length; i++)
+                        {
+                            
+                            // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                            if (setline.GetComponent<iconicElementScript>().isInsidePolygon(
+                                //setline.GetComponent<iconicElementScript>().transform.InverseTransformPoint(
+                                iconarray[i].GetComponent<iconicElementScript>().edge_position)
+                                )//)
+                                {
+                                    icon_meshobjs.Add(iconarray[i].transform.gameObject);
+                                    //penLines[i].transform.SetParent(templine.transform);
+                                    //Debug.Log("iconic found");
+
+                                }
+                        }
+
+                        GameObject[] selected_icons = new GameObject[icon_meshobjs.Count];
+                        int temp_iter = 0;
+                        foreach (var p in icon_meshobjs)
+                        {
+                            selected_icons[temp_iter] = p;
+                            temp_iter += 1;
+                        }
+
+                        Destroy(setline);
+                        transform.GetComponent<CreatePrimitives>().CreatePenLine(selected_icons);
+                        setline = null;
+                    }
+                    else
+                    {
+                        // delete the templine, not enough points
+                        // Debug.Log("here_in_destroy");
+                        Destroy(setline);
+                    }
+                }
+                else
+                {
+                    // the touch didn't end on a line, destroy the line
+                    // Debug.Log("here_in_destroy_different_Hit");
+                    Destroy(setline);
+                }
+
+            }
+
         }
 
         #endregion
 
-       // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
+        
+        // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
+    }
+
+    //https://stackoverflow.com/questions/38728714/unity3d-how-to-detect-taps-on-android
+    void OnShortTap()
+    {
+        UnityEngine.Touch currentTouch = Input.GetTouch(0);
+        if (canvas_radial.transform.childCount > 0)
+        {
+            for (int i = 0; i < canvas_radial.transform.childCount; i++)
+            {
+                Destroy(canvas_radial.transform.GetChild(i).gameObject);
+            }
+        }
+        switch (currentTouch.phase)
+        {
+            case UnityEngine.TouchPhase.Began:
+                if (LastPhaseHappend != 1)
+                {
+                    StartTouchTime = Time.realtimeSinceStartup;
+                    taping_flag = true;
+                }
+                LastPhaseHappend = 1;
+                startPos = currentTouch.position;
+                break;
+
+            case UnityEngine.TouchPhase.Moved:
+                //if (LastPhaseHappend != 2)
+                if (Vector2.Distance(currentTouch.position, startPos) > 2)
+                {
+                    taping_flag = false;
+                }
+                LastPhaseHappend = 2;
+                break;
+
+            case UnityEngine.TouchPhase.Ended:
+                if (LastPhaseHappend != 3)
+                {
+                    EndTouchTime = Time.realtimeSinceStartup;
+                    TouchTime = EndTouchTime - StartTouchTime;
+                }
+                LastPhaseHappend = 3;
+
+                if (taping_flag && TouchTime > 1)
+                // TouchTime for a tap can be further defined
+                {
+                    //Tap has happened;
+                    Debug.Log("tap_detected");
+                    menucreation(currentTouch.position);
+                }
+                break;
+        }
+        
+    }
+
+    void menucreation(Vector2 menu_position)
+    {
+
+        if (canvas_radial.transform.childCount > 0)
+        {
+            return;
+        }
+
+        var ray = Camera.main.ScreenPointToRay(menu_position);
+
+        RaycastHit Hit;
+        RaycastHit2D hit2d;
+
+        if (Physics.Raycast(ray, out Hit))
+        {
+
+            if (Hit.collider.gameObject.tag == "iconic")
+            {
+                GameObject radmenu = Instantiate(node_radial_menu,
+                        canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position)
+                        /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
+                        Quaternion.identity,
+                        canvas_radial.transform);
+                radmenu.GetComponent<NodeMenuScript>().menu_parent = Hit.collider.gameObject;
+            }
+
+
+        }
+
+        hit2d = Physics2D.GetRayIntersection(ray);
+        if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
+        {
+            GameObject radmenu = Instantiate(edge_radial_menu,
+                        canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center)
+                        /*hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center*/,
+                        Quaternion.identity,
+                        canvas_radial.transform);
+            radmenu.GetComponent<EdgeMenuScript>().menu_parent = hit2d.collider.gameObject;
+        }
+
+       
     }
 
     void GraphCreation()
@@ -593,7 +916,7 @@ public class Paintable : MonoBehaviour
         {            
                 GameObject tempcyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 tempcyl.tag = "temp_edge_primitive";
-                tempcyl.transform.position = penobjs[i].GetComponent<BoxCollider>().center + new Vector3(0f, 0f, 20f);
+                tempcyl.transform.position = penobjs[i].GetComponent<iconicElementScript>().edge_position + new Vector3(0f, 0f, 20f);
                 tempcyl.transform.localScale = new Vector3(20f, 20f, 20f);
                 tempcyl.transform.Rotate(new Vector3(90f, 0f, 0f));
                 tempcyl.transform.parent = penobjs[i].transform;
@@ -609,6 +932,64 @@ public class Paintable : MonoBehaviour
         {
             if (icon.GetComponent<BoxCollider>() != null)
                 icon.GetComponent<BoxCollider>().enabled = false;
+        }
+    }
+
+    void searchNodeAndDeleteEdge(string node_name)
+    {
+        GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
+        List<GameObject> edgeList = new List<GameObject>(edges);
+        for (int i = 0; i < edgeList.Count; i++)
+        {
+            GameObject source = edgeList[i].GetComponent<EdgeElementScript>().edge_start;
+            GameObject target = edgeList[i].GetComponent<EdgeElementScript>().edge_end;
+
+            if (source.name == node_name || target.name == node_name)
+            {
+                Destroy(edgeList[i].gameObject);
+                //break;
+            }
+        }
+    }
+
+    void searchNodeAndUpdateEdge(GameObject node_name, Vector3 panDirection)
+    {
+        GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
+        List<GameObject> edgeList = new List<GameObject>(edges);
+        for (int i = 0; i < edgeList.Count; i++)
+        {
+            GameObject source = edgeList[i].GetComponent<EdgeElementScript>().edge_start;
+            GameObject target = edgeList[i].GetComponent<EdgeElementScript>().edge_end;
+
+            if (source == node_name || target == node_name)
+            {
+                if (source == node_name)
+                {
+                    // set line renderer end point
+                    edgeList[i].GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
+                }
+                else
+                {
+                    edgeList[i].GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
+                }
+                            
+                // assuming edge_start is always an anchor
+                var edgepoints = new List<Vector3>() { edgeList[i].GetComponent<LineRenderer>().GetPosition(0), edgeList[i].GetComponent<LineRenderer>().GetPosition(1)};
+
+                edgeList[i].GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+                {
+                    var pos = edgeList[i].GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+                    return new Vector2(pos.x, pos.y);
+                }).ToArray();
+
+                edgeList[i].GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+                // set line renderer texture scale
+                var linedist = Vector3.Distance(edgeList[i].GetComponent<LineRenderer>().GetPosition(0),
+                    edgeList[i].GetComponent<LineRenderer>().GetPosition(1));
+                edgeList[i].GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+
+            }
         }
     }
 
@@ -672,6 +1053,15 @@ public class Paintable : MonoBehaviour
 
             if (ActionHistoryEnabled) GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(true);
             else GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(false);
+        }
+    }
+
+    void deleteTempLineIfDoubleFinger()
+    {
+        // Should only be called when necessary -- to get rid of incomplete lines when a double finger is detected and we are not in the pan mode.
+        if (Input.touchCount > 1 && templine != null && pan_button.GetComponent<AllButtonsBehaviors>().selected == false)
+        {
+            Destroy(templine);
         }
     }
 }

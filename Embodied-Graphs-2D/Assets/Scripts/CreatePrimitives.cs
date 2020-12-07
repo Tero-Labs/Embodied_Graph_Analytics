@@ -120,31 +120,31 @@ public class CreatePrimitives : MonoBehaviour
 
         var lineRenderer = templine.GetComponent<LineRenderer>();
         var meshFilter = templine.GetComponent<MeshFilter>();
-        
-        Mesh mesh = new Mesh();
-        lineRenderer.BakeMesh(mesh, true);
+               
 
         // If a combined mesh is not passed, use the line renderer mesh (default case)
         if (combinedMesh == null)
         {
+            Mesh mesh = new Mesh();
+            lineRenderer.BakeMesh(mesh, true);
             meshFilter.sharedMesh = mesh;
             //meshObj.GetComponent<MeshFilter>().sharedMesh = mesh;
+            templine.GetComponent<iconicElementScript>()._mesh = mesh;
         }
         else
         {
             meshFilter.sharedMesh = combinedMesh;
             //meshObj.GetComponent<MeshFilter>().sharedMesh = combinedMesh;
-        }
-
-        templine.GetComponent<iconicElementScript>()._mesh = mesh;
+            templine.GetComponent<iconicElementScript>()._mesh = combinedMesh;
+        }        
 
         //meshObj.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
         templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
 
-        
+
         // get rid of the line renderer?
         Destroy(templine.GetComponent<LineRenderer>());
-        
+
         // disable trail renderer, no longer needed
         templine.GetComponent<TrailRenderer>().enabled = false;
 
@@ -156,6 +156,7 @@ public class CreatePrimitives : MonoBehaviour
         templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
         //templine.GetComponent<BoxCollider>().center = new Vector3(0, 0, 0);
         templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+        templine.GetComponent<iconicElementScript>().edge_position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
         //Debug.Log("box collider after: " + templine.GetComponent<BoxCollider>().center.ToString());
 
         // set collider trigger
@@ -476,7 +477,7 @@ public class CreatePrimitives : MonoBehaviour
     }*/
 
     // ASSUMES: 1. points are in global space (not local)
-    /*public GameObject CreatePenLine(GameObject[] penlines)
+    public GameObject CreatePenLine(GameObject[] penlines)
     {
         GameObject templine;
 
@@ -490,17 +491,21 @@ public class CreatePrimitives : MonoBehaviour
 
         for (int k = 0; k < penlines.Length; k++)
         {
-            pen_meshobjs.Add(penlines[k].transform.GetChild(0).gameObject);
+            if (penlines[k].GetComponent<MeshFilter>().sharedMesh != null)
+        {                   
+            pen_meshobjs.Add(penlines[k].transform.gameObject);
 
-            points.AddRange(penlines[k].GetComponent<penLine_script>().points);
+            points.AddRange(penlines[k].GetComponent<iconicElementScript>().points);
 
-            totalLength += (int)penlines[k].GetComponent<penLine_script>().attribute.Length;
+            totalLength += (int)penlines[k].GetComponent<iconicElementScript>().attribute.Length;
+        }
         }
 
         // stop if no penline mesh objs found
         if (pen_meshobjs.Count == 0) return null;
+        //else Debug.Log("total penline objects "+ pen_meshobjs.Count.ToString());
 
-        newColor = penlines[0].GetComponent<penLine_script>().pen_line_material.color;
+        newColor = penlines[0].GetComponent<iconicElementScript>().icon_elem_material.color;
 
         CombineInstance[] combine = new CombineInstance[pen_meshobjs.Count];
 
@@ -514,41 +519,46 @@ public class CreatePrimitives : MonoBehaviour
         Mesh cmesh = new Mesh();
         cmesh.CombineMeshes(combine);
 
-        paintable_object.GetComponent<Paintable_Script>().totalLines++;
+        paintable_object.GetComponent<Paintable>().totalLines++;
 
-        templine = Instantiate(paintable_object.GetComponent<Paintable_Script>().PenLine, paintable_object.transform);
+        templine = Instantiate(paintable_object.GetComponent<Paintable>().IconicElement, paintable_object.GetComponent<Paintable>().Objects_parent.transform);
         templine.GetComponent<TrailRenderer>().material.color = Color.black;
 
-        templine.name = "penLine_" + paintable_object.GetComponent<Paintable_Script>().totalLines.ToString();
-        templine.tag = "penline";
+        
+        templine.name = "iconic_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
+        templine.tag = "iconic";
 
-        templine.transform.GetChild(1).GetComponent<MeshRenderer>().enabled = true;
-        templine.transform.GetChild(1).GetComponent<BoxCollider2D>().enabled = false;
+
+        templine.transform.GetComponent<MeshRenderer>().enabled = true;
+        if (templine.transform.GetComponent<BoxCollider2D>() != null)
+            templine.transform.GetComponent<BoxCollider2D>().enabled = false;
 
         // color and width
         templine.GetComponent<TrailRenderer>().material.color = newColor;
-        templine.GetComponent<penLine_script>().pen_line_material.color = newColor;
+        templine.GetComponent<iconicElementScript>().icon_elem_material.color = newColor;
         templine.GetComponent<TrailRenderer>().widthMultiplier = 1f;
         templine.GetComponent<LineRenderer>().widthMultiplier = 1f;
 
-        // disable the argument_label button, currently it's at the 3rd index
-        templine.transform.GetChild(2).gameObject.SetActive(false);
-
+        
         // CODE FROM POINTER.MOVE
-        templine.GetComponent<penLine_script>().attribute.Length = totalLength;
+        templine.GetComponent<iconicElementScript>().attribute.Length = totalLength;
         //templine.GetComponent<penLine_script>().calculateLengthAttributeFromPoints();
 
         // if no width curve exists then assign a generic width cuve (won't get used for final mesh render anyway)
-        templine.GetComponent<penLine_script>().widthcurve.AddKey(0f, 1f);
-        templine.GetComponent<penLine_script>().widthcurve.AddKey(1f, 1f);
+        templine.GetComponent<iconicElementScript>().widthcurve.AddKey(0f, 1f);
+        templine.GetComponent<iconicElementScript>().widthcurve.AddKey(1f, 1f);
 
-        templine.GetComponent<penLine_script>().points = points;
+        templine.GetComponent<iconicElementScript>().points = points;
 
         // FINISH THE TEMPLINE, PASS COMBINED MESH
         templine = FinishPenLine(templine, cmesh);
 
+        for (int i = 0; i < pen_meshobjs.Count; i++)
+            Destroy(pen_meshobjs[i]);
+
+        //paintable_object.GetComponent<Paintable>().templine = templine;
         return templine;
-    }*/
+    }
 
     // ASSUMES: 1. points are in global space
     /*public GameObject CreateSet(List<Vector3> points)
