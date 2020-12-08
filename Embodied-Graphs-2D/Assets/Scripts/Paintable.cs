@@ -27,23 +27,26 @@ public class Paintable : MonoBehaviour
     public GameObject curtouched_obj = null;
     public bool okayToPan = true;
 	public bool panZoomLocked = false;
-
+    private Vector2 prev_move_pos;
 
 	// Prefabs
 	public GameObject IconicElement;
     public GameObject EdgeElement;
+    public GameObject SimplicialEdgeElement;
     public GameObject CombineLineElement;
 
     // Canvas buttons
     public static GameObject iconicElementButton;
     public static GameObject pan_button;
     public static GameObject graph_pen_button;
+    public static GameObject simplicial_pen_button;
     public static GameObject eraser_button;
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
     public static GameObject canvas_radial;
 
     public GameObject edgeline;
+    public GameObject simplicialline;
     public GameObject setline;
     public GameObject edge_radial_menu;
     public GameObject node_radial_menu;
@@ -62,6 +65,10 @@ public class Paintable : MonoBehaviour
     public static int selected_obj_count = 0;
     public List<GameObject> selected_obj = new List<GameObject>();
     public GameObject edge_start, edge_end;
+
+    // simplicial edge paint control
+    public List<Vector3> SimplicialVertices = new List<Vector3>();
+    public List<GameObject> Simplicialnodes= new List<GameObject>();
 
     // needed for graph
     public static int graph_count = 0;
@@ -86,6 +93,7 @@ public class Paintable : MonoBehaviour
         iconicElementButton = GameObject.Find("IconicPen");
         pan_button = GameObject.Find("Pan");
         graph_pen_button = GameObject.Find("GraphPen");
+        simplicial_pen_button = GameObject.Find("SimplicialPen");
         eraser_button = GameObject.Find("Eraser");
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
@@ -232,16 +240,7 @@ public class Paintable : MonoBehaviour
 			}
 
 		}
-        // when a new button is selected, a templine might still exist. We need to destroy that as well.
-        else
-        {
-            if (templine != null)
-            {
-                Destroy(templine);
-                templine = null;
-            }
-                
-        }
+        
 
         #endregion
 
@@ -289,7 +288,7 @@ public class Paintable : MonoBehaviour
             var ray = Camera.main.ScreenPointToRay(activeTouches.position);
             RaycastHit Hit;
 
-            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "edge")
+            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "simplicial")
             {
                 
                 GameObject temp = Hit.collider.gameObject;
@@ -305,44 +304,43 @@ public class Paintable : MonoBehaviour
                 {
                     curtouched_obj = temp;                   
 
-                    /*if (curtouched_obj.tag != "paintable_canvas_object")
+                    if (curtouched_obj.tag != "paintable_canvas_object")
                     {
                         //does_not_work
-                        temp.GetComponent<MeshRenderer>().material.color = Color.red;
-                        temp.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
-                    } */                       
+                        curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
+                        curtouched_obj.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
+                    }                        
                 }
 
-                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan && (curtouched_obj == temp))
+                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan )//&& (curtouched_obj == temp))
                 {
                     panTouchStart = Camera.main.ScreenToWorldPoint(activeTouches.position);
                     //Debug.Log("touch start: " + panTouchStart.ToString());
 
                     previousTouchEnded = false;
-
-                    if (curtouched_obj.tag != "paintable_canvas_object")
-                    {
-                        //does_not_work
-                        temp.GetComponent<MeshRenderer>().material.color = Color.red;
-                        temp.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
-                    }
+                    prev_move_pos = panTouchStart;
                 }
 
-                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && !previousTouchEnded && okayToPan && (curtouched_obj == temp))
+                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && !previousTouchEnded && okayToPan)// && (curtouched_obj == temp))
                 {
-                    Vector2 panDirection = panTouchStart - (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
-                    //Debug.Log("position changed from "+ Camera.main.transform.position.ToString() + " to " + (Camera.main.transform.position + (Vector3)panDirection).ToString());
+                    if (Vector2.Distance(prev_move_pos, (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position)) > 2)
+                    {
+                        Vector2 panDirection = panTouchStart - (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
+                        //Debug.Log("position changed from "+ Camera.main.transform.position.ToString() + " to " + (Camera.main.transform.position + (Vector3)panDirection).ToString());
+
+                        if (curtouched_obj.tag == "paintable_canvas_object")
+                        {
+                            Camera.main.transform.position += (Vector3)panDirection;
+                        }
+                        else
+                        {
+                            curtouched_obj.transform.position -= (Vector3)panDirection;
+                            curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
+                            searchNodeAndUpdateEdge(curtouched_obj, panDirection);
+                        }
+                        prev_move_pos = (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
+                    }
                     
-                    if (curtouched_obj.tag == "paintable_canvas_object")
-                    {
-                        Camera.main.transform.position += (Vector3)panDirection;
-                    }
-                    else
-                    {
-                        temp.transform.position -= (Vector3)panDirection;
-                        temp.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
-                        searchNodeAndUpdateEdge(temp, panDirection);
-                    }
                 }
 
             }
@@ -508,43 +506,73 @@ public class Paintable : MonoBehaviour
                 }
 
                 // the touch has ended, destroy all temp edge cylinders now
-                GameObject[] tempcyls = GameObject.FindGameObjectsWithTag("temp_edge_primitive");
-                for (int k = 0; k < tempcyls.Length; k++)
-                {
-                    Destroy(tempcyls[k]);
-                }
+                DeleteEmptyEdgeObjects();
             }
 
         }
-        /*else
-        {
-            // just disabled edge button, disable all collider
-            if (enablecollider == true)
-            {
-                enablecollider = false;
-                DisableIconicCollider();
-            }
-        }*/
 
         #endregion
+
+        #region Simplicial Pen
+        if (simplicial_pen_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                {
+                    //Debug.Log("hit_iconic_elem_at"+ Hit.collider.gameObject.GetComponent<BoxCollider>().center.ToString());
+                    GameObject cur = Hit.collider.gameObject;
+                    SimplicialVertices.Add(cur.GetComponent<iconicElementScript>().edge_position);
+                    Simplicialnodes.Add(cur);
+
+                    if (SimplicialVertices.Count == 3)
+                    {
+                        selected_obj_count++;
+                        simplicialline = Instantiate(SimplicialEdgeElement, Objects_parent.transform.position, Quaternion.identity, Objects_parent.transform);
+                        simplicialline.name = "simplicial_" + selected_obj_count.ToString();
+                        simplicialline.tag = "simplicial";
+
+                        simplicialline.GetComponent<SimplicialElementScript>().theVertices = new List<Vector3>(SimplicialVertices);
+                        simplicialline.GetComponent<SimplicialElementScript>().thenodes = new List<GameObject>(Simplicialnodes);
+
+                        simplicialline.GetComponent<SimplicialElementScript>().updatePolygon();
+                        SimplicialCreation();
+                        SimplicialVertices.Clear();
+                        Simplicialnodes.Clear();
+                        DeleteEmptyEdgeObjects();
+                        simplicialline = null;
+                    }
+                    else if (SimplicialVertices.Count == 1)
+                    {
+                        CreateEmptyEdgeObjects();
+                    }                                         
+
+                }
+                else
+                {
+                    // some icons might have been touched before, remove those
+                    if (SimplicialVertices.Count > 0)
+                    {
+                        SimplicialVertices.Clear();
+                        Simplicialnodes.Clear();
+                        DeleteEmptyEdgeObjects();
+                    }
+                }
+            }
+                        
+        }
+        #endregion
+
 
         // ERASER BRUSH
         #region eraser
         if (PenTouchInfo.PressedNow && eraser_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            // just entered eraser button, enable all collider 
-            /*if (enablecollider == false)
-            {
-                enablecollider = true;
-                GameObject[] drawnlist = GameObject.FindGameObjectsWithTag("iconic");
-
-                foreach (GameObject icon in drawnlist)
-                {
-                    if (icon.GetComponent<BoxCollider>() != null)
-                        icon.GetComponent<BoxCollider>().enabled = true;
-                }
-            }*/
-
+            
             var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
 
             RaycastHit Hit;
@@ -569,13 +597,12 @@ public class Paintable : MonoBehaviour
                     searchNodeAndDeleteEdge(possible_edge_node_name);
                     Destroy(Hit.collider.gameObject);
                 }
-                // function anchor
-                /*else if (Hit.collider.gameObject.transform.parent.tag == "function")
+                // simplicial edge
+                else if (Hit.collider.gameObject.tag == "simplicial")
                 {
-                    string possible_edge_node_name = Hit.collider.gameObject.transform.parent.name;
                     //searchNodeAndDeleteEdge(possible_edge_node_name);
-                    Destroy(Hit.collider.gameObject.transform.parent.gameObject);
-                }*/
+                    Destroy(Hit.collider.gameObject);
+                }
                 
             }
 
@@ -600,16 +627,6 @@ public class Paintable : MonoBehaviour
                 Destroy(hit2d.collider.gameObject);
             }*/
         }
-        /*else if (!eraser_button.GetComponent<AllButtonsBehaviors>().selected)
-        {
-            // just disabled edge button, disable all collider
-            if (enablecollider == true)
-            {
-                enablecollider = false;
-                DisableIconicCollider();
-            }
-        }*/
-
         #endregion
 
         #region stroke combine brush
@@ -708,6 +725,7 @@ public class Paintable : MonoBehaviour
                         // delete the templine, not enough points
                         // Debug.Log("here_in_destroy");
                         Destroy(setline);
+                        setline = null;
                     }
                 }
                 else
@@ -715,6 +733,7 @@ public class Paintable : MonoBehaviour
                     // the touch didn't end on a line, destroy the line
                     // Debug.Log("here_in_destroy_different_Hit");
                     Destroy(setline);
+                    setline = null;
                 }
 
             }
@@ -823,6 +842,7 @@ public class Paintable : MonoBehaviour
        
     }
 
+    // normal simple graph
     void GraphCreation()
     {
         // if they are already under the same graph, no need to create a new one. Just assign the new edgeline to the previous parent
@@ -848,64 +868,142 @@ public class Paintable : MonoBehaviour
         tempedgeparent.transform.parent = tempgraph.transform;
         tempedgeparent.transform.SetSiblingIndex(1);
 
+        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
+        tempsimplicialparent.tag = "simplicial_parent";
+        tempsimplicialparent.transform.parent = tempgraph.transform;
+        tempsimplicialparent.transform.SetSiblingIndex(2);
+
         //assign_the_newly_created_Edge_to_temp_edge_parent_object
         edgeline.transform.parent = tempedgeparent.transform;
 
+        List<GameObject> temp_edge_obj = new List<GameObject>();
+        temp_edge_obj.Add(edge_start);
+        temp_edge_obj.Add(edge_end);
 
         //change_parent
-        if (edge_start.transform.parent.tag == "node_parent")
+        foreach (GameObject each_node in temp_edge_obj)
         {
-            Transform Prev_node_parent = edge_start.transform.parent;
-            Transform Prev_graph_parent = Prev_node_parent.transform.parent;
-            Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
-            Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
-            Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
-
-            foreach (Transform child in allChildrennode)
+            //change_parent 
+            // if already in a graph, change parent of every siblings of it,but make sure not under the current graph
+            if (each_node.transform.parent.tag == "node_parent" && each_node.transform.parent != tempnodeparent.transform)
             {
-                child.parent = tempnodeparent.transform;
+                Transform Prev_node_parent = each_node.transform.parent;
+                Transform Prev_graph_parent = Prev_node_parent.transform.parent;
+                Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+                Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+
+                foreach (Transform child in allChildrennode)
+                {
+                    child.parent = tempnodeparent.transform;
+                }
+
+                foreach (Transform child in allChildrenedge)
+                {
+                    child.parent = tempedgeparent.transform;
+                }
+
+                foreach (Transform child in allChildrensimpli)
+                {
+                    child.parent = tempsimplicialparent.transform;
+                }
+
+                Destroy(Prev_graph_parent.gameObject);
+                Destroy(Prev_node_parent.gameObject);
+                Destroy(Prev_edge_parent.gameObject);
+                Destroy(Prev_simplicial_parent.gameObject);
             }
-
-
-            foreach (Transform child in allChildrenedge)
+            else
             {
-                child.parent = tempedgeparent.transform;
+                each_node.transform.parent = tempnodeparent.transform;
             }
-            Destroy(Prev_graph_parent.gameObject);
-            Destroy(Prev_node_parent.gameObject);
-            Destroy(Prev_edge_parent.gameObject);
+        }            
+    }
+
+    // normal simple graph
+    void SimplicialCreation()
+    {
+        // if they are already under the same graph, no need to create a new one. Just assign the new edgeline to the previous parent
+        bool share_same_parent = true;
+        for (int x = 1; x < (Simplicialnodes.Count); x++)
+        {
+            if (Simplicialnodes[x].transform.parent != Simplicialnodes[x-1].transform.parent || Simplicialnodes[x].transform.parent.tag != "node_parent")
+            {
+                share_same_parent = false;
+                break;
+            }
         }
-        else
+        if (share_same_parent)
         {
-            edge_start.transform.parent = tempnodeparent.transform;
+            Transform Prev_graph_parent = Simplicialnodes[0].transform.parent.transform.parent;
+            simplicialline.transform.parent = Prev_graph_parent.GetChild(2);
+            return;
         }
 
-        if (edge_end.transform.parent.tag == "node_parent")
-        {
-            Transform Prev_node_parent = edge_end.transform.parent;
-            Transform Prev_graph_parent = Prev_node_parent.transform.parent;
-            Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
-            Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
-            Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+        graph_count++;
+        GameObject tempgraph = new GameObject("graph_" + graph_count.ToString());
+        tempgraph.tag = "graph";
+        tempgraph.transform.parent = Objects_parent.transform;
 
-            foreach (Transform child in allChildrennode)
-            {
-                child.parent = tempnodeparent.transform;
-            }
-                        
-            
-            foreach (Transform child in allChildrenedge)
-            {
-                child.parent = tempedgeparent.transform;
-            }
-            Destroy(Prev_graph_parent.gameObject);
-            Destroy(Prev_node_parent.gameObject);
-            Destroy(Prev_edge_parent.gameObject);
-        }
-        else
+        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
+        tempnodeparent.tag = "node_parent";
+        tempnodeparent.transform.parent = tempgraph.transform;
+        tempnodeparent.transform.SetSiblingIndex(0);
+
+        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
+        tempedgeparent.tag = "edge_parent";
+        tempedgeparent.transform.parent = tempgraph.transform;
+        tempedgeparent.transform.SetSiblingIndex(1);
+
+        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
+        tempsimplicialparent.tag = "simplicial_parent";
+        tempsimplicialparent.transform.parent = tempgraph.transform;
+        tempsimplicialparent.transform.SetSiblingIndex(2);
+
+        //assign_the_newly_created_simplicial_edge_to_temp_siplicial_parent_object
+        simplicialline.transform.parent = tempsimplicialparent.transform;
+
+        foreach (GameObject each_node in Simplicialnodes)
         {
-            edge_end.transform.parent = tempnodeparent.transform;
-        }             
+            //change_parent 
+            // if already in a graph, change parent of every siblings of it
+            if (each_node.transform.parent.tag == "node_parent" && each_node.transform.parent != tempnodeparent.transform)
+            {
+                Transform Prev_node_parent = each_node.transform.parent;
+                Transform Prev_graph_parent = Prev_node_parent.transform.parent;
+                Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+                Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+
+                foreach (Transform child in allChildrennode)
+                {
+                    child.parent = tempnodeparent.transform;
+                }
+
+                foreach (Transform child in allChildrenedge)
+                {
+                    child.parent = tempedgeparent.transform;
+                }
+
+                foreach (Transform child in allChildrensimpli)
+                {
+                    child.parent = tempsimplicialparent.transform;
+                }
+
+                Destroy(Prev_graph_parent.gameObject);
+                Destroy(Prev_node_parent.gameObject);
+                Destroy(Prev_edge_parent.gameObject);
+                Destroy(Prev_simplicial_parent.gameObject);
+            }
+            else
+            {
+                each_node.transform.parent = tempnodeparent.transform;
+            }
+        }  
     }
 
     void CreateEmptyEdgeObjects()
@@ -921,6 +1019,15 @@ public class Paintable : MonoBehaviour
                 tempcyl.transform.Rotate(new Vector3(90f, 0f, 0f));
                 tempcyl.transform.parent = penobjs[i].transform;
                 tempcyl.GetComponent<Renderer>().material.color = Color.blue;            
+        }
+    }
+
+    public void DeleteEmptyEdgeObjects()
+    {
+        GameObject[] tempcyls = GameObject.FindGameObjectsWithTag("temp_edge_primitive");
+        for (int k = 0; k < tempcyls.Length; k++)
+        {
+            Destroy(tempcyls[k]);
         }
     }
 
@@ -948,6 +1055,21 @@ public class Paintable : MonoBehaviour
             {
                 Destroy(edgeList[i].gameObject);
                 //break;
+            }
+        }
+
+        GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
+        foreach (GameObject each_simplicial in simplicials)
+        {
+            List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
+
+            foreach (GameObject each_node in thenodes)
+            {
+                if (each_node.name == node_name)
+                {
+                    Destroy(each_simplicial.gameObject);
+                    break;
+                }
             }
         }
     }
@@ -989,6 +1111,23 @@ public class Paintable : MonoBehaviour
                     edgeList[i].GetComponent<LineRenderer>().GetPosition(1));
                 edgeList[i].GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
 
+            }
+        }
+
+        GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
+        foreach (GameObject each_simplicial in simplicials)
+        {
+            List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
+            int x = 0; 
+            foreach (GameObject each_node in thenodes)
+            {
+                if (each_node == node_name)
+                {
+                    each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = node_name.GetComponent<iconicElementScript>().edge_position;
+                    each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
+                    break;
+                }
+                x++;
             }
         }
     }

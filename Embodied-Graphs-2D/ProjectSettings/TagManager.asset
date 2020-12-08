@@ -13,6 +13,8 @@ TagManager:
   - objects_parent
   - edge_parent
   - node_parent
+  - simplicial
+  - simplicial_parent
   layers:
   - Default
   - TransparentFX
