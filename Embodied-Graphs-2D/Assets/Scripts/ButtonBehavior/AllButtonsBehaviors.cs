@@ -57,6 +57,13 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().SimplicialVertices.Clear();
             paint_canvas.GetComponent<Paintable>().Simplicialnodes.Clear();
         }
+        else if (this.name == "HyperPen")
+        {
+            enableAllPenObjectColliders();
+            //enablesimplicialColliders();
+            paint_canvas.GetComponent<Paintable>().hyperVertices.Clear();
+            paint_canvas.GetComponent<Paintable>().hypernodes.Clear();
+        }
         else if (this.name == "Eraser")
         {
             enablesimplicialColliders();
@@ -121,6 +128,12 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().Simplicialnodes.Clear();
             paint_canvas.GetComponent<Paintable>().DeleteEmptyEdgeObjects();
         }
+        else if (this.name == "HyperPen")
+        {
+            paint_canvas.GetComponent<Paintable>().hyperVertices.Clear();
+            paint_canvas.GetComponent<Paintable>().hypernodes.Clear();
+            paint_canvas.GetComponent<Paintable>().DeleteEmptyEdgeObjects();
+        }        
         else if (this.name == "StrokeCombine")
         {
             if (paint_canvas.GetComponent<Paintable>().setline != null)

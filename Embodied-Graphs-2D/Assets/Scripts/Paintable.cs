@@ -33,6 +33,7 @@ public class Paintable : MonoBehaviour
 	public GameObject IconicElement;
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
+    public GameObject hyperEdgeElement;
     public GameObject CombineLineElement;
 
     // Canvas buttons
@@ -40,6 +41,7 @@ public class Paintable : MonoBehaviour
     public static GameObject pan_button;
     public static GameObject graph_pen_button;
     public static GameObject simplicial_pen_button;
+    public static GameObject hyper_pen_button;
     public static GameObject eraser_button;
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
@@ -47,6 +49,7 @@ public class Paintable : MonoBehaviour
 
     public GameObject edgeline;
     public GameObject simplicialline;
+    public GameObject hyperline;
     public GameObject setline;
     public GameObject edge_radial_menu;
     public GameObject node_radial_menu;
@@ -69,6 +72,10 @@ public class Paintable : MonoBehaviour
     // simplicial edge paint control
     public List<Vector3> SimplicialVertices = new List<Vector3>();
     public List<GameObject> Simplicialnodes= new List<GameObject>();
+
+    // hyper edge paint control
+    public List<Vector3> hyperVertices = new List<Vector3>();
+    public List<GameObject> hypernodes = new List<GameObject>();
 
     // needed for graph
     public static int graph_count = 0;
@@ -94,6 +101,7 @@ public class Paintable : MonoBehaviour
         pan_button = GameObject.Find("Pan");
         graph_pen_button = GameObject.Find("GraphPen");
         simplicial_pen_button = GameObject.Find("SimplicialPen");
+        hyper_pen_button = GameObject.Find("HyperPen"); 
         eraser_button = GameObject.Find("Eraser");
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
@@ -296,7 +304,7 @@ public class Paintable : MonoBehaviour
                 if (activeTouches.phase == UnityEngine.TouchPhase.Ended && okayToPan)
                 {
                     previousTouchEnded = true;
-                    if (curtouched_obj.tag != "paintable_canvas_object")
+                    if (curtouched_obj.tag == "iconic")
                         curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
                 }
 
@@ -304,10 +312,10 @@ public class Paintable : MonoBehaviour
                 {
                     curtouched_obj = temp;                   
 
-                    if (curtouched_obj.tag != "paintable_canvas_object")
+                    if (curtouched_obj.tag == "iconic")
                     {
                         //does_not_work
-                        curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
+                        //curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
                         curtouched_obj.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
                     }                        
                 }
@@ -332,12 +340,18 @@ public class Paintable : MonoBehaviour
                         {
                             Camera.main.transform.position += (Vector3)panDirection;
                         }
-                        else
+                        else if (curtouched_obj.tag == "iconic")
                         {
                             curtouched_obj.transform.position -= (Vector3)panDirection;
                             curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
                             searchNodeAndUpdateEdge(curtouched_obj, panDirection);
                         }
+                        else if (curtouched_obj.tag == "hyper")
+                        {
+                            curtouched_obj.transform.position -= (Vector3)panDirection;
+                            curtouched_obj.GetComponent<HyperElementScript>().UpdateChildren();
+                        }
+
                         prev_move_pos = (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
                     }
                     
@@ -567,6 +581,73 @@ public class Paintable : MonoBehaviour
         }
         #endregion
 
+        #region hypergraph Pen
+        if (hyper_pen_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                {
+                    //Debug.Log("hit_iconic_elem_at"+ Hit.collider.gameObject.GetComponent<BoxCollider>().center.ToString());
+                    GameObject cur = Hit.collider.gameObject;
+                    hyperVertices.Add(cur.GetComponent<iconicElementScript>().edge_position);
+                    hypernodes.Add(cur);
+
+                    if (hyperVertices.Count == 3)
+                    {
+                        selected_obj_count++;
+
+                        //instantiate the hyper node in the middle of the selected nodes
+                        Vector3 vec = new Vector3(0, 0, 0); 
+                        foreach (Vector3 child in hyperVertices)
+                        {
+                            vec.x += child.x;
+                            vec.y += child.y;
+                            vec.z += child.z;
+                        }
+
+                        vec.x /= hyperVertices.Count;
+                        vec.y /= hyperVertices.Count;
+                        vec.z /= hyperVertices.Count;
+
+                        hyperline = Instantiate(hyperEdgeElement, vec, Quaternion.identity, Objects_parent.transform);
+                        hyperline.name = "hyper_" + selected_obj_count.ToString();
+                        hyperline.tag = "hyper";
+
+                        hyperline.GetComponent<HyperElementScript>().theVertices = new List<Vector3>(hyperVertices);
+                        hyperline.GetComponent<HyperElementScript>().thenodes = new List<GameObject>(hypernodes);
+
+                        hyperline.GetComponent<HyperElementScript>().addChildren();
+                        hypergraphCreation();
+                        hyperVertices.Clear();
+                        hypernodes.Clear();
+                        DeleteEmptyEdgeObjects();
+                        hyperline = null;
+                    }
+                    else if (hyperVertices.Count == 1)
+                    {
+                        CreateEmptyEdgeObjects();
+                    }
+
+                }
+                else
+                {
+                    // some icons might have been touched before, remove those
+                    if (hyperVertices.Count > 0)
+                    {
+                        hyperVertices.Clear();
+                        hypernodes.Clear();
+                        DeleteEmptyEdgeObjects();
+                    }
+                }
+            }
+
+        }
+        #endregion
 
         // ERASER BRUSH
         #region eraser
@@ -583,15 +664,7 @@ public class Paintable : MonoBehaviour
                 // handle individually -- in case a type requires special treatment or extra code in the future
                 // delete edges which has ties to erased nodes (sets, penlines, functions etc.)
 
-                // set anchor
-                /*if (Hit.collider.gameObject.transform.parent.tag == "set")
-                {
-                    string possible_edge_node_name = Hit.collider.gameObject.transform.parent.name;
-                    //searchNodeAndDeleteEdge(possible_edge_node_name);
-                    Destroy(Hit.collider.gameObject.transform.parent.gameObject);
-                }
-                // pen line
-                else*/ if (Hit.collider.gameObject.tag == "iconic")
+                if (Hit.collider.gameObject.tag == "iconic")
                 {
                     string possible_edge_node_name = Hit.collider.gameObject.name;
                     searchNodeAndDeleteEdge(possible_edge_node_name);
@@ -603,7 +676,14 @@ public class Paintable : MonoBehaviour
                     //searchNodeAndDeleteEdge(possible_edge_node_name);
                     Destroy(Hit.collider.gameObject);
                 }
-                
+                // set anchor
+                else if(Hit.collider.gameObject.tag == "hyper")
+                {
+                    //searchNodeAndDeleteEdge(possible_edge_node_name);
+                    Destroy(Hit.collider.gameObject);
+                }             
+
+
             }
 
             hit2d = Physics2D.GetRayIntersection(ray);
@@ -873,6 +953,11 @@ public class Paintable : MonoBehaviour
         tempsimplicialparent.transform.parent = tempgraph.transform;
         tempsimplicialparent.transform.SetSiblingIndex(2);
 
+        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
+        temphyperparent.tag = "hyper_parent";
+        temphyperparent.transform.parent = tempgraph.transform;
+        temphyperparent.transform.SetSiblingIndex(3);
+
         //assign_the_newly_created_Edge_to_temp_edge_parent_object
         edgeline.transform.parent = tempedgeparent.transform;
 
@@ -891,9 +976,11 @@ public class Paintable : MonoBehaviour
                 Transform Prev_graph_parent = Prev_node_parent.transform.parent;
                 Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
                 Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
                 Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
                 Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
                 Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
 
                 foreach (Transform child in allChildrennode)
                 {
@@ -910,10 +997,17 @@ public class Paintable : MonoBehaviour
                     child.parent = tempsimplicialparent.transform;
                 }
 
+                foreach (Transform child in allChildrenhyper)
+                {
+                    if (child.tag == "hyper")
+                        child.parent = temphyperparent.transform;
+                }
+
                 Destroy(Prev_graph_parent.gameObject);
                 Destroy(Prev_node_parent.gameObject);
                 Destroy(Prev_edge_parent.gameObject);
                 Destroy(Prev_simplicial_parent.gameObject);
+                Destroy(Prev_hyper_parent.gameObject);
             }
             else
             {
@@ -962,6 +1056,11 @@ public class Paintable : MonoBehaviour
         tempsimplicialparent.transform.parent = tempgraph.transform;
         tempsimplicialparent.transform.SetSiblingIndex(2);
 
+        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
+        temphyperparent.tag = "hyper_parent";
+        temphyperparent.transform.parent = tempgraph.transform;
+        temphyperparent.transform.SetSiblingIndex(3);
+
         //assign_the_newly_created_simplicial_edge_to_temp_siplicial_parent_object
         simplicialline.transform.parent = tempsimplicialparent.transform;
 
@@ -975,9 +1074,11 @@ public class Paintable : MonoBehaviour
                 Transform Prev_graph_parent = Prev_node_parent.transform.parent;
                 Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
                 Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
                 Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
                 Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
                 Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
 
                 foreach (Transform child in allChildrennode)
                 {
@@ -994,16 +1095,122 @@ public class Paintable : MonoBehaviour
                     child.parent = tempsimplicialparent.transform;
                 }
 
+                foreach (Transform child in allChildrenhyper)
+                {
+                    if (child.tag == "hyper")
+                        child.parent = temphyperparent.transform;
+                }
+
                 Destroy(Prev_graph_parent.gameObject);
                 Destroy(Prev_node_parent.gameObject);
                 Destroy(Prev_edge_parent.gameObject);
                 Destroy(Prev_simplicial_parent.gameObject);
+                Destroy(Prev_hyper_parent.gameObject);
             }
             else
             {
                 each_node.transform.parent = tempnodeparent.transform;
             }
         }  
+    }
+
+    void hypergraphCreation()
+    {
+        // if they are already under the same graph, no need to create a new one. Just assign the new edgeline to the previous parent
+        bool share_same_parent = true;
+        for (int x = 1; x < (hypernodes.Count); x++)
+        {
+            if (hypernodes[x].transform.parent != hypernodes[x - 1].transform.parent || hypernodes[x].transform.parent.tag != "node_parent")
+            {
+                share_same_parent = false;
+                break;
+            }
+        }
+        if (share_same_parent)
+        {
+            Transform Prev_graph_parent = hypernodes[0].transform.parent.transform.parent;
+            // 3 is hyper edge parent index
+            hyperline.transform.parent = Prev_graph_parent.GetChild(3);
+            return;
+        }
+
+        graph_count++;
+        GameObject tempgraph = new GameObject("graph_" + graph_count.ToString());
+        tempgraph.tag = "graph";
+        tempgraph.transform.parent = Objects_parent.transform;
+
+        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
+        tempnodeparent.tag = "node_parent";
+        tempnodeparent.transform.parent = tempgraph.transform;
+        tempnodeparent.transform.SetSiblingIndex(0);
+
+        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
+        tempedgeparent.tag = "edge_parent";
+        tempedgeparent.transform.parent = tempgraph.transform;
+        tempedgeparent.transform.SetSiblingIndex(1);
+
+        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
+        tempsimplicialparent.tag = "simplicial_parent";
+        tempsimplicialparent.transform.parent = tempgraph.transform;
+        tempsimplicialparent.transform.SetSiblingIndex(2);
+
+        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
+        temphyperparent.tag = "hyper_parent";
+        temphyperparent.transform.parent = tempgraph.transform;
+        temphyperparent.transform.SetSiblingIndex(3);
+
+        //assign_the_newly_created_simplicial_edge_to_temp_siplicial_parent_object
+        hyperline.transform.parent = temphyperparent.transform;
+
+        foreach (GameObject each_node in hypernodes)
+        {
+            //change_parent 
+            // if already in a graph, change parent of every siblings of it
+            if (each_node.transform.parent.tag == "node_parent" && each_node.transform.parent != tempnodeparent.transform)
+            {
+                Transform Prev_node_parent = each_node.transform.parent;
+                Transform Prev_graph_parent = Prev_node_parent.transform.parent;
+                Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+                Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
+                Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+                Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+
+                foreach (Transform child in allChildrennode)
+                {
+                    child.parent = tempnodeparent.transform;
+                }
+
+                foreach (Transform child in allChildrenedge)
+                {
+                    child.parent = tempedgeparent.transform;
+                }
+
+                foreach (Transform child in allChildrensimpli)
+                {
+                    child.parent = tempsimplicialparent.transform;
+                }
+
+                foreach (Transform child in allChildrenhyper)
+                {
+                    if (child.tag == "hyper")
+                        child.parent = temphyperparent.transform;
+                }
+
+                Destroy(Prev_graph_parent.gameObject);
+                Destroy(Prev_node_parent.gameObject);
+                Destroy(Prev_edge_parent.gameObject);
+                Destroy(Prev_simplicial_parent.gameObject);
+                Destroy(Prev_hyper_parent.gameObject);
+            }
+            else
+            {
+                each_node.transform.parent = tempnodeparent.transform;
+            }
+        }     
+
     }
 
     void CreateEmptyEdgeObjects()
@@ -1072,6 +1279,15 @@ public class Paintable : MonoBehaviour
                 }
             }
         }
+
+        GameObject[] hyper_edges = GameObject.FindGameObjectsWithTag("hyper_child_edge");
+        foreach (GameObject each_child_edge in hyper_edges)
+        {
+            if (each_child_edge.GetComponent<HyperEdgeElement>().parent_node.name == node_name)
+            {
+                Destroy(each_child_edge);
+            }
+        }
     }
 
     void searchNodeAndUpdateEdge(GameObject node_name, Vector3 panDirection)
@@ -1128,6 +1344,16 @@ public class Paintable : MonoBehaviour
                     break;
                 }
                 x++;
+            }
+        }
+
+
+        GameObject[] hyper_edges = GameObject.FindGameObjectsWithTag("hyper_child_edge");
+        foreach (GameObject each_child_edge in hyper_edges)
+        {                        
+            if (each_child_edge.GetComponent<HyperEdgeElement>().parent_node == node_name)
+            {
+                each_child_edge.GetComponent<HyperEdgeElement>().UpdateSingleEndpoint(node_name.GetComponent<iconicElementScript>().edge_position);
             }
         }
     }

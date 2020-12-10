@@ -15,6 +15,9 @@ TagManager:
   - node_parent
   - simplicial
   - simplicial_parent
+  - hyper
+  - hyper_parent
+  - hyper_child_edge
   layers:
   - Default
   - TransparentFX
