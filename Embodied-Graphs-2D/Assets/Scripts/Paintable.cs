@@ -477,7 +477,7 @@ public class Paintable : MonoBehaviour
                             var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0),
                                 edgeline.GetComponent<LineRenderer>().GetPosition(1));
                             edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
-
+                            edgeline.GetComponent<EdgeElementScript>().addDot();
                             //edgeline = edgeline.GetComponent<EdgeElementScript>().FinishEdgeLine();                            
                             GraphCreation();
 
@@ -989,12 +989,14 @@ public class Paintable : MonoBehaviour
 
                 foreach (Transform child in allChildrenedge)
                 {
-                    child.parent = tempedgeparent.transform;
+                    if (child.tag == "edge")
+                        child.parent = tempedgeparent.transform;
                 }
 
                 foreach (Transform child in allChildrensimpli)
                 {
-                    child.parent = tempsimplicialparent.transform;
+                    if (child.tag == "simplicial")
+                        child.parent = tempsimplicialparent.transform;
                 }
 
                 foreach (Transform child in allChildrenhyper)
@@ -1087,12 +1089,14 @@ public class Paintable : MonoBehaviour
 
                 foreach (Transform child in allChildrenedge)
                 {
-                    child.parent = tempedgeparent.transform;
+                    if (child.tag == "edge")
+                        child.parent = tempedgeparent.transform;
                 }
 
                 foreach (Transform child in allChildrensimpli)
                 {
-                    child.parent = tempsimplicialparent.transform;
+                    if (child.tag == "simplicial")
+                        child.parent = tempsimplicialparent.transform;
                 }
 
                 foreach (Transform child in allChildrenhyper)
@@ -1185,12 +1189,14 @@ public class Paintable : MonoBehaviour
 
                 foreach (Transform child in allChildrenedge)
                 {
-                    child.parent = tempedgeparent.transform;
+                    if (child.tag == "edge")
+                        child.parent = tempedgeparent.transform;
                 }
 
                 foreach (Transform child in allChildrensimpli)
                 {
-                    child.parent = tempsimplicialparent.transform;
+                    if (child.tag == "simplicial")
+                        child.parent = tempsimplicialparent.transform;
                 }
 
                 foreach (Transform child in allChildrenhyper)
@@ -1327,6 +1333,7 @@ public class Paintable : MonoBehaviour
                     edgeList[i].GetComponent<LineRenderer>().GetPosition(1));
                 edgeList[i].GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
 
+                edgeList[i].GetComponent<EdgeElementScript>().updateDot();
             }
         }
 

@@ -15,6 +15,7 @@ public class EdgeElementScript : MonoBehaviour
 
     // previous first child, instead of creating a separate child, we now want to keep it in the script
     public Mesh _mesh;
+    public GameObject dot_prefab;
 
     public List<GameObject> node_obj = new List<GameObject>();
     public GameObject edge_start, edge_end;
@@ -1304,5 +1305,23 @@ public class EdgeElementScript : MonoBehaviour
         //applyGlobalStrokeDetails();
     }
 
-    
+    public void addDot()
+    {
+        for (int x = 0; x < 2; x++)
+        {
+            GameObject temp = Instantiate(dot_prefab, transform.GetComponent<LineRenderer>().GetPosition(x), Quaternion.identity, transform);
+            temp.name = "dot_child";
+            temp.transform.parent = transform;
+            temp.transform.SetSiblingIndex(x);
+        }
+    }
+
+    public void updateDot()
+    {        
+        for (int x = 0; x < 2; x++)
+        {
+            Transform temp = transform.GetChild(x);
+            temp.position = transform.GetComponent<LineRenderer>().GetPosition(x);
+        }
+    }
 }

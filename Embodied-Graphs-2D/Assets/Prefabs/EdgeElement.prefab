@@ -153,6 +153,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   edge_weight: 1
   _mesh: {fileID: 0}
+  dot_prefab: {fileID: 1095668249245509096, guid: 204ec1cd6757fe64595bd9cb3c06035b,
+    type: 3}
   node_obj: []
   edge_start: {fileID: 0}
   edge_end: {fileID: 0}
