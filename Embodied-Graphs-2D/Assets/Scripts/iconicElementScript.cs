@@ -26,6 +26,8 @@ public class iconicElementScript : MonoBehaviour
     public Material icon_elem_material;
     public GameObject paintable_object;
     public string icon_name;
+    // needed for abstraction conversion
+    public int icon_number;
 
     // get-able attributes
     public struct Attributes

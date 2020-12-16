@@ -35,6 +35,7 @@ public class Paintable : MonoBehaviour
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
     public GameObject CombineLineElement;
+    public GameObject GraphElement;
 
     // Canvas buttons
     public static GameObject iconicElementButton;
@@ -153,8 +154,9 @@ public class Paintable : MonoBehaviour
 					templine.tag = "iconic";
 
 					templine.GetComponent<iconicElementScript>().points.Add(vec);
+                    templine.GetComponent<iconicElementScript>().icon_number = totalLines;
 
-					/*
+                    /*
 					// Initiate the length display (use an existing text box used for translation parameterization)
 					templine.transform.GetChild(1).localScale = new Vector3(4, 4, 1);
 					// fix the position of the text
@@ -180,7 +182,7 @@ public class Paintable : MonoBehaviour
 					history.Add(templine);
 
 					*/
-				}
+                }
 			}
 
 			else if (templine != null &&
@@ -930,11 +932,13 @@ public class Paintable : MonoBehaviour
         {
             Transform Prev_graph_parent = edge_start.transform.parent.transform.parent;
             edgeline.transform.parent = Prev_graph_parent.GetChild(1);
+            Prev_graph_parent.GetComponent<GraphElementScript>().edges_as_Str();
             return;
         }
 
         graph_count++;
-        GameObject tempgraph = new GameObject("graph_"+graph_count.ToString());
+        GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.name = "graph_"+graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
 
@@ -1015,7 +1019,9 @@ public class Paintable : MonoBehaviour
             {
                 each_node.transform.parent = tempnodeparent.transform;
             }
-        }            
+        }
+
+        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     // normal simple graph
@@ -1035,11 +1041,13 @@ public class Paintable : MonoBehaviour
         {
             Transform Prev_graph_parent = Simplicialnodes[0].transform.parent.transform.parent;
             simplicialline.transform.parent = Prev_graph_parent.GetChild(2);
+            Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_as_Str();
             return;
         }
 
         graph_count++;
-        GameObject tempgraph = new GameObject("graph_" + graph_count.ToString());
+        GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
 
@@ -1115,7 +1123,9 @@ public class Paintable : MonoBehaviour
             {
                 each_node.transform.parent = tempnodeparent.transform;
             }
-        }  
+        }
+
+        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     void hypergraphCreation()
@@ -1135,11 +1145,13 @@ public class Paintable : MonoBehaviour
             Transform Prev_graph_parent = hypernodes[0].transform.parent.transform.parent;
             // 3 is hyper edge parent index
             hyperline.transform.parent = Prev_graph_parent.GetChild(3);
+            Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
             return;
         }
 
         graph_count++;
-        GameObject tempgraph = new GameObject("graph_" + graph_count.ToString());
+        GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
 
@@ -1215,8 +1227,9 @@ public class Paintable : MonoBehaviour
             {
                 each_node.transform.parent = tempnodeparent.transform;
             }
-        }     
+        }
 
+        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     void CreateEmptyEdgeObjects()

@@ -248,6 +248,8 @@ MonoBehaviour:
     type: 3}
   CombineLineElement: {fileID: 6047713414169321321, guid: 7bc1f77c196065b4ebec2f5e0c9a81b9,
     type: 3}
+  GraphElement: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
+    type: 3}
   edgeline: {fileID: 0}
   simplicialline: {fileID: 0}
   hyperline: {fileID: 0}
