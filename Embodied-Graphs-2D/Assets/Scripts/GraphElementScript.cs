@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class GraphElementScript : MonoBehaviour
 {
@@ -8,11 +9,20 @@ public class GraphElementScript : MonoBehaviour
     public string edges_str;
     public string hyper_edges_str;
     public string simplicial_str;
+    public string abstraction_layer;
+    public GameObject Objects_parent;
+
+    public GameObject EdgeElement;
+    public GameObject SimplicialEdgeElement;
+    public GameObject hyperEdgeElement;
+
+    public IDictionary<string, Transform> nodeMaps;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        abstraction_layer = "hypergraph";
+        //Objects_parent = GameObject.Find("Objects");
     }
 
     // Update is called once per frame
@@ -91,16 +101,21 @@ public class GraphElementScript : MonoBehaviour
         Transform Prev_node_parent = transform.GetChild(0);
         Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
 
-        
+        nodeMaps = new Dictionary<string, Transform>();
+        int icon_count = 0;
         foreach (Transform child in allChildrennode)
         {
             if (child.tag == "iconic")
             {
+                icon_count++;
                 nodes_str += child.GetComponent<iconicElementScript>().icon_number.ToString() + ",";
+                nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
             }            
         }
 
-        
+        if (icon_count == 0)
+            Destroy(transform.gameObject);
+                
         nodes_str = nodes_str.Remove(nodes_str.Length - 1) + "}";
         //Debug.Log("nodes_str" + " : " + nodes_str);
 
@@ -108,8 +123,143 @@ public class GraphElementScript : MonoBehaviour
         simplicial_as_Str();
         hyperedges_as_Str();
 
+        //Debug.Log("nodes_Str: "+ nodes_str + ", edges_Str: " + edges_str + ", simp_str: " + simplicial_str + ", hyper_Str: " + hyper_edges_str);
+
         //transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str+"-"+edges_str, "graph_to_hypergraph");
         //transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + simplicial_str, "simplicial_to_graph");
-        transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + hyper_edges_str, "hypergraph_to_graph");
+        //transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + hyper_edges_str, "hypergraph_to_graph");
+    }
+
+    public void StartConversion(string target_layer)
+    {
+        
+        // already at the target abstraction layer, so no change is needed
+        if (abstraction_layer == target_layer)
+            return;
+
+        if (abstraction_layer == "abstract" || target_layer == "abstract")
+        {
+            // ToDo: need discussion
+            return;
+        }
+
+        Debug.Log("abstraction_layer: " + abstraction_layer + ", target_layer:" + target_layer);
+
+        Graph_as_Str();
+
+        // ToDo: visualize the changes
+        if (abstraction_layer == "graph")
+        {
+            transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + edges_str, abstraction_layer + "_to_" + target_layer);
+        }
+        else if (abstraction_layer == "simplicial")
+        {
+            transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + simplicial_str, abstraction_layer + "_to_" + target_layer);
+        }
+        else
+        {
+            transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + hyper_edges_str, abstraction_layer + "_to_" + target_layer);
+        }
+
+        // set the current layer
+        abstraction_layer = target_layer;
+    }
+
+    public void showconversion(string serverUpdate, string command)
+    {
+        Debug.Log("triggered for " + command + " while current layer is: " + abstraction_layer);
+
+        // check if the current command matches with the last conversion operation
+        if ((command.Split('_'))[2] == abstraction_layer)
+        {
+            // string parsing, edges are separated by hyphen and each node of an edge is separated by a comma 
+            string[] newedges = serverUpdate.Split('-');
+
+            if ((command.Split('_'))[0] == "simplicial")
+            {
+                transform.GetChild(2).gameObject.SetActive(false);
+
+            }
+            else if ((command.Split('_'))[0] == "hypergraph")
+            {
+                transform.GetChild(3).gameObject.SetActive(false);
+
+            }
+
+            // the follwings are basically copy of paintable script
+            if (abstraction_layer == "graph")
+            {
+                foreach (string edge in newedges)
+                {
+                    string[] nodes_of_edge = edge.Split(',');
+
+                    // simplicial may have subsets of length 1, will skip those
+                    if (nodes_of_edge.Length == 1)
+                        continue;
+
+                    List<GameObject> temp_nodes = new List<GameObject>();
+                    foreach (string node in nodes_of_edge)
+                    {
+                        if (nodeMaps.ContainsKey(node))
+                        {
+                            temp_nodes.Add(nodeMaps[node].gameObject);
+                        }
+                    }
+
+                    GameObject edgeline = Instantiate(EdgeElement, temp_nodes[0].GetComponent<iconicElementScript>().edge_position, Quaternion.identity, transform.GetChild(1));
+                    edgeline.name = "edge_1";
+                    edgeline.tag = "edge";
+
+                    edgeline.GetComponent<EdgeElementScript>().edge_start = temp_nodes[0];
+                    edgeline.GetComponent<EdgeElementScript>().edge_end = temp_nodes[1];
+
+                    edgeline.GetComponent<LineRenderer>().SetPosition(0, temp_nodes[0].GetComponent<iconicElementScript>().edge_position);
+                    edgeline.GetComponent<LineRenderer>().SetPosition(1, temp_nodes[1].GetComponent<iconicElementScript>().edge_position);
+
+                    var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1)};
+
+                    edgeline.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+                    {
+                        var pos = edgeline.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+                        return new Vector2(pos.x, pos.y);
+                    }).ToArray();
+
+                    edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+                    // set line renderer texture scale
+                    var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1));
+                    edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+                    edgeline.GetComponent<EdgeElementScript>().addDot();
+                }
+            }
+            else if (abstraction_layer == "simplicial")
+            {
+                foreach (string edge in newedges)
+                {
+                    string[] nodes_of_edge = edge.Split(',');
+
+                    // simplicial may have subsets of length 1, will skip those
+                    if (nodes_of_edge.Length < 3)
+                        continue;
+
+                    GameObject simplicialline = Instantiate(SimplicialEdgeElement, transform.position, Quaternion.identity, transform.GetChild(2));
+                    simplicialline.name = "simplicial_1" ;
+                    simplicialline.tag = "simplicial";                                    
+
+                    foreach (string node in nodes_of_edge)
+                    {
+                        if (nodeMaps.ContainsKey(node))
+                        {
+                            //Debug.Log(node + " : " + nodeMaps[node].name);
+                            simplicialline.GetComponent<SimplicialElementScript>().theVertices.Add(nodeMaps[node].GetComponent<iconicElementScript>().edge_position);
+                            simplicialline.GetComponent<SimplicialElementScript>().thenodes.Add(nodeMaps[node].gameObject);
+                        }
+                    }
+
+                    simplicialline.GetComponent<SimplicialElementScript>().updatePolygon();
+                }
+            }
+            
+        }
     }
 }

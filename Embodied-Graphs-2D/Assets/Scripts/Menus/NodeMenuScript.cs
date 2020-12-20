@@ -23,7 +23,8 @@ public class NodeMenuScript : MonoBehaviour
         if (input.text.Length > 0)
         {
             menu_parent.GetComponent<iconicElementScript>().icon_name = input.text;
-            menu_parent.name = input.text;
+            //ToDo:show_name_in_a_text
+            //menu_parent.name = input.text;
             //Debug.Log("name" + input.text + "has been updated for"+ menu_parent.name);
         }
     }

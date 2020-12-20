@@ -1321,4 +1321,13 @@ public class iconicElementScript : MonoBehaviour
         }
         return inside;
     }
+
+    void OnDestroy()
+    {
+        Transform node_parent = transform.parent; 
+        if (node_parent.tag == "node_parent")
+        {
+            node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
+        } 
+    }
 }

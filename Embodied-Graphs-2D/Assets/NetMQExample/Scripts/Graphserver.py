@@ -126,8 +126,26 @@ def get_subsets(s, n):
 
 def frozen_set_to_list(frozenlist):
     sets=list(frozenlist)
-    edges = [list(x) for x in sets]
-    return edges
+    #edges = [list(x) for x in sets]
+    
+    final_str = ""
+    for iter_1, each_edge in enumerate(sets):
+        #print(list(each_edge))
+
+        edges_as_str = ""
+        for iter, each_node in enumerate(list(each_edge)):
+            if iter != 0:
+                edges_as_str += "," + str(each_node)
+            else:
+                edges_as_str += str(each_node)
+
+        if iter_1 != 0:
+            final_str += "-" + edges_as_str
+        else:
+            final_str += edges_as_str
+
+    print(final_str)
+    return final_str
 
 class SimplicialComplex:
     """
@@ -261,35 +279,35 @@ if __name__ == '__main__':
         graph = Graph(nodes_list, edges_list)
         graph_to_simplicial_complex = graph.to_simplicial_complex()
         print("graph_to_simplicial_complex",graph_to_simplicial_complex.simplices)
-        socket.send(str(frozen_set_to_list(graph_to_simplicial_complex.simplices)).encode('ascii'))  
+        socket.send((frozen_set_to_list(graph_to_simplicial_complex.simplices)).encode('ascii'))  
         
     if args.graph_to_hypergraph:
         graph = Graph(nodes_list, edges_list)
         graph_to_hypergraph = graph.to_hypergraph()
         print("graph_to_hypergraph",graph_to_hypergraph.hyperedges)
-        socket.send(str(frozen_set_to_list(graph_to_hypergraph.hyperedges)).encode('ascii'))    
+        socket.send((frozen_set_to_list(graph_to_hypergraph.hyperedges)).encode('ascii'))    
         
     if args.hypergraph_to_graph:
         hypergraph = HyperGraph(nodes_list, edges_list)
         hypergraph_to_graph = hypergraph.to_graph()
         print("hypergraph_to_graph",hypergraph_to_graph.edges)
-        socket.send(str(frozen_set_to_list(hypergraph_to_graph.edges)).encode('ascii'))  
+        socket.send((frozen_set_to_list(hypergraph_to_graph.edges)).encode('ascii'))  
         
     if args.hypergraph_to_simplicial:
         hypergraph = HyperGraph(nodes_list, edges_list)
         hypergraph_to_simplicial = hypergraph.to_simplicial_complex()
         print("hypergraph_to_simplicial",hypergraph_to_simplicial.simplices)
-        socket.send(str(frozen_set_to_list(hypergraph_to_simplicial.simplices)).encode('ascii'))  
+        socket.send((frozen_set_to_list(hypergraph_to_simplicial.simplices)).encode('ascii'))  
         
     if args.simplicial_to_graph:
         simplicial = SimplicialComplex(nodes_list, edges_list)
         simplicial_to_graph = simplicial.to_graph()
         print("simplicial_to_graph",simplicial_to_graph.edges)
-        socket.send(str(frozen_set_to_list(simplicial_to_graph.edges)).encode('ascii'))  
+        socket.send((frozen_set_to_list(simplicial_to_graph.edges)).encode('ascii'))  
         
     if args.simplicial_to_hypergraph:
         simplicial = SimplicialComplex(nodes_list, edges_list)
         simplicial_to_hypergraph = simplicial.to_hypergraph()
         print("graph_from_hypergraph",simplicial_to_hypergraph.hyperedges)
-        socket.send(str(frozen_set_to_list(simplicial_to_hypergraph.hyperedges)).encode('ascii'))  
+        socket.send((frozen_set_to_list(simplicial_to_hypergraph.hyperedges)).encode('ascii'))  
     

@@ -1324,4 +1324,13 @@ public class EdgeElementScript : MonoBehaviour
             temp.position = transform.GetComponent<LineRenderer>().GetPosition(x);
         }
     }
+
+    void OnDestroy()
+    {
+        Transform node_parent = transform.parent;
+        if (node_parent.tag == "edge_parent")
+        {
+            node_parent.parent.GetComponent<GraphElementScript>().edges_as_Str();
+        }
+    }
 }

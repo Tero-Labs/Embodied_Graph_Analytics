@@ -238,6 +238,7 @@ MonoBehaviour:
   curtouched_obj: {fileID: 0}
   okayToPan: 0
   panZoomLocked: 0
+  graphlocked: 0
   IconicElement: {fileID: 6047713414169321321, guid: 75286930b4830af4f8d0baa900a8fd61,
     type: 3}
   EdgeElement: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
@@ -257,6 +258,8 @@ MonoBehaviour:
   edge_radial_menu: {fileID: 6611585196480367512, guid: 284b8df2d551dd24fa199238dd31bfb3,
     type: 3}
   node_radial_menu: {fileID: 6611585196480367512, guid: 660840d32fcceb243bdf23f0ffc3ec60,
+    type: 3}
+  graph_radial_menu: {fileID: 5879088296258757433, guid: b46b55cc3f10436449cd05f54c322d75,
     type: 3}
   templine: {fileID: 0}
   totalLines: 0

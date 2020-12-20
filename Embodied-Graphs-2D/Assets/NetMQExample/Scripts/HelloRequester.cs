@@ -21,6 +21,7 @@ public class HelloRequester : RunAbleThread
     public bool sendmessage = true;
     public string serverUpdate = "";
     public string graph_as_str;
+    public string command;
     int t0;
 
     protected override void Run()

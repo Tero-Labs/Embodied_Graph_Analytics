@@ -27,6 +27,8 @@ public class Paintable : MonoBehaviour
     public GameObject curtouched_obj = null;
     public bool okayToPan = true;
 	public bool panZoomLocked = false;
+    public bool graphlocked;
+
     private Vector2 prev_move_pos;
 
 	// Prefabs
@@ -54,6 +56,7 @@ public class Paintable : MonoBehaviour
     public GameObject setline;
     public GameObject edge_radial_menu;
     public GameObject node_radial_menu;
+    public GameObject graph_radial_menu;
 
     // needed for drawing
     public GameObject templine;
@@ -693,21 +696,6 @@ public class Paintable : MonoBehaviour
             {
                 Destroy(hit2d.collider.gameObject);
             }
-            /*else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "spawn_edge")
-            {
-                hit2d.collider.gameObject.GetComponent<SpawnEdgeScript>().cleanUp();    // clear all spawned elements, if any in the scene.
-                Destroy(hit2d.collider.gameObject);
-            }
-            else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "static_pen_line")
-            {
-                Destroy(hit2d.collider.gameObject);
-            }
-            else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "oop_property_edge" &&
-                hit2d.collider.transform.GetComponent<OOP_Property_Edge_script>().showPropertyEdge)
-            {
-                Destroy(hit2d.collider.transform.GetComponent<OOP_Property_Edge_script>().propertyTargetSet);
-                Destroy(hit2d.collider.gameObject);
-            }*/
         }
         #endregion
 
@@ -869,11 +857,16 @@ public class Paintable : MonoBehaviour
                 }
                 LastPhaseHappend = 3;
 
-                if (taping_flag && TouchTime > 1)
+                if (taping_flag && TouchTime > 0.5f)
                 // TouchTime for a tap can be further defined
                 {
                     //Tap has happened;
-                    Debug.Log("tap_detected");
+                    Debug.Log("tap_detected for duration: " + TouchTime.ToString());
+                    if (TouchTime > 1f)
+                        graphlocked = true;
+                    else
+                        graphlocked = false;
+
                     menucreation(currentTouch.position);
                 }
                 break;
@@ -899,12 +892,30 @@ public class Paintable : MonoBehaviour
 
             if (Hit.collider.gameObject.tag == "iconic")
             {
-                GameObject radmenu = Instantiate(node_radial_menu,
-                        canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position)
-                        /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
-                        Quaternion.identity,
-                        canvas_radial.transform);
-                radmenu.GetComponent<NodeMenuScript>().menu_parent = Hit.collider.gameObject;
+                if(graphlocked)
+                {
+                    Transform node_parent = Hit.collider.gameObject.transform.parent;
+                    if (node_parent.tag == "node_parent")
+                    {
+                        //node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
+                        GameObject radmenu = Instantiate(graph_radial_menu,
+                            canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position + new Vector3(5f, 5f, 0f))
+                            /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
+                            Quaternion.identity,
+                            canvas_radial.transform);
+                        radmenu.GetComponent<GraphSliderMenu>().graph_parent = node_parent.parent.gameObject;
+                        radmenu.GetComponent<GraphSliderMenu>().UpdateLayer(node_parent.parent.GetComponent<GraphElementScript>().abstraction_layer);
+                    }                    
+                }
+                else
+                {
+                    GameObject radmenu = Instantiate(node_radial_menu,
+                            canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position)
+                            /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
+                            Quaternion.identity,
+                            canvas_radial.transform);
+                    radmenu.GetComponent<NodeMenuScript>().menu_parent = Hit.collider.gameObject;
+                }
             }
 
 
@@ -1439,6 +1450,18 @@ public class Paintable : MonoBehaviour
             if (ActionHistoryEnabled) GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(true);
             else GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(false);
         }
+
+        //Graph
+        if (Input.GetKeyUp(KeyCode.G))
+        {
+            
+            graphlocked = true;
+            Debug.Log("NOT WORKING?");
+        }/*
+        else
+        {
+            graphlocked = false;
+        }*/
     }
 
     void deleteTempLineIfDoubleFinger()

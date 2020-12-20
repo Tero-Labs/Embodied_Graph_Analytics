@@ -49,4 +49,13 @@ public class HyperElementScript : MonoBehaviour
     {
         
     }
+
+    void OnDestroy()
+    {
+        Transform node_parent = transform.parent;
+        if (node_parent.tag == "hyper_parent")
+        {
+            node_parent.parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
+        }
+    }
 }

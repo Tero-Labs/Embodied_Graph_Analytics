@@ -37,4 +37,10 @@ public abstract class RunAbleThread
         // _runnerThread will end before main thread end
         _runnerThread.Join();
     }
+
+    // added to check if a thread is alive now
+    public bool isalive()
+    {
+        return _runnerThread.IsAlive;
+    }
 }
