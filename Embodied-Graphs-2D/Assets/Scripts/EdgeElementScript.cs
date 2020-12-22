@@ -1325,12 +1325,54 @@ public class EdgeElementScript : MonoBehaviour
         }
     }
 
+    public void updateEndPoint(GameObject node_name)
+    {
+        GameObject source = transform.GetComponent<EdgeElementScript>().edge_start;
+        GameObject target = transform.GetComponent<EdgeElementScript>().edge_end;
+
+        if (source == node_name || target == node_name)
+        {
+            if (source == node_name)
+            {
+                // set line renderer end point
+                transform.GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
+            }
+            else
+            {
+                transform.GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
+            }
+
+            // assuming edge_start is always an anchor
+            var edgepoints = new List<Vector3>() { transform.GetComponent<LineRenderer>().GetPosition(0), transform.GetComponent<LineRenderer>().GetPosition(1) };
+
+            transform.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+            {
+                var pos = transform.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+                return new Vector2(pos.x, pos.y);
+            }).ToArray();
+
+            transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+            // set line renderer texture scale
+            var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
+                transform.GetComponent<LineRenderer>().GetPosition(1));
+            transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+
+            updateDot();
+        }
+    }
+
+
     void OnDestroy()
     {
         Transform node_parent = transform.parent;
         if (node_parent.tag == "edge_parent")
         {
             node_parent.parent.GetComponent<GraphElementScript>().edges_as_Str();
+        }
+        else if (node_parent.tag == "simplicial_parent")
+        {
+            node_parent.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
         }
     }
 }

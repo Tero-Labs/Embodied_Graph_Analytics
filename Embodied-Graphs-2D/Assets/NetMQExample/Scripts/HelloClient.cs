@@ -14,15 +14,15 @@ public class HelloClient : MonoBehaviour
         //_helloRequester.Stop();
     }
 
-    public void Abstraction_conversion(string graph_as_string, string conversion_type)
+    public bool Abstraction_conversion(string graph_as_string, string conversion_type)
     {
         if (_helloRequester != null)
         {
-            bool flag = true;
+            //bool flag = true;
             // housekeeping so that an already running thread does not throw netmq exception 
             if(_helloRequester.isalive())
             {
-                return;
+                return false;
             }
             //Debug.Log("checking is alive: " + _helloRequester.isalive().ToString() + " flag: " + flag.ToString());
         }
@@ -32,6 +32,7 @@ public class HelloClient : MonoBehaviour
         _helloRequester.graph_as_str = graph_as_string; //"{8,9,7,10}-{8,9}{9,7}{8,7}";
         _helloRequester.command = conversion_type;
         _helloRequester.Start();
+        return true;
     }
 
     void Update()

@@ -696,6 +696,10 @@ public class Paintable : MonoBehaviour
             {
                 Destroy(hit2d.collider.gameObject);
             }
+            else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "simplicial")
+            {
+                Destroy(hit2d.collider.gameObject);
+            }
         }
         #endregion
 
@@ -1298,16 +1302,31 @@ public class Paintable : MonoBehaviour
         GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
         foreach (GameObject each_simplicial in simplicials)
         {
-            List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
-
-            foreach (GameObject each_node in thenodes)
+            if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
             {
-                if (each_node.name == node_name)
+                List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
+
+                foreach (GameObject each_node in thenodes)
                 {
-                    Destroy(each_simplicial.gameObject);
-                    break;
+                    if (each_node.name == node_name)
+                    {
+                        Destroy(each_simplicial.gameObject);
+                        break;
+                    }
                 }
             }
+            else if (each_simplicial.GetComponent<EdgeElementScript>() != null)
+            {
+                GameObject source = each_simplicial.GetComponent<EdgeElementScript>().edge_start;
+                GameObject target = each_simplicial.GetComponent<EdgeElementScript>().edge_end;
+
+                if (source.name == node_name || target.name == node_name)
+                {
+                    Destroy(each_simplicial.gameObject);
+                    //break;
+                }
+            }
+
         }
 
         GameObject[] hyper_edges = GameObject.FindGameObjectsWithTag("hyper_child_edge");
@@ -1326,56 +1345,31 @@ public class Paintable : MonoBehaviour
         List<GameObject> edgeList = new List<GameObject>(edges);
         for (int i = 0; i < edgeList.Count; i++)
         {
-            GameObject source = edgeList[i].GetComponent<EdgeElementScript>().edge_start;
-            GameObject target = edgeList[i].GetComponent<EdgeElementScript>().edge_end;
-
-            if (source == node_name || target == node_name)
-            {
-                if (source == node_name)
-                {
-                    // set line renderer end point
-                    edgeList[i].GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
-                }
-                else
-                {
-                    edgeList[i].GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
-                }
-                            
-                // assuming edge_start is always an anchor
-                var edgepoints = new List<Vector3>() { edgeList[i].GetComponent<LineRenderer>().GetPosition(0), edgeList[i].GetComponent<LineRenderer>().GetPosition(1)};
-
-                edgeList[i].GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
-                {
-                    var pos = edgeList[i].GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
-                    return new Vector2(pos.x, pos.y);
-                }).ToArray();
-
-                edgeList[i].GetComponent<EdgeCollider2D>().edgeRadius = 10;
-
-                // set line renderer texture scale
-                var linedist = Vector3.Distance(edgeList[i].GetComponent<LineRenderer>().GetPosition(0),
-                    edgeList[i].GetComponent<LineRenderer>().GetPosition(1));
-                edgeList[i].GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
-
-                edgeList[i].GetComponent<EdgeElementScript>().updateDot();
-            }
+            edgeList[i].GetComponent<EdgeElementScript>().updateEndPoint(node_name);            
         }
 
         GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
         foreach (GameObject each_simplicial in simplicials)
         {
-            List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
-            int x = 0; 
-            foreach (GameObject each_node in thenodes)
+            if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
             {
-                if (each_node == node_name)
+                List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
+                int x = 0;
+                foreach (GameObject each_node in thenodes)
                 {
-                    each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = node_name.GetComponent<iconicElementScript>().edge_position;
-                    each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
-                    break;
+                    if (each_node == node_name)
+                    {
+                        each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = node_name.GetComponent<iconicElementScript>().edge_position;
+                        each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
+                        break;
+                    }
+                    x++;
                 }
-                x++;
             }
+            else
+            {
+                each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint(node_name);
+            }            
         }
 
 
