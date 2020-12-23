@@ -16,7 +16,7 @@ public class GraphElementScript : MonoBehaviour
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
     public GameObject LabelElement;
-    public GameObject canvas;
+    //public GameObject canvas;
 
     public IDictionary<string, Transform> nodeMaps;
 
@@ -159,8 +159,17 @@ public class GraphElementScript : MonoBehaviour
 
         if (target_layer == "abstract")
         {
-            // ToDo: need discussion
-            Instantiate(LabelElement, new Vector3(0f,0f,0f), Quaternion.identity, transform);
+            // already label present
+            if (transform.childCount > 4)
+            {
+                transform.GetChild(4).gameObject.SetActive(true);                
+            } 
+            else
+            {
+                GameObject label = Instantiate(LabelElement, new Vector3(0f, 0f, -5f), Quaternion.identity, transform);
+                label.transform.SetSiblingIndex(4);
+            }
+                
             abstraction_layer = target_layer;
             for (int i = 0; i < 4; i++)
             {
@@ -173,7 +182,13 @@ public class GraphElementScript : MonoBehaviour
         if (abstraction_layer == "abstract")
         {
             // ToDo: need discussion
-            Instantiate(LabelElement, new Vector3(0f, 0f, 0f), Quaternion.identity, transform);
+            // if a label present
+            if (transform.childCount > 4)
+            {
+                transform.GetChild(4).gameObject.SetActive(false);
+            }
+
+
             transform.GetChild(0).gameObject.SetActive(true);
             if (target_layer == "graph")
             {
