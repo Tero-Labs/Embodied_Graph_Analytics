@@ -907,7 +907,7 @@ public class Paintable : MonoBehaviour
                             /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
                             Quaternion.identity,
                             canvas_radial.transform);
-                        radmenu.GetComponent<GraphSliderMenu>().graph_parent = node_parent.parent.gameObject;
+                        radmenu.GetComponent<GraphSliderMenu>().setparent(node_parent.parent.gameObject);
                         radmenu.GetComponent<GraphSliderMenu>().UpdateLayer(node_parent.parent.GetComponent<GraphElementScript>().abstraction_layer);
                     }                    
                 }

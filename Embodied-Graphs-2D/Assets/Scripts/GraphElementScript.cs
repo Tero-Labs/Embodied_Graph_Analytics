@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using TMPro;
+
 
 public class GraphElementScript : MonoBehaviour
 {
+    public string graph_name;
     public string nodes_str;
     public string edges_str;
     public string hyper_edges_str;
@@ -18,13 +21,33 @@ public class GraphElementScript : MonoBehaviour
     public GameObject LabelElement;
     //public GameObject canvas;
 
+    public bool graph_lock;
+    public bool simplicial_lock;
+    public bool hyper_edges_lock;
+    public bool abstract_lock;
+
+    public bool graph_drawn;
+    public bool simplicial_drawn;
+    public bool hyper_edges_drawn;
+    public bool abstract_drawn;
+
     public IDictionary<string, Transform> nodeMaps;
 
     // Start is called before the first frame update
     void Start()
     {
+        graph_name = "G1";
         abstraction_layer = "hypergraph";
         //Objects_parent = GameObject.Find("Objects");
+
+        graph_lock = true;
+        simplicial_lock = true;
+        hyper_edges_lock = true;
+        abstract_lock = true;
+
+        graph_drawn = false;
+        simplicial_drawn = false;
+        hyper_edges_drawn = false;
     }
 
     // Update is called once per frame
@@ -162,11 +185,13 @@ public class GraphElementScript : MonoBehaviour
             // already label present
             if (transform.childCount > 4)
             {
-                transform.GetChild(4).gameObject.SetActive(true);                
+                transform.GetChild(4).gameObject.SetActive(true);
+                transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
             } 
             else
             {
                 GameObject label = Instantiate(LabelElement, new Vector3(0f, 0f, -5f), Quaternion.identity, transform);
+                label.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
                 label.transform.SetSiblingIndex(4);
             }
                 
@@ -264,7 +289,20 @@ public class GraphElementScript : MonoBehaviour
             if (abstraction_layer == "graph")
             {
                 transform.GetChild(1).gameObject.SetActive(true);
-                DeleteChildren(transform.GetChild(1));
+                if (graph_lock == false)
+                {
+                    DeleteChildren(transform.GetChild(1));
+                }
+                // force initial conversion
+                else if (graph_drawn)
+                {
+                    return;
+                }
+                else if (graph_drawn == false)
+                {
+                    graph_drawn = true;
+                }
+
                 foreach (string edge in newedges)
                 {
                     string[] nodes_of_edge = edge.Split(',');
@@ -276,10 +314,25 @@ public class GraphElementScript : MonoBehaviour
                     EdgeCreation("edge", nodes_of_edge, 1);
                 }
             }
+
             else if (abstraction_layer == "simplicial")
             {
                 transform.GetChild(2).gameObject.SetActive(true);
-                DeleteChildren(transform.GetChild(2));
+
+                if (simplicial_lock == false)
+                {
+                    DeleteChildren(transform.GetChild(2));
+                }
+                // force initial conversion
+                else if (simplicial_drawn)
+                {
+                    return;
+                }
+                else if (simplicial_drawn == false)
+                {
+                    simplicial_drawn = true;
+                }
+
                 foreach (string edge in newedges)
                 {
                     string[] nodes_of_edge = edge.Split(',');
@@ -296,10 +349,25 @@ public class GraphElementScript : MonoBehaviour
                     }                    
                 }
             }
+
             else if (abstraction_layer == "hypergraph")
             {
                 transform.GetChild(3).gameObject.SetActive(true);
-                DeleteChildren(transform.GetChild(3));
+
+                if (hyper_edges_lock == false)
+                {
+                    DeleteChildren(transform.GetChild(3));
+                }
+                // force initial conversion
+                else if (hyper_edges_drawn)
+                {
+                    return;
+                }
+                else if (hyper_edges_drawn == false)
+                {
+                    hyper_edges_drawn = true;
+                }
+
                 foreach (string edge in newedges)
                 {
                     string[] nodes_of_edge = edge.Split(',');
