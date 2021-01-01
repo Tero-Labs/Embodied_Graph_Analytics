@@ -37,6 +37,7 @@ public class Paintable : MonoBehaviour
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
     public GameObject CombineLineElement;
+    public GameObject FunctionLineElement;
     public GameObject GraphElement;
 
     // Canvas buttons
@@ -48,15 +49,18 @@ public class Paintable : MonoBehaviour
     public static GameObject eraser_button;
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
+    public static GameObject function_brush_button;
     public static GameObject canvas_radial;
 
     public GameObject edgeline;
     public GameObject simplicialline;
     public GameObject hyperline;
     public GameObject setline;
+    public GameObject function_menu;
     public GameObject edge_radial_menu;
     public GameObject node_radial_menu;
     public GameObject graph_radial_menu;
+    public GameObject function_radial_menu;
 
     // needed for drawing
     public GameObject templine;
@@ -82,7 +86,7 @@ public class Paintable : MonoBehaviour
     public List<GameObject> hypernodes = new List<GameObject>();
 
     // needed for graph
-    public static int graph_count = 0;
+    public int graph_count = 0;
 
     // needed for panning
     private bool taping_flag;
@@ -91,6 +95,12 @@ public class Paintable : MonoBehaviour
     float StartTouchTime; // Time.realtimeSinceStartup at start of touch
     float EndTouchTime; // Time.realtimeSinceStartup at end of touch
     public Vector2 startPos;
+
+    // needed for function
+    public bool no_func_menu_open;
+    public bool function_name_performed = true;
+    public GameObject functionline;
+    public static int function_count = 0;
 
     // objects history
     public List<GameObject> history = new List<GameObject>();
@@ -109,8 +119,11 @@ public class Paintable : MonoBehaviour
         eraser_button = GameObject.Find("Eraser");
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
-        
+        function_brush_button = GameObject.Find("function_brush");
+
         canvas_radial = GameObject.Find("canvas_radial");
+
+        no_func_menu_open = true;
     }
 
 	// Update is called once per frame
@@ -816,7 +829,122 @@ public class Paintable : MonoBehaviour
 
         #endregion
 
-        
+        #region function brush
+
+        if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            //Debug.Log("entered");
+            if (no_func_menu_open)
+            {
+                if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+                {
+                    // start drawing a new line
+                    var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                    RaycastHit Hit;
+                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                    {
+                        //Debug.Log("instantiated_templine");
+
+                        Vector3 vec = Hit.point + new Vector3(0, 0, -5);
+                        functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
+
+                        functionline.name = "function_line_" + function_count.ToString();
+                        function_count++;
+                        functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
+                        functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
+                        //function_menu.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text = "Brush loaded";
+                    }
+                }
+
+                else if (functionline != null &&
+                    PenTouchInfo.PressedNow //currentPen.tip.isPressed
+                    && (PenTouchInfo.penPosition -
+                    (Vector2)functionline.GetComponent<FunctionElementScript>().points[functionline.GetComponent<FunctionElementScript>().points.Count - 1]).magnitude > 0f)
+                {
+                    // add points to the last line
+                    var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                    RaycastHit Hit;
+                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                    {
+
+                        Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+
+                        functionline.GetComponent<TrailRenderer>().transform.position = vec;
+                        functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
+                        functionline.GetComponent<FunctionElementScript>().calculateLengthAttributeFromPoints();
+
+                        // pressure based pen width
+                        functionline.GetComponent<FunctionElementScript>().updateLengthFromPoints();
+                        functionline.GetComponent<FunctionElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                        functionline.GetComponent<FunctionElementScript>().reNormalizeCurveWidth();
+                        functionline.GetComponent<TrailRenderer>().widthCurve = functionline.GetComponent<FunctionElementScript>().widthcurve;
+
+                    }
+                }
+
+                else if (functionline != null && PenTouchInfo.ReleasedThisFrame)
+                {
+                    var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); 
+                    RaycastHit Hit;
+
+                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                    {
+                        if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
+                        {
+
+                            List<GameObject> selected_graphs = new List<GameObject>();
+                            GameObject[] grapharray = GameObject.FindGameObjectsWithTag("graph");
+
+                            for (int i = 0; i < grapharray.Length; i++)
+                            {
+
+                                // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                                if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
+                                    functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                    grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
+                                {
+                                    selected_graphs.Add(grapharray[i]);
+                                }
+                            }
+
+                            Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
+                            if (selected_graphs.Count == 0)
+                            {
+                                Destroy(functionline);
+                                functionline = null;
+                                return;
+                            }
+                                
+                            functionline = transform.GetComponent<CreatePrimitives>().FinishFunctionLine(functionline);
+
+                            functionline.GetComponent<FunctionElementScript>().InstantiateNameBox();
+                            
+                            functionline.GetComponent<FunctionElementScript>().grapharray = selected_graphs.ToArray();
+                            functionline = null;
+                        }
+                        else
+                        {
+                            // delete the templine, not enough points
+                            // Debug.Log("here_in_destroy");
+                            Destroy(functionline);
+                            functionline = null;
+                        }
+                    }
+                    else
+                    {
+                        // the touch didn't end on a line, destroy the line
+                        // Debug.Log("here_in_destroy_different_Hit");
+                        Destroy(functionline);
+                        functionline = null;
+                    }
+
+                }
+            }            
+        }
+
+        #endregion
+
+
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
     }
@@ -893,11 +1021,12 @@ public class Paintable : MonoBehaviour
 
         if (Physics.Raycast(ray, out Hit))
         {
-
+            Debug.Log("hit:"+ Hit.collider.gameObject.tag);
             if (Hit.collider.gameObject.tag == "iconic")
             {
                 if(graphlocked)
                 {
+                    Debug.Log("graph_menu_created");
                     Transform node_parent = Hit.collider.gameObject.transform.parent;
                     if (node_parent.tag == "node_parent")
                     {
@@ -913,6 +1042,7 @@ public class Paintable : MonoBehaviour
                 }
                 else
                 {
+                    Debug.Log("node_menu_created");
                     GameObject radmenu = Instantiate(node_radial_menu,
                             canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position)
                             /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
@@ -928,6 +1058,7 @@ public class Paintable : MonoBehaviour
         hit2d = Physics2D.GetRayIntersection(ray);
         if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
         {
+            Debug.Log("hit:" + hit2d.collider.gameObject.tag);
             GameObject radmenu = Instantiate(edge_radial_menu,
                         canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center)
                         /*hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center*/,
@@ -956,6 +1087,7 @@ public class Paintable : MonoBehaviour
         tempgraph.name = "graph_"+graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
+        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + graph_count.ToString();
 
         GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
@@ -1065,6 +1197,7 @@ public class Paintable : MonoBehaviour
         tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
+        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + graph_count.ToString();
 
         GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
@@ -1169,6 +1302,7 @@ public class Paintable : MonoBehaviour
         tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
+        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + graph_count.ToString();
 
         GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";

@@ -36,8 +36,7 @@ public class GraphElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        graph_name = "G1";
-        abstraction_layer = "hypergraph";
+        abstraction_layer = "graph";
         //Objects_parent = GameObject.Find("Objects");
 
         graph_lock = true;
@@ -190,7 +189,7 @@ public class GraphElementScript : MonoBehaviour
             } 
             else
             {
-                GameObject label = Instantiate(LabelElement, new Vector3(0f, 0f, -5f), Quaternion.identity, transform);
+                GameObject label = Instantiate(LabelElement, transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position, Quaternion.identity, transform);
                 label.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
                 label.transform.SetSiblingIndex(4);
             }

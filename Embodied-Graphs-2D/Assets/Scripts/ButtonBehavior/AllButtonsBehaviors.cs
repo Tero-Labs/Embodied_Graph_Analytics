@@ -82,6 +82,12 @@ public class AllButtonsBehaviors : MonoBehaviour
             disablesimplicialColliders();
         }
 
+        else if (this.name == "function_brush")
+        {
+            enableAllPenObjectColliders();
+            //enablesimplicialColliders();
+        }       
+
         // deselect all other buttons
         for (int i = 0; i < buttons.Length; i++)
 		{
@@ -140,6 +146,14 @@ public class AllButtonsBehaviors : MonoBehaviour
             {
                 Destroy(paint_canvas.GetComponent<Paintable>().setline);
                 paint_canvas.GetComponent<Paintable>().setline = null;
+            }
+        }
+        else if (this.name == "function_brush")
+        {           
+            if (paint_canvas.GetComponent<Paintable>().functionline != null)
+            {
+                Destroy(paint_canvas.GetComponent<Paintable>().functionline);
+                paint_canvas.GetComponent<Paintable>().functionline = null;
             }
         }
     }

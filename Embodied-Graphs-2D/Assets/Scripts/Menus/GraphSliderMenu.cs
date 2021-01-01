@@ -30,7 +30,7 @@ public class GraphSliderMenu : MonoBehaviour
         if (input.text.Length > 0)
         {
             graph_parent.GetComponent<GraphElementScript>().graph_name = input.text;
-
+            // graph name update
             if (graph_parent.transform.childCount > 4 && graph_parent.transform.GetChild(4).gameObject.activeSelf)
             {
                 graph_parent.transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = input.text;

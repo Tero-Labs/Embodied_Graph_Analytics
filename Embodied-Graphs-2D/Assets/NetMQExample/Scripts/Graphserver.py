@@ -6,9 +6,11 @@
 
 import time
 import zmq
-
+import networkx as nx
 import argparse, json, os
-import subprocess
+import subprocess   
+ 
+from itertools import combinations
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -28,6 +30,14 @@ parser.add_argument('--simplicial_to_graph', type=str2bool, nargs='?', const=Tru
 parser.add_argument('--simplicial_to_hypergraph', type=str2bool, nargs='?', const=True, default=False, help ="convert a simplicial to hypergraph.")
 parser.add_argument('--hypergraph_to_graph', type=str2bool, nargs='?', const=True, default=False, help ="convert a hypergraph to graph.")
 parser.add_argument('--hypergraph_to_simplicial', type=str2bool, nargs='?', const=True, default=False, help ="convert a hypergraph to simplicial.")
+
+
+#functions
+parser.add_argument('--addition', type=str2bool, nargs='?', const=True, default=False, help= "combines a list of graphs together.")
+
+
+
+
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
@@ -63,8 +73,112 @@ def parse_message(sent_Str):
     print(edges_list)    
     return nodes_list, edges_list
  
+def parse_edge_message(edge_str):
+    edges_list = []
+    for each_edge_Str in edge_str:
+        if each_edge_Str == '':
+            continue
+        each_edge_Str = each_edge_Str[1:]
+        cur_edge = []
+        for edge_node in each_edge_Str.split(','):
+            cur_edge.append(int(edge_node))
+        #print(cur_edge)    
+        edges_list.append((cur_edge))
 
-from itertools import combinations
+    return edges_list
+
+
+# format: {<nodes seperated by comma>-{edge_1}{edge_2}-{edge_1}{edge_2}-{edge_1}{edge_2}+....}
+def parse_list_message(sent_list_Str):
+    
+    sent_list_Str = sent_list_Str.split("+")
+    
+    all_graphs = []
+        
+    for sent_Str in sent_list_Str:
+        
+        each_graph = {"node": None, "edges": None, "simplices": None, "hyperedges": None}
+        
+        sent_Str=sent_Str.split("-")
+
+        node_Str=sent_Str[0][1:-1]        
+        nodes_list = []
+        for each_node in node_Str.split(','):
+            nodes_list.append(int(each_node))
+
+        graph_edge_Str = sent_Str[1].split("}")
+        graph_edge_list = parse_edge_message(graph_edge_Str)
+        
+        simplicial_edge_Str = sent_Str[2].split("}")
+        simplicial_edge_list = parse_edge_message(simplicial_edge_Str)
+        
+        hypergraph_edge_Str = sent_Str[3].split("}")
+        hypergraph_edge_list = parse_edge_message(hypergraph_edge_Str)
+        
+        each_graph["node"] = nodes_list
+        each_graph["edges"] = graph_edge_list
+        each_graph["simplices"] = simplicial_edge_list
+        each_graph["hyperedges"] = hypergraph_edge_list
+
+        all_graphs.append(each_graph)
+        print(each_graph)
+        
+    return all_graphs
+
+def gedge_to_str(g_edges):
+    
+    final_str = ""
+    for iter_1, each_edge in enumerate(g_edges):
+        #print(list(each_edge))
+
+        edges_as_str = ""
+        for iter, each_node in enumerate(list(each_edge)):
+            if iter != 0:
+                edges_as_str += "," + str(each_node)
+            else:
+                edges_as_str += str(each_node)
+
+        if iter_1 != 0:
+            final_str += "-" + edges_as_str
+        else:
+            final_str += edges_as_str
+
+    return final_str
+
+def gnode_to_str(g_nodes):
+    
+    nodes_as_str = ""
+    for iter, each_node in enumerate(list(g_nodes)):
+        if iter != 0:
+            nodes_as_str += "," + str(each_node)
+        else:
+            nodes_as_str += str(each_node)
+            
+    return nodes_as_str
+
+    
+def graph_addition(all_graphs):
+    
+    if (len(all_graphs) < 2):
+        return None
+    
+    G = nx.Graph()
+    G.add_nodes_from(all_graphs[0]["node"])
+    G.add_edges_from(all_graphs[0]["edges"])
+    
+    for iter in range(1, len(all_graphs)):
+    
+        G_2 = nx.Graph()
+        G_2.add_nodes_from(all_graphs[iter]["node"])
+        G_2.add_edges_from(all_graphs[iter]["edges"])
+
+        G_new = nx.compose(G,G_2)
+        G = G_new
+    
+    #plt.subplot(121)
+    #nx.draw(G_new, with_labels=True, font_weight='bold')
+    return G
+    
 
 ## So we can have an empty edge/face/simplex set everywhere, even the
 ## node set can be empty
@@ -271,43 +385,62 @@ if __name__ == '__main__':
     
     message = socket.recv()
     print("Received request from unity: %s" % message)
-    #TypeError: a bytes-like object is required, not 'str'
-    nodes_list, edges_list = parse_message(message.decode('utf8'))
+    
     time.sleep(1)
 
     if args.graph_to_simplicial:
+        #TypeError: a bytes-like object is required, not 'str'
+        nodes_list, edges_list = parse_message(message.decode('utf8'))
         graph = Graph(nodes_list, edges_list)
         graph_to_simplicial_complex = graph.to_simplicial_complex()
         print("graph_to_simplicial_complex",graph_to_simplicial_complex.simplices)
         socket.send((frozen_set_to_list(graph_to_simplicial_complex.simplices)).encode('ascii'))  
         
     if args.graph_to_hypergraph:
+        #TypeError: a bytes-like object is required, not 'str'
+        nodes_list, edges_list = parse_message(message.decode('utf8'))
         graph = Graph(nodes_list, edges_list)
         graph_to_hypergraph = graph.to_hypergraph()
         print("graph_to_hypergraph",graph_to_hypergraph.hyperedges)
         socket.send((frozen_set_to_list(graph_to_hypergraph.hyperedges)).encode('ascii'))    
         
     if args.hypergraph_to_graph:
+        #TypeError: a bytes-like object is required, not 'str'
+        nodes_list, edges_list = parse_message(message.decode('utf8'))
         hypergraph = HyperGraph(nodes_list, edges_list)
         hypergraph_to_graph = hypergraph.to_graph()
         print("hypergraph_to_graph",hypergraph_to_graph.edges)
         socket.send((frozen_set_to_list(hypergraph_to_graph.edges)).encode('ascii'))  
         
     if args.hypergraph_to_simplicial:
+        #TypeError: a bytes-like object is required, not 'str'
+        nodes_list, edges_list = parse_message(message.decode('utf8'))
         hypergraph = HyperGraph(nodes_list, edges_list)
         hypergraph_to_simplicial = hypergraph.to_simplicial_complex()
         print("hypergraph_to_simplicial",hypergraph_to_simplicial.simplices)
         socket.send((frozen_set_to_list(hypergraph_to_simplicial.simplices)).encode('ascii'))  
         
     if args.simplicial_to_graph:
+        #TypeError: a bytes-like object is required, not 'str'
+        nodes_list, edges_list = parse_message(message.decode('utf8'))
         simplicial = SimplicialComplex(nodes_list, edges_list)
         simplicial_to_graph = simplicial.to_graph()
         print("simplicial_to_graph",simplicial_to_graph.edges)
         socket.send((frozen_set_to_list(simplicial_to_graph.edges)).encode('ascii'))  
         
     if args.simplicial_to_hypergraph:
+        #TypeError: a bytes-like object is required, not 'str'
+        nodes_list, edges_list = parse_message(message.decode('utf8'))
         simplicial = SimplicialComplex(nodes_list, edges_list)
         simplicial_to_hypergraph = simplicial.to_hypergraph()
         print("graph_from_hypergraph",simplicial_to_hypergraph.hyperedges)
         socket.send((frozen_set_to_list(simplicial_to_hypergraph.hyperedges)).encode('ascii'))  
     
+    if args.addition:
+        all_graphs = parse_list_message(message.decode('utf8'))
+        G = graph_addition(all_graphs)
+        if G is not None:
+            final_Str = gnode_to_str(list(G.nodes())) + "+" + gedge_to_str(list(G.edges()))
+            socket.send((final_Str).encode('ascii'))  
+        else:            
+            socket.send("impossible") 
