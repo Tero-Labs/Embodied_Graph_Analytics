@@ -50,6 +50,8 @@ public class FunctionElementScript : MonoBehaviour
     public Vector3 position_before_record;
     public Vector3 edge_position;
 
+    public Dictionary<string, Transform> nodeMaps;
+
     // path translate
     public Vector3 position_before_translation;
     public List<Vector3> translation_path = new List<Vector3>();
@@ -111,6 +113,15 @@ public class FunctionElementScript : MonoBehaviour
         paintable_object.GetComponent<Paintable>().no_func_menu_open = false;
     }
 
+    // ToDo: instantiate the graph somewhere else? perform the toggle operation here as well
+    public void ServerOutputProcessing(string graph_as_Str)
+    {
+        // if returned as a graph
+        if (transform.childCount > 1)
+            Destroy(transform.GetChild(1).gameObject);
+        InstantiateGraph(graph_as_Str);
+    }
+
     public void InstantiateGraph(string graph_as_Str)
     {
         Debug.Log("graph_as_Str: " + graph_as_Str);
@@ -143,12 +154,91 @@ public class FunctionElementScript : MonoBehaviour
         temphyperparent.transform.parent = tempgraph.transform;
         temphyperparent.transform.SetSiblingIndex(3);
 
+        nodeMaps = new Dictionary<string, Transform>();
 
         //nodes_init
+        string nodes_str = (graph_as_Str.Split('+'))[0];
+        string[] each_node = nodes_str.Split(',');        
+
+        foreach (string current_node in each_node)
+        {
+            foreach (GameObject current_graph in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            {
+                if (current_graph.tag == "graph")
+                {
+                    if (current_graph.GetComponent<GraphElementScript>().nodeMaps.ContainsKey(current_node))
+                    {
+                        Transform prev_Trasform = current_graph.GetComponent<GraphElementScript>().nodeMaps[current_node];
+                        GameObject tempicon = Instantiate(prev_Trasform.gameObject, new Vector3(0f, 0f, 0f), Quaternion.identity, tempnodeparent.transform);
+                        paintable_object.GetComponent<Paintable>().totalLines++;
+                        tempicon.name = "iconic_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
+                        tempicon.GetComponent<iconicElementScript>().icon_number = paintable_object.GetComponent<Paintable>().totalLines;
+
+                        nodeMaps.Add(current_node, tempicon.transform);
+
+                        //tempicon.GetComponent<MeshFilter>().sharedMesh = tempicon.GetComponent<MeshFilter>().sharedMesh;
+                        break;
+                    }
+                }
+                // ToDo: else if iconic, direct copy if needed later
+            }
+        }
 
         //edges_init
+        string[] newedges = ((graph_as_Str.Split('+'))[1]).Split('-');
+        foreach (string edge in newedges)
+        {
+            string[] nodes_of_edge = edge.Split(',');
+
+            // simplicial may have subsets of length 1, will skip those
+            if (nodes_of_edge.Length != 2)
+                continue;
+
+            EdgeCreation("edge", nodes_of_edge, 1);
+        }
 
     }
+
+    void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
+    {
+        List<GameObject> temp_nodes = new List<GameObject>();
+        foreach (string node in nodes_of_edge)
+        {
+            if (nodeMaps.ContainsKey(node))
+            {
+                temp_nodes.Add(nodeMaps[node].gameObject);
+            }
+        }
+
+        GameObject edgeline = Instantiate(paintable_object.GetComponent<Paintable>().EdgeElement, temp_nodes[0].GetComponent<iconicElementScript>().edge_position, 
+            Quaternion.identity, transform.GetChild(1).GetChild(idx));
+
+        paintable_object.GetComponent<Paintable>().selected_obj_count++;
+        edgeline.name = "edge_" + paintable_object.GetComponent<Paintable>().selected_obj_count.ToString();
+        edgeline.tag = tag;
+
+        edgeline.GetComponent<EdgeElementScript>().edge_start = temp_nodes[0];
+        edgeline.GetComponent<EdgeElementScript>().edge_end = temp_nodes[1];
+
+        edgeline.GetComponent<LineRenderer>().SetPosition(0, temp_nodes[0].GetComponent<iconicElementScript>().edge_position);
+        edgeline.GetComponent<LineRenderer>().SetPosition(1, temp_nodes[1].GetComponent<iconicElementScript>().edge_position);
+
+        var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1) };
+
+        edgeline.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+        {
+            var pos = edgeline.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+            return new Vector2(pos.x, pos.y);
+        }).ToArray();
+
+        edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+        // set line renderer texture scale
+        var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1));
+        edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+        edgeline.GetComponent<EdgeElementScript>().addDot();
+    }
+
 
     public void AddPoint(Vector3 vec)
     {

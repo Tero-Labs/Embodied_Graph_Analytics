@@ -17,7 +17,7 @@ public class FunctionCaller : MonoBehaviour
         graphs_as_string = "";
         for (int i = 0; i < selected_graphs.Length; i++)
         {
-            selected_graphs[i].GetComponent<GraphElementScript>().Graph_as_Str();
+            //selected_graphs[i].GetComponent<GraphElementScript>().Graph_as_Str();
             graphs_as_string = graphs_as_string + selected_graphs[i].GetComponent<GraphElementScript>().nodes_str + "-" + 
                 selected_graphs[i].GetComponent<GraphElementScript>().edges_str + "-" +
                 selected_graphs[i].GetComponent<GraphElementScript>().simplicial_str + "-" +
@@ -62,7 +62,7 @@ public class FunctionCaller : MonoBehaviour
             {
                 _helloRequester.serverUpdateCame = false;
                 //show_your_output_as_you_want
-                transform.GetComponent<FunctionElementScript>().InstantiateGraph(_helloRequester.serverUpdate);
+                transform.GetComponent<FunctionElementScript>().ServerOutputProcessing(_helloRequester.serverUpdate);
             }
         }
 

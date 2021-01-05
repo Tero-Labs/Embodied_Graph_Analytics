@@ -52,6 +52,8 @@ public class Paintable : MonoBehaviour
     public static GameObject function_brush_button;
     public static GameObject canvas_radial;
 
+    public GameObject text_message_worldspace;
+
     public GameObject edgeline;
     public GameObject simplicialline;
     public GameObject hyperline;
@@ -73,7 +75,7 @@ public class Paintable : MonoBehaviour
     // edge paint control
     // box collider control
     public static bool enablecollider = false;
-    public static int selected_obj_count = 0;
+    public int selected_obj_count = 0;
     public List<GameObject> selected_obj = new List<GameObject>();
     public GameObject edge_start, edge_end;
 
@@ -120,6 +122,8 @@ public class Paintable : MonoBehaviour
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
         function_brush_button = GameObject.Find("function_brush");
+
+        text_message_worldspace = GameObject.Find("text_message_worldspace");
 
         canvas_radial = GameObject.Find("canvas_radial");
 
@@ -302,7 +306,7 @@ public class Paintable : MonoBehaviour
             deleteTempLineIfDoubleFinger();
 
             int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
-            GameObject.Find("text_message_worldspace").GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+            text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
 
 
         }
@@ -391,7 +395,7 @@ public class Paintable : MonoBehaviour
         {
             previousTouchEnded = true;
             //main_camera.GetComponent<MobileTouchCamera>().enabled = false;
-            GameObject.Find("text_message_worldspace").GetComponent<TextMeshProUGUI>().text = "";
+            text_message_worldspace.GetComponent<TextMeshProUGUI>().text = "";
         }
 
         #endregion
@@ -686,32 +690,50 @@ public class Paintable : MonoBehaviour
                 {
                     string possible_edge_node_name = Hit.collider.gameObject.name;
                     searchNodeAndDeleteEdge(possible_edge_node_name);
+
+                    Transform temp = Hit.collider.gameObject.transform.parent;
                     Destroy(Hit.collider.gameObject);
+
+                    if (temp.tag == "node_parent")
+                        temp.parent.GetComponent<GraphElementScript>().Graph_as_Str();
                 }
                 // simplicial edge
                 else if (Hit.collider.gameObject.tag == "simplicial")
                 {
                     //searchNodeAndDeleteEdge(possible_edge_node_name);
+                    Transform temp = Hit.collider.gameObject.transform.parent;
                     Destroy(Hit.collider.gameObject);
+
+                    if (temp.tag == "simplicial_parent")
+                        temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
                 }
                 // set anchor
                 else if(Hit.collider.gameObject.tag == "hyper")
                 {
                     //searchNodeAndDeleteEdge(possible_edge_node_name);
+                    Transform temp = Hit.collider.gameObject.transform.parent;
                     Destroy(Hit.collider.gameObject);
+
+                    if (temp.tag == "hyper_parent")
+                        temp.parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
                 }             
-
-
             }
 
             hit2d = Physics2D.GetRayIntersection(ray);
             if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
-            {
+            {                
+                Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
+                if (temp.tag == "edge_parent")
+                    temp.parent.GetComponent<GraphElementScript>().edges_as_Str();
+
             }
             else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "simplicial")
             {
+                Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
+                if (temp.tag == "simplicial_parent")
+                    temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
             }
         }
         #endregion
@@ -899,15 +921,18 @@ public class Paintable : MonoBehaviour
                             {
 
                                 // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                                // we checked if the first node is inside the drawn lasso
                                 if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
                                     functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
                                     grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
                                 {
                                     selected_graphs.Add(grapharray[i]);
+                                    // MARKER: as everything is recalculated in functionmenuscript, we added break for fast op.
+                                    break;
                                 }
                             }
 
-                            Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
+                            //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
                             if (selected_graphs.Count == 0)
                             {
                                 Destroy(functionline);
@@ -919,7 +944,7 @@ public class Paintable : MonoBehaviour
 
                             functionline.GetComponent<FunctionElementScript>().InstantiateNameBox();
                             
-                            functionline.GetComponent<FunctionElementScript>().grapharray = selected_graphs.ToArray();
+                            //functionline.GetComponent<FunctionElementScript>().grapharray = selected_graphs.ToArray();
                             functionline = null;
                         }
                         else

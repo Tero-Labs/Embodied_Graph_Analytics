@@ -31,7 +31,7 @@ public class GraphElementScript : MonoBehaviour
     public bool hyper_edges_drawn;
     public bool abstract_drawn;
 
-    public IDictionary<string, Transform> nodeMaps;
+    public Dictionary<string, Transform> nodeMaps;
 
     // Start is called before the first frame update
     void Start()
