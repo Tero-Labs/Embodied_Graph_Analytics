@@ -190,7 +190,7 @@ TrailRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.5347214
+        value: 1
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -269,11 +269,14 @@ MonoBehaviour:
   draggable_now: 0
   icon_elem_material: {fileID: 2100000, guid: eed04dd1a9ac1ec41b0e758c4373d1bb, type: 2}
   paintable_object: {fileID: 0}
+  icon_name: 
+  icon_number: 0
   current_attribute: 0
   previous_position: {x: 0, y: 0, z: 0}
   recorded_path: []
   record_path_enable: 0
   position_before_record: {x: 0, y: 0, z: 0}
+  edge_position: {x: 0, y: 0, z: 0}
   position_before_translation: {x: 0, y: 0, z: 0}
   translation_path: []
   path_index: 0

@@ -255,6 +255,8 @@ MonoBehaviour:
     type: 3}
   GraphElement: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
     type: 3}
+  canvas_radial: {fileID: 0}
+  text_message_worldspace: {fileID: 0}
   edgeline: {fileID: 0}
   simplicialline: {fileID: 0}
   hyperline: {fileID: 0}
@@ -271,6 +273,7 @@ MonoBehaviour:
   templine: {fileID: 0}
   totalLines: 0
   Objects_parent: {fileID: 1127941168}
+  selected_obj_count: 0
   selected_obj: []
   edge_start: {fileID: 0}
   edge_end: {fileID: 0}

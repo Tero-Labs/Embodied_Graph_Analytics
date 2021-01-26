@@ -36,6 +36,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             // enable all colliders to move primitives around
             enableAllPenObjectColliders();
             paint_canvas.GetComponent<Paintable>().okayToPan = true;
+            paint_canvas.GetComponent<Paintable>().panZoomLocked = false;
         }
 
         else if (this.name == "IconicPen")
@@ -86,6 +87,8 @@ public class AllButtonsBehaviors : MonoBehaviour
         {
             enableAllPenObjectColliders();
             //enablesimplicialColliders();
+            //disable_menu_creation
+            paint_canvas.GetComponent<Paintable>().panZoomLocked = true; 
         }       
 
         // deselect all other buttons

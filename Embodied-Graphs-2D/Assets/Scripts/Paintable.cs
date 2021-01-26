@@ -50,7 +50,7 @@ public class Paintable : MonoBehaviour
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
     public static GameObject function_brush_button;
-    public static GameObject canvas_radial;
+    public GameObject canvas_radial;
 
     public GameObject text_message_worldspace;
 
@@ -103,6 +103,9 @@ public class Paintable : MonoBehaviour
     public bool function_name_performed = true;
     public GameObject functionline;
     public static int function_count = 0;
+    public GameObject dragged_arg_textbox;
+    public GameObject potential_tapped_graph;
+
 
     // objects history
     public List<GameObject> history = new List<GameObject>();
@@ -128,6 +131,8 @@ public class Paintable : MonoBehaviour
         canvas_radial = GameObject.Find("canvas_radial");
 
         no_func_menu_open = true;
+        dragged_arg_textbox = null;
+        potential_tapped_graph = null;
     }
 
 	// Update is called once per frame
@@ -858,112 +863,131 @@ public class Paintable : MonoBehaviour
             //Debug.Log("entered");
             if (no_func_menu_open)
             {
-                if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+                OnGraphTap();
+
+                // normal operation
+                if (potential_tapped_graph == null)
                 {
-                    // start drawing a new line
-                    var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                    RaycastHit Hit;
-                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                    if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
                     {
-                        //Debug.Log("instantiated_templine");
+                        // start drawing a new line
+                        var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                        RaycastHit Hit;
+                        Debug.Log("here");
+                        if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                        {
+                            Debug.Log("instantiated_templine");
 
-                        Vector3 vec = Hit.point + new Vector3(0, 0, -5);
-                        functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
+                            Vector3 vec = Hit.point + new Vector3(0, 0, -5);
+                            functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
 
-                        functionline.name = "function_line_" + function_count.ToString();
-                        function_count++;
-                        functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
-                        functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
-                        //function_menu.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text = "Brush loaded";
+                            functionline.name = "function_line_" + function_count.ToString();
+                            function_count++;
+                            functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
+                            functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
+                            //function_menu.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text = "Brush loaded";
+                        }
                     }
-                }
 
-                else if (functionline != null &&
-                    PenTouchInfo.PressedNow //currentPen.tip.isPressed
-                    && (PenTouchInfo.penPosition -
-                    (Vector2)functionline.GetComponent<FunctionElementScript>().points[functionline.GetComponent<FunctionElementScript>().points.Count - 1]).magnitude > 0f)
-                {
-                    // add points to the last line
-                    var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                    RaycastHit Hit;
-                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                    else if (functionline != null &&
+                        PenTouchInfo.PressedNow //currentPen.tip.isPressed
+                        && (PenTouchInfo.penPosition -
+                        (Vector2)functionline.GetComponent<FunctionElementScript>().points[functionline.GetComponent<FunctionElementScript>().points.Count - 1]).magnitude > 0f)
                     {
-
-                        Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
-
-                        functionline.GetComponent<TrailRenderer>().transform.position = vec;
-                        functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
-                        functionline.GetComponent<FunctionElementScript>().calculateLengthAttributeFromPoints();
-
-                        // pressure based pen width
-                        functionline.GetComponent<FunctionElementScript>().updateLengthFromPoints();
-                        functionline.GetComponent<FunctionElementScript>().addPressureValue(PenTouchInfo.pressureValue);
-                        functionline.GetComponent<FunctionElementScript>().reNormalizeCurveWidth();
-                        functionline.GetComponent<TrailRenderer>().widthCurve = functionline.GetComponent<FunctionElementScript>().widthcurve;
-
-                    }
-                }
-
-                else if (functionline != null && PenTouchInfo.ReleasedThisFrame)
-                {
-                    var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); 
-                    RaycastHit Hit;
-
-                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
-                    {
-                        if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
+                        // add points to the last line
+                        var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                        RaycastHit Hit;
+                        if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
                         {
 
-                            List<GameObject> selected_graphs = new List<GameObject>();
-                            GameObject[] grapharray = GameObject.FindGameObjectsWithTag("graph");
+                            Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
 
-                            for (int i = 0; i < grapharray.Length; i++)
+                            functionline.GetComponent<TrailRenderer>().transform.position = vec;
+                            functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
+                            functionline.GetComponent<FunctionElementScript>().calculateLengthAttributeFromPoints();
+
+                            // pressure based pen width
+                            functionline.GetComponent<FunctionElementScript>().updateLengthFromPoints();
+                            functionline.GetComponent<FunctionElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                            functionline.GetComponent<FunctionElementScript>().reNormalizeCurveWidth();
+                            functionline.GetComponent<TrailRenderer>().widthCurve = functionline.GetComponent<FunctionElementScript>().widthcurve;
+
+                        }
+                    }
+
+                    else if (functionline != null && PenTouchInfo.ReleasedThisFrame)
+                    {
+                        var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                        RaycastHit Hit;
+
+                        /*if (potential_tapped_graph == null)
+                        {*/
+                            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
                             {
-
-                                // check if the lines are inside the drawn set polygon -- in respective local coordinates
-                                // we checked if the first node is inside the drawn lasso
-                                if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
-                                    functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
-                                    grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
+                                if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
                                 {
-                                    selected_graphs.Add(grapharray[i]);
-                                    // MARKER: as everything is recalculated in functionmenuscript, we added break for fast op.
-                                    break;
+
+                                    List<GameObject> selected_graphs = new List<GameObject>();
+                                    GameObject[] grapharray = GameObject.FindGameObjectsWithTag("graph");
+
+                                    for (int i = 0; i < grapharray.Length; i++)
+                                    {
+
+                                        // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                                        // we checked if the first node is inside the drawn lasso
+                                        if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
+                                            functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                            grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
+                                        {
+                                            selected_graphs.Add(grapharray[i]);
+                                            // MARKER: as everything is recalculated in functionmenuscript, we added break for fast op.
+                                            break;
+                                        }
+                                    }
+
+                                    //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
+                                    if (selected_graphs.Count == 0)
+                                    {
+                                        Destroy(functionline);
+                                        functionline = null;
+                                        return;
+                                    }
+
+                                    functionline = transform.GetComponent<CreatePrimitives>().FinishFunctionLine(functionline);
+
+                                    functionline.GetComponent<FunctionElementScript>().InstantiateNameBox();
+
+                                    //functionline.GetComponent<FunctionElementScript>().grapharray = selected_graphs.ToArray();
+                                    functionline = null;
+                                }
+                                else
+                                {
+                                    // delete the templine, not enough points
+                                    // Debug.Log("here_in_destroy");
+                                    Destroy(functionline);
+                                    functionline = null;
                                 }
                             }
-
-                            //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
-                            if (selected_graphs.Count == 0)
+                            else
                             {
+                                // the touch didn't end on a line, destroy the line
+                                // Debug.Log("here_in_destroy_different_Hit");
                                 Destroy(functionline);
                                 functionline = null;
-                                return;
                             }
-                                
-                            functionline = transform.GetComponent<CreatePrimitives>().FinishFunctionLine(functionline);
-
-                            functionline.GetComponent<FunctionElementScript>().InstantiateNameBox();
-                            
-                            //functionline.GetComponent<FunctionElementScript>().grapharray = selected_graphs.ToArray();
-                            functionline = null;
+                        //}
+                        // vertex_add_interaction
+                        /*else
+                        {                            
                         }
-                        else
-                        {
-                            // delete the templine, not enough points
-                            // Debug.Log("here_in_destroy");
-                            Destroy(functionline);
-                            functionline = null;
-                        }
+                        */
                     }
-                    else
-                    {
-                        // the touch didn't end on a line, destroy the line
-                        // Debug.Log("here_in_destroy_different_Hit");
-                        Destroy(functionline);
-                        functionline = null;
-                    }
-
                 }
+                else if (potential_tapped_graph != null && Input.touchCount > 1)
+                {
+                    
+                    OnGraphAdditionInteraction();
+                }                    
             }            
         }
 
@@ -973,6 +997,212 @@ public class Paintable : MonoBehaviour
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
     }
+
+    void OnGraphAdditionInteraction()
+    {
+        UnityEngine.Touch currentTouch = Input.GetTouch(1);
+        if (currentTouch.phase == UnityEngine.TouchPhase.Began)//currentPen.tip.wasPressedThisFrame)
+        {
+            // start drawing a new line
+            var ray = Camera.main.ScreenPointToRay(currentTouch.position);
+            RaycastHit Hit;
+            Debug.Log("here_with_tap");
+            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+            {
+                Debug.Log("instantiated_templine_with_tap");
+
+                Vector3 vec = Hit.point + new Vector3(0, 0, -5);
+                functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
+
+                functionline.name = "function_line_" + function_count.ToString();
+                function_count++;
+                functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
+                functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
+                //function_menu.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text = "Brush loaded";
+            }
+        }
+
+        else if (functionline != null &&
+            currentTouch.phase == UnityEngine.TouchPhase.Moved //currentPen.tip.isPressed
+            && (currentTouch.position -
+            (Vector2)functionline.GetComponent<FunctionElementScript>().points[functionline.GetComponent<FunctionElementScript>().points.Count - 1]).magnitude > 0f)
+        {
+            // add points to the last line
+            var ray = Camera.main.ScreenPointToRay(currentTouch.position);
+            RaycastHit Hit;
+            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+            {
+
+                Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+
+                functionline.GetComponent<TrailRenderer>().transform.position = vec;
+                functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
+                functionline.GetComponent<FunctionElementScript>().calculateLengthAttributeFromPoints();
+
+                // pressure based pen width
+                functionline.GetComponent<FunctionElementScript>().updateLengthFromPoints();
+                functionline.GetComponent<FunctionElementScript>().addPressureValue(1);
+                functionline.GetComponent<FunctionElementScript>().reNormalizeCurveWidth();
+                functionline.GetComponent<TrailRenderer>().widthCurve = functionline.GetComponent<FunctionElementScript>().widthcurve;
+            }
+        }
+
+        else if (functionline != null && currentTouch.phase == UnityEngine.TouchPhase.Ended)
+        {
+            var ray = Camera.main.ScreenPointToRay(currentTouch.position);
+            RaycastHit Hit;
+
+            // vertex_add_interaction            
+            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+            {
+                if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
+                {
+                    Debug.Log("finished_templine_with_tap");
+                    List<GameObject> selected_graphs = new List<GameObject>();
+                    GameObject[] grapharray = GameObject.FindGameObjectsWithTag("graph");
+
+                    for (int i = 0; i < grapharray.Length; i++)
+                    {
+
+                        // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                        // we checked if the first node is inside the drawn lasso
+                        if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
+                            functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
+                            grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
+                        {
+                            selected_graphs.Add(grapharray[i]);
+                        }
+                    }
+
+                    //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
+                    if (selected_graphs.Count == 0)
+                    {
+                        Destroy(functionline);
+                        functionline = null;
+                        return;
+                    }
+                    
+                    GameObject tempnodeparent = potential_tapped_graph.transform.GetChild(0).gameObject;
+                    GameObject tempedgeparent = potential_tapped_graph.transform.GetChild(1).gameObject;
+                    GameObject tempsimplicialparent = potential_tapped_graph.transform.GetChild(2).gameObject;
+                    GameObject temphyperparent = potential_tapped_graph.transform.GetChild(3).gameObject;
+
+                    //change_parent
+                    foreach (GameObject new_child_graph in selected_graphs)
+                    {
+                        //change_parent 
+                        // if already in a graph, change parent of every siblings of it,but make sure not under the current graph
+                        
+                        Transform Prev_node_parent = new_child_graph.transform.GetChild(0);
+                        Transform Prev_graph_parent = new_child_graph.transform;
+                        Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+                        Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                        Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
+                        Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+                        Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+                        Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+                        Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+
+                        foreach (Transform child in allChildrennode)
+                        {
+                            child.parent = tempnodeparent.transform;
+                        }
+
+                        foreach (Transform child in allChildrenedge)
+                        {
+                            if (child.tag == "edge")
+                                child.parent = tempedgeparent.transform;
+                        }
+
+                        foreach (Transform child in allChildrensimpli)
+                        {
+                            if (child.tag == "simplicial")
+                                child.parent = tempsimplicialparent.transform;
+                        }
+
+                        foreach (Transform child in allChildrenhyper)
+                        {
+                            if (child.tag == "hyper")
+                                child.parent = temphyperparent.transform;
+                        }
+
+                        Destroy(Prev_graph_parent.gameObject);
+                        Destroy(Prev_node_parent.gameObject);
+                        Destroy(Prev_edge_parent.gameObject);
+                        Destroy(Prev_simplicial_parent.gameObject);
+                        Destroy(Prev_hyper_parent.gameObject);
+                        
+                    }
+
+                    potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
+
+                    Destroy(functionline);
+                    functionline = null;
+                }
+                else
+                {
+                    // delete the templine, not enough points
+                    // Debug.Log("here_in_destroy");
+                    Destroy(functionline);
+                    functionline = null;
+                }
+            }
+            else
+            {
+                // the touch didn't end on a line, destroy the line
+                // Debug.Log("here_in_destroy_different_Hit");
+                Destroy(functionline);
+                functionline = null;
+            }
+        
+        }
+    }
+
+    void OnGraphTap()
+    {
+        if (Input.touchCount == 0) return;
+        
+        UnityEngine.Touch currentTouch = Input.GetTouch(0);
+        switch (currentTouch.phase)
+        {
+            case UnityEngine.TouchPhase.Began:
+                if (LastPhaseHappend != 1)
+                {
+                    taping_flag = true;
+                }
+                LastPhaseHappend = 1;
+                startPos = currentTouch.position;
+                var ray = Camera.main.ScreenPointToRay(startPos);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                {
+                    if (Hit.transform.parent.tag == "node_parent")
+                    {
+                        potential_tapped_graph = Hit.transform.parent.parent.gameObject;                        
+                    }
+                }
+
+                break;
+
+            case UnityEngine.TouchPhase.Moved:
+                //if (LastPhaseHappend != 2)
+                if (Vector2.Distance(currentTouch.position, startPos) > 2)
+                {
+                    taping_flag = false;
+                    potential_tapped_graph = null;
+                }
+                LastPhaseHappend = 2;
+                break;
+
+            case UnityEngine.TouchPhase.Ended:
+                
+                LastPhaseHappend = 3;
+                potential_tapped_graph = null;
+                break;
+        }
+
+    }
+
 
     //https://stackoverflow.com/questions/38728714/unity3d-how-to-detect-taps-on-android
     void OnShortTap()
@@ -1598,10 +1828,10 @@ public class Paintable : MonoBehaviour
 			GameObject newitem = Instantiate(listtocopy, listtocopy.transform.parent);
 			*/
 
-            ActionHistoryEnabled = !ActionHistoryEnabled;
+            /*ActionHistoryEnabled = !ActionHistoryEnabled;
 
             if (ActionHistoryEnabled) GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(true);
-            else GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(false);
+            else GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(false);*/
         }
 
         //Graph

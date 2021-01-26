@@ -117,9 +117,11 @@ public class FunctionElementScript : MonoBehaviour
     public void ServerOutputProcessing(string graph_as_Str)
     {
         // if returned as a graph
+        // destroy previous function outputs, if any
         if (transform.childCount > 1)
             Destroy(transform.GetChild(1).gameObject);
-        InstantiateGraph(graph_as_Str);
+        
+        transform.GetChild(0).GetComponent<FunctionMenuScript>().PostProcess(graph_as_Str);
     }
 
     public void InstantiateGraph(string graph_as_Str)
