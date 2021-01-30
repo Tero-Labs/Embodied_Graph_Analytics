@@ -171,17 +171,7 @@ public class CreatePrimitives : MonoBehaviour
         //templine.transform.position = meshObj.GetComponent<MeshFilter>().sharedMesh.bounds.center;
 
         // update the previous_position variable for templine for checkMove()
-        templine.GetComponent<iconicElementScript>().previous_position = templine.transform.position;
-
-
-        // set mesh renderer color
-        /*Debug.Log(templine.GetComponent<MeshRenderer>().material.color);
-        Debug.Log(meshObj.GetComponent<MeshRenderer>().material.color);
-        Debug.Log("templine"+templine.transform.position.ToString());
-        //Debug.Log("meshobj new" + paintable_object.GetComponent<Paintable>().Objects_parent.transform.TransformPoint(meshObj.GetComponent<MeshFilter>().sharedMesh.bounds.center).ToString());
-        //Debug.Log("meshobj local" + paintable_object.GetComponent<Paintable>().Objects_parent.transform.TransformPoint(templine.GetComponent<MeshFilter>().sharedMesh.bounds.center).ToString());
-        Debug.Log(templine.transform.position);*/
-        //Destroy(meshObj);        
+        templine.GetComponent<iconicElementScript>().previous_position = templine.transform.position;   
 
         // Save the area of the bounding box 
         templine.GetComponent<iconicElementScript>().attribute.Area =
@@ -239,17 +229,17 @@ public class CreatePrimitives : MonoBehaviour
         templine.GetComponent<LineRenderer>().enabled = false;
 
         // add a collider
-        templine.AddComponent<BoxCollider>();
-
+       /* templine.AddComponent<BoxCollider>();
         templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
-        templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+        templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;*/
+
         templine.GetComponent<FunctionElementScript>().edge_position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
 
         // set collider trigger
-        templine.GetComponent<BoxCollider>().isTrigger = true;
+        //templine.GetComponent<BoxCollider>().isTrigger = true;
 
         // disable the collider because we are in the pen mode right now. Pan mode enables back all colliders.
-        templine.GetComponent<BoxCollider>().enabled = false;
+        //templine.GetComponent<BoxCollider>().enabled = false;
 
         // set transform position
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;

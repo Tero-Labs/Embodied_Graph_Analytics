@@ -7,6 +7,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
+using Jobberwocky.GeometryAlgorithms.Source.API;
+using Jobberwocky.GeometryAlgorithms.Source.Core;
+using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 
 
 public class FunctionElementScript : MonoBehaviour
@@ -43,6 +46,7 @@ public class FunctionElementScript : MonoBehaviour
 
     // movement related variables
     public Vector3 previous_position;	// used for checking if the pen object is under a set or function
+    public Vector3 joint_centroid;
 
     // path record
     public List<Vector3> recorded_path = new List<Vector3>();
@@ -74,6 +78,7 @@ public class FunctionElementScript : MonoBehaviour
 
     // other interaction variables
     private Vector3 touchDelta = new Vector3();
+    private Vector3 menu_center = new Vector3();
 
     // pressure based line width
     public List<float> pressureValues = new List<float>();
@@ -199,6 +204,7 @@ public class FunctionElementScript : MonoBehaviour
             EdgeCreation("edge", nodes_of_edge, 1);
         }
 
+        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
@@ -275,6 +281,9 @@ public class FunctionElementScript : MonoBehaviour
 
     public void computeBounds()
     {
+        menu_center.x = maxx;
+        menu_center.y = maxy;
+
         maxx = -100000f; maxy = -100000f; minx = 100000f; miny = 100000f;
 
         for (int i = 0; i < points.Count; i++)
@@ -507,6 +516,87 @@ public class FunctionElementScript : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void updateLassoPoints()
+    {
+        
+        if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        {
+            List<Vector3> hull_pts = new List<Vector3>();
+            int center_count = 0;
+            joint_centroid = Vector3.zero;
+
+            foreach (GameObject function_argument in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            {
+                if (function_argument.tag == "graph")
+                {
+                    Transform[] allChildrennode = function_argument.transform.GetChild(0).GetComponentsInChildren<Transform>();
+                    foreach (Transform child in allChildrennode)
+                    {
+                        if (child.tag == "iconic")
+                        {
+                            List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
+                            hull_pts.AddRange(returned_pts);
+                            center_count++;
+                            joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
+                        }
+                    }
+                }
+                else if (function_argument.tag == "iconic")
+                {
+                    List<Vector3> returned_pts = function_argument.GetComponent<iconicElementScript>().hullPoints();
+                    hull_pts.AddRange(returned_pts);
+                    center_count++;
+                    joint_centroid += function_argument.GetComponent<iconicElementScript>().edge_position;
+                }
+            }
+
+            joint_centroid = joint_centroid / center_count;
+
+            var hullAPI = new HullAPI();
+            var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 3000 });
+
+            Vector3[] vertices = hull.vertices;
+            //Array.Sort(vertices);
+            Debug.Log("hulled: ");
+
+            // sort vertices according to angle
+            // Store angles between texture's center and vertex position vector
+            /*float[] angles = new float[vertices.Length];
+
+            // Calculate the angle between each vertex and the texture's /center
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                angles[i] = AngleBetweenVectors(vertices[i], joint_centroid);
+                //vertexArray[i] -= texCenter;   // Offset vertex about texture center
+            }
+
+            // Sort angles into ascending order, use to put vertices in clockwise order
+            Array.Sort(angles, vertices);*/
+
+            transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+            transform.GetComponent<LineRenderer>().enabled = true;
+
+            points = vertices.ToList();
+            /*transform.GetComponent<LineRenderer>().positionCount = points.Count;
+            transform.GetComponent<LineRenderer>().SetPositions(points.ToArray());
+
+            computeCentroid();
+            computeBounds();*/
+
+            paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
+            transform.GetChild(0).position = new Vector3(maxx+15, maxy+15, -5);
+        }
+
+
+    }
+
+    public static float AngleBetweenVectors(Vector2 a, Vector2 b)
+    {
+        float angle = (float)Mathf.Atan2(a.y - b.y,
+                                         a.x - b.x);
+        return angle;
     }
 
     /*public void checkContinuousPathDefinitionInteraction()
@@ -1456,7 +1546,7 @@ public class FunctionElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        transform.gameObject.tag = "function";
     }
 
     // Update is called once per frame

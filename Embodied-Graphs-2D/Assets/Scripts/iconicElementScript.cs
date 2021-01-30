@@ -20,6 +20,9 @@ public class iconicElementScript : MonoBehaviour
     // object drawing properties
     public List<Vector3> points = new List<Vector3>();
     public Vector3 centroid;
+    public float radius;
+    public float radius_margin;
+
     public float maxx = -100000f, maxy = -100000f, minx = 100000f, miny = 100000f;
     public bool draggable_now = false;
 
@@ -44,6 +47,7 @@ public class iconicElementScript : MonoBehaviour
 
     // path record
     public List<Vector3> recorded_path = new List<Vector3>();
+    public List<Vector3> hull_pts = new List<Vector3>();
     public bool record_path_enable = false;
     public Vector3 position_before_record;
     public Vector3 edge_position;
@@ -102,6 +106,39 @@ public class iconicElementScript : MonoBehaviour
         }
         centroid = new Vector3(totalx / points.Count, totaly / points.Count, points[0].z); // including z in the average calc. created problem
                                                                                            // so just used a constant value from the points list.
+
+        computeRadius();
+    }
+
+    public void computeRadius()
+    {
+        int Count = 0;
+        int interval = (int) Math.Floor((float)(points.Count / 10));
+        float totalx = 0, totaly = 0, totalz = 0;
+        float distance = 0;
+        for (int i = 0; i < points.Count; i=i + interval)
+        {
+            totalx = points[i].x - centroid.x;
+            totaly = points[i].y - centroid.y;
+            totalz = points[i].z - centroid.z;
+            distance += (float) Math.Sqrt( (totalx * totalx) + (totaly * totaly) + (totalz * totalz));
+            Count++;
+        }
+        radius = distance / Count;
+    }
+
+    public List<Vector3> hullPoints()
+    {
+        hull_pts = new List<Vector3>();
+
+        for (int i= 0; i < 361; i = i+36)
+        {
+            hull_pts.Add(new Vector3(edge_position.x + ((radius + radius_margin) * (float)Math.Cos(i)),
+                edge_position.y + ((radius + radius_margin) * (float)Math.Sin(i)),
+                -5f));
+        }
+
+        return hull_pts;
     }
 
     public void computeBounds()
@@ -1287,7 +1324,7 @@ public class iconicElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        radius_margin = 20;
     }
 
     // Update is called once per frame
@@ -1330,4 +1367,49 @@ public class iconicElementScript : MonoBehaviour
             node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
         } 
     }
+
+    void searchNodeAndUpdateEdge(Vector3 panDirection)
+    {
+        GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
+        List<GameObject> edgeList = new List<GameObject>(edges);
+        for (int i = 0; i < edgeList.Count; i++)
+        {
+            edgeList[i].GetComponent<EdgeElementScript>().updateEndPoint(transform.gameObject);
+        }
+
+        GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
+        foreach (GameObject each_simplicial in simplicials)
+        {
+            if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
+            {
+                List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
+                int x = 0;
+                foreach (GameObject each_node in thenodes)
+                {
+                    if (each_node == transform.gameObject)
+                    {
+                        each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
+                        each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
+                        break;
+                    }
+                    x++;
+                }
+            }
+            else
+            {
+                each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint(transform.gameObject);
+            }
+        }
+
+
+        GameObject[] hyper_edges = GameObject.FindGameObjectsWithTag("hyper_child_edge");
+        foreach (GameObject each_child_edge in hyper_edges)
+        {
+            if (each_child_edge.GetComponent<HyperEdgeElement>().parent_node == transform.gameObject)
+            {
+                each_child_edge.GetComponent<HyperEdgeElement>().UpdateSingleEndpoint(edge_position);
+            }
+        }
+    }
+
 }

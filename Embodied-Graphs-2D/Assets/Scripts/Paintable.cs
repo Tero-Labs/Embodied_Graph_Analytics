@@ -46,10 +46,10 @@ public class Paintable : MonoBehaviour
     public static GameObject graph_pen_button;
     public static GameObject simplicial_pen_button;
     public static GameObject hyper_pen_button;
-    public static GameObject eraser_button;
+    public GameObject eraser_button;
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
-    public static GameObject function_brush_button;
+    public GameObject function_brush_button;
     public GameObject canvas_radial;
 
     public GameObject text_message_worldspace;
@@ -104,6 +104,7 @@ public class Paintable : MonoBehaviour
     public GameObject functionline;
     public static int function_count = 0;
     public GameObject dragged_arg_textbox;
+    public GameObject current_dragged_function;
     public GameObject potential_tapped_graph;
 
 
@@ -873,7 +874,7 @@ public class Paintable : MonoBehaviour
                         // start drawing a new line
                         var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                         RaycastHit Hit;
-                        Debug.Log("here");
+                        //Debug.Log("here");
                         if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
                         {
                             Debug.Log("instantiated_templine");
@@ -928,20 +929,23 @@ public class Paintable : MonoBehaviour
                                 {
 
                                     List<GameObject> selected_graphs = new List<GameObject>();
-                                    GameObject[] grapharray = GameObject.FindGameObjectsWithTag("graph");
+                                    GameObject[] grapharray = GameObject.FindGameObjectsWithTag("iconic");
 
                                     for (int i = 0; i < grapharray.Length; i++)
                                     {
 
-                                        // check if the lines are inside the drawn set polygon -- in respective local coordinates
-                                        // we checked if the first node is inside the drawn lasso
-                                        if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
-                                            functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
-                                            grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
+                                    // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                                    // we checked if the first node is inside the drawn lasso
+                                    /*if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
+                                        functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                        grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)*/
+
+                                        if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                                grapharray[i].GetComponent<iconicElementScript>().edge_position))//)
                                         {
                                             selected_graphs.Add(grapharray[i]);
-                                            // MARKER: as everything is recalculated in functionmenuscript, we added break for fast op.
-                                            break;
+                                                // MARKER: as everything is recalculated in functionmenuscript, we added break for fast op.
+                                                break;
                                         }
                                     }
 

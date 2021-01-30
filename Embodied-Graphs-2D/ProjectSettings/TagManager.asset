@@ -18,6 +18,7 @@ TagManager:
   - hyper
   - hyper_parent
   - hyper_child_edge
+  - function
   layers:
   - Default
   - TransparentFX

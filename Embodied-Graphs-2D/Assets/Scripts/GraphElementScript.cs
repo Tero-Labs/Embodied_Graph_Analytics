@@ -470,5 +470,26 @@ public class GraphElementScript : MonoBehaviour
         hyperline.GetComponent<HyperElementScript>().addChildren();
     }
 
+    public void checkHitAndMove(Vector3 diff)
+    {
+        Transform[] allChildrennode = transform.GetChild(0).GetComponentsInChildren<Transform>();
+        
+        foreach (Transform child in allChildrennode)
+        {
+            if (child.tag == "iconic")
+                child.GetComponent<iconicElementScript>().edge_position += diff;
+        }
+
+        Transform[] allChildrenedge = transform.GetChild(1).GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildrenedge)
+        {
+            if (child.tag == "edge")
+                child.GetComponent<EdgeElementScript>().updateEndPoint();
+        }
+
+        /*transform.GetChild(2);
+        transform.GetChild(3);*/
+
+    }
 
 }

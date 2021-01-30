@@ -286,6 +286,8 @@ MonoBehaviour:
   no_func_menu_open: 0
   function_name_performed: 1
   functionline: {fileID: 0}
+  dragged_arg_textbox: {fileID: 0}
+  potential_tapped_graph: {fileID: 0}
   history: []
 --- !u!114 &86345611
 MonoBehaviour:
