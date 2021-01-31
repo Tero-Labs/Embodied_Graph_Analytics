@@ -241,6 +241,7 @@ MonoBehaviour:
   okayToPan: 0
   panZoomLocked: 0
   graphlocked: 0
+  touchDelta: {x: 0, y: 0, z: 0}
   IconicElement: {fileID: 6047713414169321321, guid: 75286930b4830af4f8d0baa900a8fd61,
     type: 3}
   EdgeElement: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
@@ -255,6 +256,8 @@ MonoBehaviour:
     type: 3}
   GraphElement: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
     type: 3}
+  eraser_button: {fileID: 0}
+  function_brush_button: {fileID: 0}
   canvas_radial: {fileID: 0}
   text_message_worldspace: {fileID: 0}
   edgeline: {fileID: 0}
@@ -287,6 +290,7 @@ MonoBehaviour:
   function_name_performed: 1
   functionline: {fileID: 0}
   dragged_arg_textbox: {fileID: 0}
+  current_dragged_function: {fileID: 0}
   potential_tapped_graph: {fileID: 0}
   history: []
 --- !u!114 &86345611

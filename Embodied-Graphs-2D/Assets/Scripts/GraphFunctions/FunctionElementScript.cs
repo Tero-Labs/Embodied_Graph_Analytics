@@ -100,13 +100,14 @@ public class FunctionElementScript : MonoBehaviour
     //public GameObject details_dropdown;
     public bool global_details_on_path = true;
 
-    public GameObject name_label;
     public GameObject function_menu;
 
     public InputField mainInputField;
     public GameObject[] grapharray;
 
+    // prefabs
     public GameObject graph_prefab;
+    public GameObject topo_label;
 
     public void InstantiateNameBox()
     {
@@ -205,6 +206,90 @@ public class FunctionElementScript : MonoBehaviour
         }
 
         tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+    }
+
+    public void InstantiateTopoGraph()
+    {
+        GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
+
+        GameObject temp_graph = Instantiate(graph);
+        temp_graph.transform.parent = transform;
+        temp_graph.transform.SetSiblingIndex(1);
+
+        if (transform.GetChild(0).GetComponent<FunctionMenuScript>().cur_arg_Str[1] == "in-place")
+        {
+            GameObject extra_objects = new GameObject("labels_overlay");
+            extra_objects.transform.parent = temp_graph.transform;
+            extra_objects.transform.SetSiblingIndex(4);
+
+            Transform node_parent = temp_graph.transform.GetChild(0);
+            Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
+
+            int index = 0; 
+            foreach (Transform child in allChildrennode)
+            {
+                if (child.tag == "iconic")
+                {
+                    GameObject temp_label = Instantiate(topo_label);
+                    temp_label.transform.SetParent(extra_objects.transform);
+
+                    temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position + 
+                        new Vector3( child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius+5, 0);
+
+                    index++;
+                    temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
+                }                    
+            }
+        }
+        else
+        {
+            Transform node_parent = temp_graph.transform.GetChild(0);
+            Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
+
+            int iter = 0;
+            Vector3 position = Vector3.zero;
+
+            foreach (Transform child in allChildrennode)
+            {
+                if (child.tag == "iconic")
+                {
+                    iter++;
+                    
+                    if (iter == 1)
+                    {
+                        position = /*child.position - */child.GetComponent<iconicElementScript>().edge_position +
+                            new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+                    }
+                    else
+                    {
+                        position +=  new Vector3(child.GetComponent<iconicElementScript>().radius*2, 0, 0);
+                        child.position = child.InverseTransformDirection(position) -
+                            child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position);
+                        child.GetComponent<iconicElementScript>().edge_position = position;
+                        Debug.Log(child.name);
+                        /*Debug.Log("InverseTransformDirection edge:" + child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position).ToString());
+                        Debug.Log("InverseTransformDirection calc pos:" + child.InverseTransformDirection(position).ToString());*/
+                        Debug.Log("InverseTransformDirection diff:" + (child.InverseTransformDirection(position)- 
+                            child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position)).ToString());
+
+                        position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+                        /*position = child.GetComponent<iconicElementScript>().edge_position +
+                            new Vector3(0, child.GetComponent<iconicElementScript>().radius, 0);*/
+                    }
+                    
+                }
+            }
+
+
+            Transform[] allChildrenedge = temp_graph.transform.GetChild(1).GetComponentsInChildren<Transform>();
+            foreach (Transform child in allChildrenedge)
+            {
+                if (child.tag == "edge")
+                    child.GetComponent<EdgeElementScript>().updateEndPoint();
+            }
+
+            updateLassoPoints(temp_graph);
+        }
     }
 
     void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
@@ -587,6 +672,64 @@ public class FunctionElementScript : MonoBehaviour
 
             paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
             transform.GetChild(0).position = new Vector3(maxx+15, maxy+15, -5);
+        }
+
+
+    }
+
+    public void updateLassoPoints(GameObject graph)
+    {
+
+        if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        {
+            List<Vector3> hull_pts = new List<Vector3>();
+            int center_count = 0;
+            joint_centroid = Vector3.zero;
+           
+            if (graph.tag == "graph")
+            {
+                Transform[] allChildrennode = graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
+                foreach (Transform child in allChildrennode)
+                {
+                    if (child.tag == "iconic")
+                    {
+                        List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
+                        hull_pts.AddRange(returned_pts);
+                        center_count++;
+                        joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
+                    }
+                }
+            }  
+
+            joint_centroid = joint_centroid / center_count;
+
+            var hullAPI = new HullAPI();
+            var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 3000 });
+
+            Vector3[] vertices = hull.vertices;
+            //Array.Sort(vertices);
+            Debug.Log("hulled: ");
+
+            // sort vertices according to angle
+            // Store angles between texture's center and vertex position vector
+            /*float[] angles = new float[vertices.Length];
+
+            // Calculate the angle between each vertex and the texture's /center
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                angles[i] = AngleBetweenVectors(vertices[i], joint_centroid);
+                //vertexArray[i] -= texCenter;   // Offset vertex about texture center
+            }
+
+            // Sort angles into ascending order, use to put vertices in clockwise order
+            Array.Sort(angles, vertices);*/
+
+            transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+            transform.GetComponent<LineRenderer>().enabled = true;
+
+            points = vertices.ToList();
+            paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
+            transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
         }
 
 

@@ -36,6 +36,9 @@ public class FunctionMenuScript : MonoBehaviour
     // functions_list
     private Dictionary<int,string> addition_dict;
     //private Dictionary<int, int> addition_order_dict;
+
+    private Dictionary<int, string> topologicalsort_dict;
+
     private Dictionary<int, string> dummy_dict;
     //private Dictionary<int, int> dummy_order_dict;
 
@@ -88,6 +91,12 @@ public class FunctionMenuScript : MonoBehaviour
             {1, 1},
         };*/
 
+        topologicalsort_dict = new Dictionary<int, string>()
+        {
+            {0, "graph"},
+            {1, "string"},
+        };
+
 
         dummy_dict = new Dictionary<int, string>()
         {
@@ -95,11 +104,6 @@ public class FunctionMenuScript : MonoBehaviour
             {1, "iconic"},
         };
 
-        /*dummy_order_dict = new Dictionary<int, int>()
-        {
-            {0, 0},
-            {1, 1},
-        };*/
 
         # endregion
     }
@@ -498,26 +502,17 @@ public class FunctionMenuScript : MonoBehaviour
                 match_found = true;
                 cur_dict = addition_dict;
                 //cur_order_dict = addition_order_dict;
-                cur_arg_Str = new Dictionary<int, string>();
-                argument_objects = new GameObject[cur_dict.Count];
+                
+                output_type = "graph";
+            }
+
+            else if (input.text.ToLower().Equals("topological"))
+            {
+                match_found = true;
+                cur_dict = topologicalsort_dict;
+                //cur_order_dict = dummy_order_dict;
 
                 output_type = "graph";
-                cur_iter = 0;
-
-                foreach (int key in cur_dict.Keys)
-                {
-                    if (cur_dict[key] == "graph")
-                        cur_arg_Str.Add(key, "<sprite name=\"graph_box\">");
-                    else if (cur_dict[key] == "iconic")
-                        cur_arg_Str.Add(key, "<sprite name=\"node_box\">");
-                    else
-                        cur_arg_Str.Add(key, "<sprite name=\"text_box\">");
-                }
-
-                string argument_str = get_arguments_string();
-
-                text_label.GetComponent<TextMeshProUGUI>().text = input.text.ToUpper() + argument_str;
-                paintable.GetComponent<Paintable>().no_func_menu_open = false;
             }
 
             else if (input.text.ToLower().Equals("dummy"))
@@ -525,11 +520,15 @@ public class FunctionMenuScript : MonoBehaviour
                 match_found = true;
                 cur_dict = dummy_dict;
                 //cur_order_dict = dummy_order_dict;
-                cur_arg_Str = new Dictionary<int, string>();
-                argument_objects = new GameObject[cur_dict.Count];
 
                 output_type = "scalar";
+            }
+
+            if (match_found)
+            {
                 cur_iter = 0;
+                cur_arg_Str = new Dictionary<int, string>();
+                argument_objects = new GameObject[cur_dict.Count];
 
                 foreach (int key in cur_dict.Keys)
                 {
@@ -559,8 +558,16 @@ public class FunctionMenuScript : MonoBehaviour
             // ToDo: update string parsing, pass current func name too
             if (output_type != "scalar")
             {
-                transform.parent.GetComponent<FunctionCaller>().GetGraphStrings(argument_objects);
-                transform.parent.GetComponent<FunctionCaller>().Function_Caller(mainInputField.text.ToLower());
+                if (mainInputField.text.ToLower().Equals("topological"))
+                {
+                    transform.parent.GetComponent<FunctionElementScript>().InstantiateTopoGraph();
+                }
+                else
+                {
+                    transform.parent.GetComponent<FunctionCaller>().GetGraphStrings(argument_objects);
+                    transform.parent.GetComponent<FunctionCaller>().Function_Caller(mainInputField.text.ToLower());
+                }
+                
             }
             else
             {

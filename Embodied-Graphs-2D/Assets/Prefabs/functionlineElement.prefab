@@ -322,6 +322,7 @@ MonoBehaviour:
   icon_number: 0
   current_attribute: 0
   previous_position: {x: 0, y: 0, z: 0}
+  joint_centroid: {x: 0, y: 0, z: 0}
   recorded_path: []
   record_path_enable: 0
   position_before_record: {x: 0, y: 0, z: 0}
@@ -359,6 +360,8 @@ MonoBehaviour:
   mainInputField: {fileID: 0}
   grapharray: []
   graph_prefab: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
+    type: 3}
+  topo_label: {fileID: 8829594746175238268, guid: 90daaffd0430cf343975d4c68cff4c1d,
     type: 3}
 --- !u!114 &1267191338032718980
 MonoBehaviour:

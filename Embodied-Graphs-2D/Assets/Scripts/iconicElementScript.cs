@@ -1324,7 +1324,7 @@ public class iconicElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        radius_margin = 20;
+        radius_margin = 40;
     }
 
     // Update is called once per frame
