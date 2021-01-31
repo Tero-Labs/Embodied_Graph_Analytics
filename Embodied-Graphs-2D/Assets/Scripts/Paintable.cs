@@ -30,9 +30,10 @@ public class Paintable : MonoBehaviour
     public bool graphlocked;
 
     private Vector2 prev_move_pos;
+    public Vector3 touchDelta;
 
-	// Prefabs
-	public GameObject IconicElement;
+    // Prefabs
+    public GameObject IconicElement;
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
@@ -333,7 +334,11 @@ public class Paintable : MonoBehaviour
                 {
                     previousTouchEnded = true;
                     if (curtouched_obj.tag == "iconic")
+                    {
                         curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
+                        curtouched_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
+                    }
+                        
                 }
 
                 else if (activeTouches.phase == UnityEngine.TouchPhase.Began && okayToPan)
@@ -345,7 +350,12 @@ public class Paintable : MonoBehaviour
                         //does_not_work
                         //curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
                         curtouched_obj.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
-                    }                        
+                    }
+
+                    Vector3 vec = Hit.point; 
+                    // enforce the same z coordinate as the rest of the points in the parent set object
+                    vec.z = -5f;
+                    touchDelta = curtouched_obj.transform.position - vec;
                 }
 
                 else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan )//&& (curtouched_obj == temp))
@@ -364,19 +374,31 @@ public class Paintable : MonoBehaviour
                         Vector2 panDirection = panTouchStart - (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
                         //Debug.Log("position changed from "+ Camera.main.transform.position.ToString() + " to " + (Camera.main.transform.position + (Vector3)panDirection).ToString());
 
+                        Vector3 vec = Hit.point;
+                        // enforce the same z coordinate as the rest of the points in the parent set object
+                        vec.z = -5f;
+
+                        Vector3 diff = vec - curtouched_obj.transform.position + touchDelta;
+                        diff.z = 0;
+
+                        //transform.position += diff;
+
                         if (curtouched_obj.tag == "paintable_canvas_object")
                         {
                             Camera.main.transform.position += (Vector3)panDirection;
                         }
                         else if (curtouched_obj.tag == "iconic")
                         {
-                            curtouched_obj.transform.position -= (Vector3)panDirection;
-                            curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
-                            searchNodeAndUpdateEdge(curtouched_obj, panDirection);
+                            //curtouched_obj.transform.position -= (Vector3)panDirection;
+                            curtouched_obj.transform.position += diff;
+                            curtouched_obj.GetComponent<iconicElementScript>().edge_position += diff;
+                            //curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
+                            curtouched_obj.GetComponent<iconicElementScript>().searchNodeAndUpdateEdge();
                         }
                         else if (curtouched_obj.tag == "hyper")
                         {
-                            curtouched_obj.transform.position -= (Vector3)panDirection;
+                            //curtouched_obj.transform.position -= (Vector3)panDirection;
+                            curtouched_obj.transform.position += diff;
                             curtouched_obj.GetComponent<HyperElementScript>().UpdateChildren();
                         }
 
@@ -1732,7 +1754,7 @@ public class Paintable : MonoBehaviour
         }
     }
 
-    void searchNodeAndUpdateEdge(GameObject node_name, Vector3 panDirection)
+    /*void searchNodeAndUpdateEdge(GameObject node_name, Vector3 panDirection)
     {
         GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
         List<GameObject> edgeList = new List<GameObject>(edges);
@@ -1774,7 +1796,7 @@ public class Paintable : MonoBehaviour
                 each_child_edge.GetComponent<HyperEdgeElement>().UpdateSingleEndpoint(node_name.GetComponent<iconicElementScript>().edge_position);
             }
         }
-    }
+    }*/
 
     void handleKeyInteractions()
     {

@@ -155,6 +155,8 @@ public class FunctionMenuScript : MonoBehaviour
                                     paintable.GetComponent<Paintable>().main_camera, out TouchStart);
 
                                 //Vector3 TouchStart = Camera.main.ScreenToWorldPoint(PenTouchInfo.penPosition);
+                                TouchStart = paintable.GetComponent<Paintable>().main_camera.transform.InverseTransformPoint(TouchStart);
+
                                 //Debug.Log(TouchStart.ToString());
                                 //todo:not_being__correctly_mapped
                                 argument_text = Instantiate(argument_text_box,
