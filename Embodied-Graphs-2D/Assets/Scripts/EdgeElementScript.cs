@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using BezierSolution;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
-using UnityEngine.UI;
 using UnityEngine.InputSystem;
 
 public class EdgeElementScript : MonoBehaviour
@@ -1365,8 +1363,8 @@ public class EdgeElementScript : MonoBehaviour
 
     public void updateEndPoint()
     {
-        GameObject source = transform.GetComponent<EdgeElementScript>().edge_start;
-        GameObject target = transform.GetComponent<EdgeElementScript>().edge_end;        
+        GameObject source = edge_start;
+        GameObject target = edge_end;        
             
         // set line renderer end point
         transform.GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
@@ -1393,7 +1391,80 @@ public class EdgeElementScript : MonoBehaviour
         updateDot();        
     }
 
+    public List<Vector3> myEllipseSpline()
+    {
+        List<Vector3> spline_pts = new List<Vector3>();
+        Vector3 center = (edge_start.GetComponent<iconicElementScript>().edge_position + edge_end.GetComponent<iconicElementScript>().edge_position) / 2;
+        float a = edge_end.GetComponent<iconicElementScript>().edge_position.x - center.x;
+        float b = edge_start.GetComponent<iconicElementScript>().radius + edge_end.GetComponent<iconicElementScript>().radius;
 
+        //spline_pts.Add(edge_start.GetComponent<iconicElementScript>().edge_position);
+        for (int i = 0; i < 90; i = i + 6)
+        {
+            Vector3 temp = new Vector3(center.x + (a * (float)Math.Cos(i)),
+                center.y + (b * (float)Math.Sin(i)),
+                -5f);
+
+            // as we are approximating the center, some float fluctuation can hamper the result
+            // and cause the generated pont cross edge_start. To prevent this, we use this extra check.
+            if (temp.y > edge_start.GetComponent<iconicElementScript>().edge_position.y)
+                continue;
+            spline_pts.Add(temp);
+        }
+
+        //spline_pts.RemoveAt(spline_pts.Count - 1);
+        spline_pts.Add(edge_start.GetComponent<iconicElementScript>().edge_position);
+
+        return spline_pts;
+    }
+
+    public void updateSplineEndPoint()
+    {
+        recorded_path = myEllipseSpline();
+        Debug.Log("my_spline:" + recorded_path.Count.ToString());
+
+        
+        /*GameObject spline = new GameObject("spline");
+        spline.AddComponent<BezierSpline>();
+        BezierSpline bs = spline.transform.GetComponent<BezierSpline>();
+        bs.Initialize(recorded_path.Count);
+
+        for (int ss = 0; ss < recorded_path.Count; ss++)
+        {
+            bs[ss].position = recorded_path[ss];
+        }
+
+        // Now sample 50 points, but decide how many to sample in each section
+        // ...
+
+        // Now sample 50 points across the spline with a [0, 1] parameter sweep
+        recorded_path = new List<Vector3>(10);
+        for (int i = 0; i < 10; i++)
+        {
+            recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, 9, i)));
+        }
+
+        Destroy(spline);*/
+
+        transform.GetComponent<LineRenderer>().positionCount = recorded_path.Count;
+        transform.GetComponent<LineRenderer>().SetPositions(recorded_path.ToArray());
+        
+        transform.GetComponent<EdgeCollider2D>().points = recorded_path.Select(x =>
+        {
+            var pos = transform.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+            return new Vector2(pos.x, pos.y);
+        }).ToArray();
+
+        transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+        // set line renderer texture scale
+        /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
+            transform.GetComponent<LineRenderer>().GetPosition(1));
+        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);*/
+
+        transform.GetChild(0).position = edge_start.GetComponent<iconicElementScript>().edge_position;
+        transform.GetChild(1).position = edge_end.GetComponent<iconicElementScript>().edge_position;
+    }
 
     void OnDestroy()
     {

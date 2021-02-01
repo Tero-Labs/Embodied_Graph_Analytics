@@ -243,6 +243,7 @@ public class FunctionElementScript : MonoBehaviour
         }
         else
         {
+            temp_graph.GetComponent<GraphElementScript>().splined_edge_flag = true;
             Transform node_parent = temp_graph.transform.GetChild(0);
             Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
 
@@ -285,7 +286,10 @@ public class FunctionElementScript : MonoBehaviour
             foreach (Transform child in allChildrenedge)
             {
                 if (child.tag == "edge")
-                    child.GetComponent<EdgeElementScript>().updateEndPoint();
+                {
+                    child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
+                }                   
+                
             }
 
             updateLassoPoints(temp_graph);

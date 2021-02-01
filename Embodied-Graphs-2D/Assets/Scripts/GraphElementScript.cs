@@ -15,6 +15,8 @@ public class GraphElementScript : MonoBehaviour
     public string abstraction_layer;
     public GameObject Objects_parent;
 
+    public bool splined_edge_flag;
+
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
@@ -47,6 +49,7 @@ public class GraphElementScript : MonoBehaviour
         graph_drawn = false;
         simplicial_drawn = false;
         hyper_edges_drawn = false;
+        //splined_edge_flag = false;
     }
 
     // Update is called once per frame
@@ -484,7 +487,13 @@ public class GraphElementScript : MonoBehaviour
         foreach (Transform child in allChildrenedge)
         {
             if (child.tag == "edge")
-                child.GetComponent<EdgeElementScript>().updateEndPoint();
+            {
+                if (splined_edge_flag)
+                    child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
+                else
+                    child.GetComponent<EdgeElementScript>().updateEndPoint();
+            }
+                
         }
 
         /*transform.GetChild(2);
