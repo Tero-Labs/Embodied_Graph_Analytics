@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 public class FunctionCaller : MonoBehaviour
@@ -17,6 +18,8 @@ public class FunctionCaller : MonoBehaviour
         graphs_as_string = "";
         for (int i = 0; i < selected_graphs.Length; i++)
         {
+            if (selected_graphs[i].tag != "graph") continue;
+
             //selected_graphs[i].GetComponent<GraphElementScript>().Graph_as_Str();
             graphs_as_string = graphs_as_string + selected_graphs[i].GetComponent<GraphElementScript>().nodes_str + "-" + 
                 selected_graphs[i].GetComponent<GraphElementScript>().edges_str + "-" +
@@ -26,6 +29,23 @@ public class FunctionCaller : MonoBehaviour
         graphs_as_string = graphs_as_string.Remove(graphs_as_string.Length - 1);
 
         Debug.Log("combined_string: " + graphs_as_string);
+        GetGraphJson(selected_graphs);
+    }
+
+    public void GetGraphJson(GameObject[] selected_graphs)
+    {
+        Graphs graphs = new Graphs();
+        graphs.graphs = new List<Graph>();
+
+        for (int i = 0; i < selected_graphs.Length; i++)
+        {
+            if (selected_graphs[i].tag != "graph") continue;
+
+            graphs.graphs.Add(selected_graphs[i].GetComponent<GraphElementScript>().graph);
+        }
+
+        Debug.Log(JsonUtility.ToJson(graphs));
+        File.WriteAllText("Assets/Resources/" + "data.json", JsonUtility.ToJson(graphs));
     }
 
     private void OnDestroy()
@@ -46,9 +66,9 @@ public class FunctionCaller : MonoBehaviour
             //Debug.Log("checking is alive: " + _helloRequester.isalive().ToString() + " flag: " + flag.ToString());
         }
 
-        transform.GetComponent<StartServer>().ExecuteCommand(function_name);
+        //transform.GetComponent<StartServer>().ExecuteCommand(function_name);
         _helloRequester = new HelloRequester();
-        _helloRequester.graph_as_str = graphs_as_string; //"{8,9,7,10}-{8,9}{9,7}{8,7}+{8,9,7,10}-{8,9}{9,7}{8,7}";
+        _helloRequester.graph_as_str = function_name; //graphs_as_string; //"{8,9,7,10}-{8,9}{9,7}{8,7}+{8,9,7,10}-{8,9}{9,7}{8,7}";
         _helloRequester.command = function_name;
         _helloRequester.Start();
         return true;

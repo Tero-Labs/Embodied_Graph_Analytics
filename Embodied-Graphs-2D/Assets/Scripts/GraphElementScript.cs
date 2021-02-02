@@ -33,6 +33,8 @@ public class GraphElementScript : MonoBehaviour
     public bool hyper_edges_drawn;
     public bool abstract_drawn;
 
+    public Graph graph;
+
     public Dictionary<string, Transform> nodeMaps;
 
     // Start is called before the first frame update
@@ -85,6 +87,7 @@ public class GraphElementScript : MonoBehaviour
         }
 
         //Debug.Log("edges_str" + " : " + edges_str);
+        edges_init();
     }
 
     public void simplicial_as_Str()
@@ -114,6 +117,7 @@ public class GraphElementScript : MonoBehaviour
         }
 
         //Debug.Log("simplicial_str" + " : " + simplicial_str);
+        simplicial_init();
     }
 
     public void hyperedges_as_Str()
@@ -136,6 +140,7 @@ public class GraphElementScript : MonoBehaviour
         }
 
         //Debug.Log("hyper_edges_str" + " : " + hyper_edges_str);
+        hyperedges_init();
     }
 
     // express the graph as string, so that we can pass to the python server
@@ -168,11 +173,111 @@ public class GraphElementScript : MonoBehaviour
         simplicial_as_Str();
         hyperedges_as_Str();
 
-        //Debug.Log("nodes_Str: "+ nodes_str + ", edges_Str: " + edges_str + ", simp_str: " + simplicial_str + ", hyper_Str: " + hyper_edges_str);
+        Graph_init();
+    }
 
-        //transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str+"-"+edges_str, "graph_to_hypergraph");
-        //transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + simplicial_str, "simplicial_to_graph");
-        //transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + hyper_edges_str, "hypergraph_to_graph");
+
+    public void edges_init()
+    {
+        graph.edges = new List<Edge>();
+
+        Transform Prev_edge_parent = transform.GetChild(1);
+        Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+
+        foreach (Transform child in allChildrenedge)
+        {
+            if (child.tag == "edge")
+            {
+                Edge edge = new Edge();
+                edge.edge_start = child.GetComponent<EdgeElementScript>().edge_start.GetComponent<iconicElementScript>().icon_number;
+                edge.edge_end = child.GetComponent<EdgeElementScript>().edge_end.GetComponent<iconicElementScript>().icon_number;
+                edge.weight = child.GetComponent<EdgeElementScript>().edge_weight;
+
+                graph.edges.Add(edge);
+            }
+        }
+
+    }
+
+    public void simplicial_init()
+    {
+        graph.simplicials = new List<HyperOrSimplicialEdge>();
+
+        Transform Prev_simp_parent = transform.GetChild(2);
+        Transform[] allChildrensimpedge = Prev_simp_parent.GetComponentsInChildren<Transform>();
+
+        foreach (Transform child in allChildrensimpedge)
+        {
+            if (child.tag == "simplicial")
+            {
+                HyperOrSimplicialEdge simplicial = new HyperOrSimplicialEdge();
+                simplicial.nodes = new List<int>();
+
+                if (child.GetComponent<SimplicialElementScript>() != null)
+                {
+                    foreach (GameObject node in child.GetComponent<SimplicialElementScript>().thenodes)
+                        simplicial.nodes.Add(node.GetComponent<iconicElementScript>().icon_number);                    
+                }
+                else
+                {
+                    simplicial.nodes.Add(child.GetComponent<EdgeElementScript>().edge_start.GetComponent<iconicElementScript>().icon_number);
+                    simplicial.nodes.Add(child.GetComponent<EdgeElementScript>().edge_end.GetComponent<iconicElementScript>().icon_number);                    
+                }
+
+                graph.simplicials.Add(simplicial);
+            }
+        }
+    }
+
+    public void hyperedges_init()
+    {
+        graph.hyperedges = new List<HyperOrSimplicialEdge>();
+
+        Transform Prev_hyper_parent = transform.GetChild(3);
+        Transform[] allChildrenhyperedge = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+
+        foreach (Transform child in allChildrenhyperedge)
+        {
+            if (child.tag == "hyper")
+            {
+                HyperOrSimplicialEdge hyperedge = new HyperOrSimplicialEdge();
+                hyperedge.nodes = new List<int>();
+
+                foreach (GameObject node in child.GetComponent<HyperElementScript>().thenodes)
+                    hyperedge.nodes.Add(node.GetComponent<iconicElementScript>().icon_number);
+
+                graph.hyperedges.Add(hyperedge);
+            }
+        }        
+    }
+
+    // express the graph as string, so that we can pass to the python server
+    public void Graph_init()
+    {
+        graph = new Graph();
+        graph.nodes = new List<int>();
+
+        Transform Prev_node_parent = transform.GetChild(0);
+        Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+
+        nodeMaps = new Dictionary<string, Transform>();
+        int icon_count = 0;
+        foreach (Transform child in allChildrennode)
+        {
+            if (child.tag == "iconic")
+            {
+                icon_count++;
+                graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
+                nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
+            }
+        }
+
+        if (icon_count == 0)
+            Destroy(transform.gameObject);
+
+        edges_init();
+        simplicial_init();
+        hyperedges_init();
     }
 
     public void StartConversion(string target_layer)

@@ -218,10 +218,10 @@ public class FunctionMenuScript : MonoBehaviour
                 {
                     var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera, false);
 
-                    /*if (dragged_arg_object == null && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
+                    if (dragged_arg_object == null && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
                     {
                         dragged_arg_object = paintable.GetComponent<Paintable>().dragged_arg_textbox;
-                    }*/
+                    }
 
                     //Debug.Log("Found draaged object" + dragged_arg_object.name + " character at " + index.ToString());
 
@@ -258,7 +258,7 @@ public class FunctionMenuScript : MonoBehaviour
                                 //argument_objects[cur_order_dict[index]] = temp.gameObject;
                                 argument_objects[index] = temp.gameObject;
                             }
-                            else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
+                            else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null && paintable.GetComponent<Paintable>().dragged_arg_textbox != transform.gameObject)
                             {
                                 temp = paintable.GetComponent<Paintable>().dragged_arg_textbox.transform;
                                 cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().message_box/*text_label*/.GetComponent<TextMeshProUGUI>().text;
@@ -557,17 +557,9 @@ public class FunctionMenuScript : MonoBehaviour
             transform.parent.GetComponent<FunctionElementScript>().updateLassoPoints();
             // ToDo: update string parsing, pass current func name too
             if (output_type != "scalar")
-            {
-                if (mainInputField.text.ToLower().Equals("topological"))
-                {
-                    transform.parent.GetComponent<FunctionElementScript>().InstantiateTopoGraph();
-                }
-                else
-                {
-                    transform.parent.GetComponent<FunctionCaller>().GetGraphStrings(argument_objects);
-                    transform.parent.GetComponent<FunctionCaller>().Function_Caller(mainInputField.text.ToLower());
-                }
-                
+            {                
+                transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects);
+                transform.parent.GetComponent<FunctionCaller>().Function_Caller(mainInputField.text.ToLower());  
             }
             else
             {
@@ -592,11 +584,15 @@ public class FunctionMenuScript : MonoBehaviour
             }
         }
 
-        if (instant_eval)
+        if (mainInputField.text.ToLower().Equals("topological"))
+        {
+            transform.parent.GetComponent<FunctionElementScript>().InstantiateTopoGraph();
+        }
+        else if (instant_eval)
         {
             // show results instantly
             transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();
-            if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(output);
+            if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(); //(output);
         }
 
         message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text ;

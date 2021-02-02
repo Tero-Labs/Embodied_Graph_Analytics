@@ -10,7 +10,7 @@ using TMPro;
 using Jobberwocky.GeometryAlgorithms.Source.API;
 using Jobberwocky.GeometryAlgorithms.Source.Core;
 using Jobberwocky.GeometryAlgorithms.Source.Parameters;
-
+using System.IO;
 
 public class FunctionElementScript : MonoBehaviour
 {
@@ -130,6 +130,83 @@ public class FunctionElementScript : MonoBehaviour
         transform.GetChild(0).GetComponent<FunctionMenuScript>().PostProcess(graph_as_Str);
     }
 
+    public void InstantiateGraph()
+    {
+        GameObject tempgraph = Instantiate(graph_prefab, new Vector3(0, 0, 0), Quaternion.identity, transform);
+        tempgraph.transform.SetSiblingIndex(1);
+
+        paintable_object.GetComponent<Paintable>().graph_count++;
+
+        tempgraph.name = "graph_" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
+        tempgraph.tag = "graph";
+        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
+
+        GameObject tempnodeparent = new GameObject("node_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        tempnodeparent.tag = "node_parent";
+        tempnodeparent.transform.parent = tempgraph.transform;
+        tempnodeparent.transform.SetSiblingIndex(0);
+
+        GameObject tempedgeparent = new GameObject("edge_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        tempedgeparent.tag = "edge_parent";
+        tempedgeparent.transform.parent = tempgraph.transform;
+        tempedgeparent.transform.SetSiblingIndex(1);
+
+        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        tempsimplicialparent.tag = "simplicial_parent";
+        tempsimplicialparent.transform.parent = tempgraph.transform;
+        tempsimplicialparent.transform.SetSiblingIndex(2);
+
+        GameObject temphyperparent = new GameObject("hyper_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        temphyperparent.tag = "hyper_parent";
+        temphyperparent.transform.parent = tempgraph.transform;
+        temphyperparent.transform.SetSiblingIndex(3);
+
+        nodeMaps = new Dictionary<string, Transform>();
+
+        Graph graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+
+       
+        foreach (int current_node in graph.nodes)
+        {
+            foreach (GameObject current_graph in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            {
+                if (current_graph.tag == "graph")
+                {
+                    if (current_graph.GetComponent<GraphElementScript>().nodeMaps.ContainsKey(current_node.ToString()))
+                    {
+                        Transform prev_Trasform = current_graph.GetComponent<GraphElementScript>().nodeMaps[current_node.ToString()];
+                        GameObject tempicon = Instantiate(prev_Trasform.gameObject, new Vector3(0f, 0f, 0f), Quaternion.identity, tempnodeparent.transform);
+                        paintable_object.GetComponent<Paintable>().totalLines++;
+                        tempicon.name = "iconic_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
+                        tempicon.GetComponent<iconicElementScript>().icon_number = paintable_object.GetComponent<Paintable>().totalLines;
+
+                        nodeMaps.Add(current_node.ToString(), tempicon.transform);
+
+                        //tempicon.GetComponent<MeshFilter>().sharedMesh = tempicon.GetComponent<MeshFilter>().sharedMesh;
+                        break;
+                    }
+                }
+                // ToDo: else if iconic, direct copy if needed later
+            }
+        }
+
+        foreach (Edge edge in graph.edges)
+        {
+            string[] nodes_of_edge = new string[2];
+            nodes_of_edge[0] = edge.edge_start.ToString();
+            nodes_of_edge[1] = edge.edge_end.ToString();
+
+            // simplicial may have subsets of length 1, will skip those
+            if (nodes_of_edge.Length != 2)
+                continue;
+
+            EdgeCreation("edge", nodes_of_edge, 1);
+        }
+
+        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+    }
+
+
     public void InstantiateGraph(string graph_as_Str)
     {
         Debug.Log("graph_as_Str: " + graph_as_Str);
@@ -225,21 +302,28 @@ public class FunctionElementScript : MonoBehaviour
             Transform node_parent = temp_graph.transform.GetChild(0);
             Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
 
-            int index = 0; 
-            foreach (Transform child in allChildrennode)
+            Graph returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+
+            int index = 0;
+            foreach (int current_node in returned_graph.nodes)
             {
-                if (child.tag == "iconic")
+                foreach (Transform child in allChildrennode)
                 {
-                    GameObject temp_label = Instantiate(topo_label);
-                    temp_label.transform.SetParent(extra_objects.transform);
+                    if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == current_node)
+                    {
+                        GameObject temp_label = Instantiate(topo_label);
+                        temp_label.transform.SetParent(extra_objects.transform);
 
-                    temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position + 
-                        new Vector3( child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius+5, 0);
+                        temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
+                            new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
 
-                    index++;
-                    temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
-                }                    
-            }
+                        index++;
+                        temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
+                        break;
+                    }
+                }
+            }                                 
+            
         }
         else
         {
@@ -249,38 +333,42 @@ public class FunctionElementScript : MonoBehaviour
 
             int iter = 0;
             Vector3 position = Vector3.zero;
-
-            foreach (Transform child in allChildrennode)
+            Graph returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+            foreach (int current_node in returned_graph.nodes)
             {
-                if (child.tag == "iconic")
+                foreach (Transform child in allChildrennode)
                 {
-                    iter++;
-                    
-                    if (iter == 1)
+                    if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == current_node)
                     {
-                        position = /*child.position - */child.GetComponent<iconicElementScript>().edge_position +
-                            new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
-                    }
-                    else
-                    {
-                        position +=  new Vector3(child.GetComponent<iconicElementScript>().radius*2, 0, 0);
-                        child.position = child.InverseTransformDirection(position) -
-                            child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position);
-                        child.GetComponent<iconicElementScript>().edge_position = position;
-                        Debug.Log(child.name);
-                        /*Debug.Log("InverseTransformDirection edge:" + child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position).ToString());
-                        Debug.Log("InverseTransformDirection calc pos:" + child.InverseTransformDirection(position).ToString());*/
-                        Debug.Log("InverseTransformDirection diff:" + (child.InverseTransformDirection(position)- 
-                            child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position)).ToString());
+                        iter++;
 
-                        position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
-                        /*position = child.GetComponent<iconicElementScript>().edge_position +
-                            new Vector3(0, child.GetComponent<iconicElementScript>().radius, 0);*/
+                        if (iter == 1)
+                        {
+                            position = /*child.position - */child.GetComponent<iconicElementScript>().edge_position +
+                                new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+                        }
+                        else
+                        {
+                            position += new Vector3(child.GetComponent<iconicElementScript>().radius * 2, 0, 0);
+                            child.position = child.InverseTransformDirection(position) -
+                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position);
+                            child.GetComponent<iconicElementScript>().edge_position = position;
+                            Debug.Log(child.name);
+                            /*Debug.Log("InverseTransformDirection edge:" + child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position).ToString());
+                            Debug.Log("InverseTransformDirection calc pos:" + child.InverseTransformDirection(position).ToString());*/
+                            Debug.Log("InverseTransformDirection diff:" + (child.InverseTransformDirection(position) -
+                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position)).ToString());
+
+                            position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+                            /*position = child.GetComponent<iconicElementScript>().edge_position +
+                                new Vector3(0, child.GetComponent<iconicElementScript>().radius, 0);*/
+                        }
+
+                        break;
                     }
-                    
                 }
-            }
 
+            }
 
             Transform[] allChildrenedge = temp_graph.transform.GetChild(1).GetComponentsInChildren<Transform>();
             foreach (Transform child in allChildrenedge)
