@@ -28,7 +28,7 @@ public class FunctionMenuScript : MonoBehaviour
     public TMP_Text tmptextlabel;
     public Image img;
 
-    string sprite_arg;
+
     public GameObject message_box;
     public GameObject argument_text_box;
     public GameObject dragged_arg_object;
@@ -38,6 +38,8 @@ public class FunctionMenuScript : MonoBehaviour
     //private Dictionary<int, int> addition_order_dict;
 
     private Dictionary<int, string> topologicalsort_dict;
+    private Dictionary<int, string> shortestpath_dict;
+    private Dictionary<int, string> community_dict;
 
     private Dictionary<int, string> dummy_dict;
     //private Dictionary<int, int> dummy_order_dict;
@@ -67,7 +69,6 @@ public class FunctionMenuScript : MonoBehaviour
 
         argument_text = null;
         dragged_arg_object = null;
-        sprite_arg = "<sprite name=\"argument_box\">";
 
         keepchilden.onValueChanged.AddListener(delegate { ChildToggle(keepchilden); });
         evaluation_type.onValueChanged.AddListener(delegate { InstantEvalToggle(evaluation_type); });
@@ -97,6 +98,17 @@ public class FunctionMenuScript : MonoBehaviour
             {1, "string"},
         };
 
+        shortestpath_dict = new Dictionary<int, string>()
+        {
+            {0, "graph"},
+            {1, "iconic"},
+            {2, "iconic"},
+        };
+
+        community_dict = new Dictionary<int, string>()
+        {
+            {0, "graph"},
+        };
 
         dummy_dict = new Dictionary<int, string>()
         {
@@ -506,7 +518,7 @@ public class FunctionMenuScript : MonoBehaviour
                 output_type = "graph";
             }
 
-            else if (input.text.ToLower().Equals("topological"))
+            else if (input.text.ToLower().Equals("topological") || input.text.ToLower().Equals("degree_measure"))
             {
                 match_found = true;
                 cur_dict = topologicalsort_dict;
@@ -514,6 +526,25 @@ public class FunctionMenuScript : MonoBehaviour
 
                 output_type = "graph";
             }
+
+            else if (input.text.ToLower().Equals("shortestpath"))
+            {
+                match_found = true;
+                cur_dict = shortestpath_dict;
+                //cur_order_dict = dummy_order_dict;
+
+                output_type = "graph";
+            }
+
+            else if (input.text.ToLower().Equals("community"))
+            {
+                match_found = true;
+                cur_dict = community_dict;
+                //cur_order_dict = dummy_order_dict;
+
+                output_type = "graph";
+            }
+
 
             else if (input.text.ToLower().Equals("dummy"))
             {
@@ -584,9 +615,18 @@ public class FunctionMenuScript : MonoBehaviour
             }
         }
 
-        if (mainInputField.text.ToLower().Equals("topological"))
+        if (mainInputField.text.ToLower().Equals("topological") || mainInputField.text.ToLower().Equals("degree_measure"))
         {
             transform.parent.GetComponent<FunctionElementScript>().InstantiateTopoGraph();
+        }
+        else if (mainInputField.text.ToLower().Equals("shortestpath"))
+        {
+            transform.parent.GetComponent<FunctionElementScript>().InstantiatePathGraph();
+        }
+        else if (mainInputField.text.ToLower().Equals("community"))
+        {
+            Debug.Log("finished");
+            transform.parent.GetComponent<FunctionElementScript>().InstantiateCommunityGraph();
         }
         else if (instant_eval)
         {

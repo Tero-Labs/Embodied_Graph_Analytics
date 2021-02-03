@@ -384,7 +384,91 @@ public class FunctionElementScript : MonoBehaviour
         }
     }
 
-    void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
+    public void InstantiatePathGraph()
+    {
+        GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
+                
+        nodeMaps = new Dictionary<string, Transform>();
+        
+        GameObject temp_graph = Instantiate(graph);
+        temp_graph.transform.parent = transform;
+        temp_graph.transform.SetSiblingIndex(1);
+        
+        GameObject extra_objects = new GameObject("labels_overlay");
+        extra_objects.transform.parent = temp_graph.transform;
+        extra_objects.transform.SetSiblingIndex(4);
+        
+        // remap node dictionary
+        Transform[] allChildrennode = temp_graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
+        foreach (Transform current_node in allChildrennode)
+        {
+            if (current_node.tag == "iconic")
+            {
+                nodeMaps.Add(current_node.GetComponent<iconicElementScript>().icon_number.ToString(), current_node);
+            }
+        }
+
+        Graph returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+
+        int index = 0;
+        foreach (int current_node in returned_graph.nodes)
+        {
+            index++;
+            if (index == 1) continue;
+
+            string[] nodes_of_edge = new string[2];
+            nodes_of_edge[0] = returned_graph.nodes[index-2].ToString();
+            nodes_of_edge[1] = returned_graph.nodes[index-1].ToString();
+
+            // simplicial may have subsets of length 1, will skip those
+            if (nodes_of_edge.Length != 2)
+                continue;
+
+            GameObject edgeline = EdgeCreation("edge", nodes_of_edge, 1);
+
+            edgeline.GetComponent<LineRenderer>().startColor = Color.red;
+            edgeline.GetComponent<LineRenderer>().endColor = Color.red;
+            edgeline.GetComponent<LineRenderer>().startWidth = 10;
+            edgeline.GetComponent<LineRenderer>().endWidth = 10;
+        }              
+
+    }
+
+    public void InstantiateCommunityGraph()
+    {
+        GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
+
+        nodeMaps = new Dictionary<string, Transform>();
+
+        GameObject temp_graph = Instantiate(graph);
+        temp_graph.transform.parent = transform;
+        temp_graph.transform.SetSiblingIndex(1);
+
+        GameObject extra_objects = new GameObject("labels_overlay");
+        extra_objects.transform.parent = temp_graph.transform;
+        extra_objects.transform.SetSiblingIndex(4);
+
+        // remap node dictionary
+        Transform[] allChildrennode = temp_graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
+        foreach (Transform current_node in allChildrennode)
+        {
+            if (current_node.tag == "iconic")
+            {
+                nodeMaps.Add(current_node.GetComponent<iconicElementScript>().icon_number.ToString(), current_node);
+            }
+        }
+
+        Graphs returned_graphs = JsonUtility.FromJson<Graphs>(File.ReadAllText("Assets/Resources/" + "output.json"));
+
+        foreach (Graph returned_graph in returned_graphs.graphs)
+        {
+            GameObject functionline = Instantiate(paintable_object.GetComponent<Paintable>().FunctionLineElement, 
+                Vector3.zero, Quaternion.identity, extra_objects.transform);
+            updatechildLassoPoints(graph, returned_graph.nodes, functionline);
+        }                
+    }
+
+    GameObject EdgeCreation(string tag, string[] nodes_of_edge, int idx)
     {
         List<GameObject> temp_nodes = new List<GameObject>();
         foreach (string node in nodes_of_edge)
@@ -422,6 +506,8 @@ public class FunctionElementScript : MonoBehaviour
         var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1));
         edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
         edgeline.GetComponent<EdgeElementScript>().addDot();
+
+        return edgeline;
     }
 
 
@@ -826,6 +912,65 @@ public class FunctionElementScript : MonoBehaviour
 
 
     }
+
+    public void updatechildLassoPoints(GameObject graph, List<int> nodes, GameObject gameObject)
+    {        
+        List<Vector3> hull_pts = new List<Vector3>();
+        int center_count = 0;
+        joint_centroid = Vector3.zero;
+
+        if (graph.tag == "graph")
+        {
+            Transform[] allChildrennode = graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
+
+            // we need only certain nodes inside the hull, hence tracking it down   
+            foreach (int node in nodes)
+            {
+                foreach (Transform child in allChildrennode)
+                {
+                    if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == node)
+                    {
+                        List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
+                        hull_pts.AddRange(returned_pts);
+                        center_count++;
+                        joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
+                        break;
+                    }
+                }
+            }            
+        }
+
+        joint_centroid = joint_centroid / center_count;
+
+        var hullAPI = new HullAPI();
+        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 250 });
+
+        Vector3[] vertices = hull.vertices;
+        //Array.Sort(vertices);
+        Debug.Log("hulled: ");
+
+        // sort vertices according to angle
+        // Store angles between texture's center and vertex position vector
+        /*float[] angles = new float[vertices.Length];
+
+        // Calculate the angle between each vertex and the texture's /center
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            angles[i] = AngleBetweenVectors(vertices[i], joint_centroid);
+            //vertexArray[i] -= texCenter;   // Offset vertex about texture center
+        }
+
+        // Sort angles into ascending order, use to put vertices in clockwise order
+        Array.Sort(angles, vertices);*/
+
+        if (gameObject.transform.GetComponent<MeshFilter>().sharedMesh != null)
+            gameObject.transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+        gameObject.transform.GetComponent<LineRenderer>().enabled = true;
+
+        gameObject.GetComponent<FunctionElementScript>().points = vertices.ToList();
+        paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject);        
+    }
+
 
     public static float AngleBetweenVectors(Vector2 a, Vector2 b)
     {

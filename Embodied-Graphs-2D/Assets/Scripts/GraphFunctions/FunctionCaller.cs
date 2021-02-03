@@ -8,6 +8,8 @@ public class FunctionCaller : MonoBehaviour
     private HelloRequester _helloRequester;
     private string graphs_as_string;
 
+    GameObject[] selected_graphs;
+
     private void Start()
     {
 
@@ -34,6 +36,7 @@ public class FunctionCaller : MonoBehaviour
 
     public void GetGraphJson(GameObject[] selected_graphs)
     {
+        this.selected_graphs = selected_graphs;
         Graphs graphs = new Graphs();
         graphs.graphs = new List<Graph>();
 
@@ -55,6 +58,12 @@ public class FunctionCaller : MonoBehaviour
 
     public bool Function_Caller(string function_name)
     {
+        if (function_name == "shortestpath")
+        {
+            function_name += "_" + selected_graphs[1].GetComponent<iconicElementScript>().icon_number.ToString();
+            function_name += "_" + selected_graphs[2].GetComponent<iconicElementScript>().icon_number.ToString();
+        }
+
         if (_helloRequester != null)
         {
             //bool flag = true;
