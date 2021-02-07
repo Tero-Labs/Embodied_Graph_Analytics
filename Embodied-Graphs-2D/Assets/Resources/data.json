@@ -1,1 +1,1 @@
-{"graphs":[{"edges":[{"edge_start":2,"edge_end":3,"weight":1},{"edge_start":1,"edge_end":2,"weight":1},{"edge_start":3,"edge_end":1,"weight":1}],"simplicials":[],"hyperedges":[],"nodes":[1,2,3]}]}
+{"graphs":[{"edges":[{"edge_start":1,"edge_end":6,"weight":1},{"edge_start":1,"edge_end":5,"weight":1},{"edge_start":1,"edge_end":4,"weight":1},{"edge_start":1,"edge_end":3,"weight":1},{"edge_start":1,"edge_end":2,"weight":1}],"simplicials":[],"hyperedges":[],"nodes":[1,2,3,4,5,6]}]}

@@ -127,14 +127,17 @@ public class iconicElementScript : MonoBehaviour
         radius = distance / Count;
     }
 
-    public List<Vector3> hullPoints()
+    public List<Vector3> hullPoints(float margin = 0f)
     {
+        if (margin == 0f)
+            margin = radius_margin;
+
         hull_pts = new List<Vector3>();
 
         for (int i = 0; i < 361; i = i + 36)
         {
-            hull_pts.Add(new Vector3(edge_position.x + ((radius + radius_margin) * (float)Math.Cos(i)),
-                edge_position.y + ((radius + radius_margin) * (float)Math.Sin(i)),
+            hull_pts.Add(new Vector3(edge_position.x + ((radius + margin) * (float)Math.Cos(i)),
+                edge_position.y + ((radius + margin) * (float)Math.Sin(i)),
                 -5f));
         }
 

@@ -462,9 +462,15 @@ public class FunctionElementScript : MonoBehaviour
 
         foreach (Graph returned_graph in returned_graphs.graphs)
         {
-            GameObject functionline = Instantiate(paintable_object.GetComponent<Paintable>().FunctionLineElement, 
-                Vector3.zero, Quaternion.identity, extra_objects.transform);
+            // direct functionline prefab instantiation was not working for some reason, hence we copy
+            // the currect object and update its' lasso
+            // ToDo: assign different colors to different lasso
+            GameObject functionline = Instantiate(transform.gameObject, 
+                transform.position, Quaternion.identity, extra_objects.transform);
             updatechildLassoPoints(graph, returned_graph.nodes, functionline);
+
+            Destroy(functionline.transform.GetChild(0).gameObject);
+            Destroy(functionline.transform.GetChild(1).gameObject);
         }                
     }
 
@@ -930,7 +936,7 @@ public class FunctionElementScript : MonoBehaviour
                 {
                     if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == node)
                     {
-                        List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
+                        List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints(20f);
                         hull_pts.AddRange(returned_pts);
                         center_count++;
                         joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
@@ -943,7 +949,7 @@ public class FunctionElementScript : MonoBehaviour
         joint_centroid = joint_centroid / center_count;
 
         var hullAPI = new HullAPI();
-        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 250 });
+        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 2500 });
 
         Vector3[] vertices = hull.vertices;
         //Array.Sort(vertices);
@@ -963,11 +969,22 @@ public class FunctionElementScript : MonoBehaviour
         // Sort angles into ascending order, use to put vertices in clockwise order
         Array.Sort(angles, vertices);*/
 
-        if (gameObject.transform.GetComponent<MeshFilter>().sharedMesh != null)
-            gameObject.transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+        /*if (gameObject.transform.GetComponent<MeshFilter>().sharedMesh != null)
+            gameObject.transform.GetComponent<MeshFilter>().sharedMesh.Clear();*/
+
+        //gameObject.transform.position = vertices[0];
         gameObject.transform.GetComponent<LineRenderer>().enabled = true;
 
         gameObject.GetComponent<FunctionElementScript>().points = vertices.ToList();
+
+        /*gameObject.GetComponent<LineRenderer>().widthCurve = gameObject.GetComponent<FunctionElementScript>().widthcurve;
+
+        gameObject.GetComponent<LineRenderer>().numCapVertices = 15;
+        gameObject.GetComponent<LineRenderer>().numCornerVertices = 15;
+
+        gameObject.GetComponent<LineRenderer>().positionCount = gameObject.GetComponent<FunctionElementScript>().points.Count;
+        gameObject.GetComponent<LineRenderer>().SetPositions(gameObject.GetComponent<FunctionElementScript>().points.ToArray());*/
+
         paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject);        
     }
 
