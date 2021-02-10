@@ -1,15 +1,28 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace SimpleFileBrowser
 {
 	[RequireComponent( typeof( ScrollRect ) )]
 	public class RecycledListView : MonoBehaviour
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WSA || UNITY_WSA_10_0
+		, IPointerClickHandler
+#endif
 	{
+#pragma warning disable 0649
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WSA || UNITY_WSA_10_0
+		[SerializeField]
+		private FileBrowser fileBrowser;
+#endif
+
 		// Cached components
-		public RectTransform viewportTransform;
-		public RectTransform contentTransform;
+		[SerializeField]
+		private RectTransform viewportTransform;
+		[SerializeField]
+		private RectTransform contentTransform;
+#pragma warning restore 0649
 
 		private float itemHeight, _1OverItemHeight;
 		private float viewportHeight;
@@ -22,7 +35,7 @@ namespace SimpleFileBrowser
 		// Current indices of items shown on screen
 		private int currentTopIndex = -1, currentBottomIndex = -1;
 
-		void Start()
+		private void Start()
 		{
 			viewportHeight = viewportTransform.rect.height;
 			GetComponent<ScrollRect>().onValueChanged.AddListener( ( pos ) => UpdateItemsInTheList() );
@@ -208,5 +221,18 @@ namespace SimpleFileBrowser
 				adapter.SetItemContent( item );
 			}
 		}
+
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WSA || UNITY_WSA_10_0
+		// When free space inside ScrollRect is clicked:
+		// Left click: deselect selected file(s)
+		// Right click: show context menu
+		public void OnPointerClick( PointerEventData eventData )
+		{
+			if( eventData.button == PointerEventData.InputButton.Left )
+				fileBrowser.DeselectAllFiles();
+			else if( eventData.button == PointerEventData.InputButton.Right )
+				fileBrowser.OnContextMenuTriggered();
+		}
+#endif
 	}
 }

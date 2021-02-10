@@ -51,6 +51,7 @@ public class Paintable : MonoBehaviour
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
     public GameObject function_brush_button;
+    public GameObject video_op_button;
     public GameObject canvas_radial;
 
     public GameObject text_message_worldspace;
@@ -108,6 +109,8 @@ public class Paintable : MonoBehaviour
     public GameObject current_dragged_function;
     public GameObject potential_tapped_graph;
 
+    // needed for video
+    public GameObject videoplayer;
 
     // objects history
     public List<GameObject> history = new List<GameObject>();
@@ -127,6 +130,7 @@ public class Paintable : MonoBehaviour
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
         function_brush_button = GameObject.Find("function_brush");
+        video_op_button = GameObject.Find("video_op");
 
         text_message_worldspace = GameObject.Find("text_message_worldspace");
 

@@ -89,7 +89,13 @@ public class AllButtonsBehaviors : MonoBehaviour
             //enablesimplicialColliders();
             //disable_menu_creation
             paint_canvas.GetComponent<Paintable>().panZoomLocked = true; 
-        }       
+        }
+
+        else if (this.name == "video_op")
+        {            
+            paint_canvas.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().videoplayer.GetComponent<FileLoadDialog>().DialogShow();
+        }
 
         // deselect all other buttons
         for (int i = 0; i < buttons.Length; i++)
