@@ -1432,7 +1432,7 @@ public class iconicElementScript : MonoBehaviour
         }
     }
 
-
+    // called only when dragging is done, to save computation cost
     public void searchFunctionAndUpdateLasso()
     {
 

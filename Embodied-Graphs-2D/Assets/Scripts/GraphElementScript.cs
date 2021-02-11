@@ -17,6 +17,7 @@ public class GraphElementScript : MonoBehaviour
     public GameObject Objects_parent;
 
     public bool splined_edge_flag;
+    public GameObject paintable;
 
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
@@ -595,27 +596,55 @@ public class GraphElementScript : MonoBehaviour
 
     public void checkHitAndMove(Vector3 diff)
     {
-        Transform[] allChildrennode = transform.GetChild(0).GetComponentsInChildren<Transform>();
-        
-        foreach (Transform child in allChildrennode)
+        if (transform.GetChild(0).gameObject.activeSelf)
         {
-            if (child.tag == "iconic")
-                child.GetComponent<iconicElementScript>().edge_position += diff;
-        }
+            Transform[] allChildrennode = transform.GetChild(0).GetComponentsInChildren<Transform>();
 
-        Transform[] allChildrenedge = transform.GetChild(1).GetComponentsInChildren<Transform>();
-        foreach (Transform child in allChildrenedge)
-        {
-            if (child.tag == "edge")
+            foreach (Transform child in allChildrennode)
             {
-                if (splined_edge_flag)
-                    child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
-                else
-                    child.GetComponent<EdgeElementScript>().updateEndPoint();
+                if (child.tag == "iconic")
+                    child.GetComponent<iconicElementScript>().edge_position += diff;
             }
-                
         }
 
+        if (transform.GetChild(1).gameObject.activeSelf)
+        {
+            Transform[] allChildrenedge = transform.GetChild(1).GetComponentsInChildren<Transform>();
+            foreach (Transform child in allChildrenedge)
+            {
+                if (child.tag == "edge")
+                {
+                    if (splined_edge_flag)
+                        child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
+                    else
+                        child.GetComponent<EdgeElementScript>().updateEndPoint();
+                }
+
+            }
+        }
+
+        if (transform.GetChild(3).gameObject.activeSelf)
+        {
+            Transform[] allChildrenedge = transform.GetChild(3).GetComponentsInChildren<Transform>();
+            foreach (Transform child in allChildrenedge)
+            {
+                if (child.tag == "hyper")
+                {
+                    child.transform.position += diff;
+                    child.GetComponent<HyperElementScript>().UpdateChildren();
+                }
+
+            }
+        }
+
+        if (transform.childCount > 4)
+        {
+            transform.GetChild(4).transform.position += diff;
+        }
+
+
+        //ToDo: add hyperedge and simplicial dragging; also check if the child is active
+        // also the graph label
         /*transform.GetChild(2);
         transform.GetChild(3);*/
 

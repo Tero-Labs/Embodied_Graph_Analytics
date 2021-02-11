@@ -353,6 +353,7 @@ public class Paintable : MonoBehaviour
                     {
                         //does_not_work
                         //curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
+                        if (!graphlocked)
                         curtouched_obj.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
                     }
 
@@ -394,10 +395,22 @@ public class Paintable : MonoBehaviour
                         else if (curtouched_obj.tag == "iconic")
                         {
                             //curtouched_obj.transform.position -= (Vector3)panDirection;
-                            curtouched_obj.transform.position += diff;
-                            curtouched_obj.GetComponent<iconicElementScript>().edge_position += diff;
-                            //curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
-                            curtouched_obj.GetComponent<iconicElementScript>().searchNodeAndUpdateEdge();
+                            if (graphlocked)
+                            {
+                                if (curtouched_obj.transform.parent.tag == "node_parent")
+                                {
+                                    curtouched_obj.transform.parent.parent.position += diff;
+                                    curtouched_obj.transform.parent.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
+                                }
+                            }
+                            else
+                            {
+                                curtouched_obj.transform.position += diff;
+                                curtouched_obj.GetComponent<iconicElementScript>().edge_position += diff;
+                                //curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
+                                curtouched_obj.GetComponent<iconicElementScript>().searchNodeAndUpdateEdge();
+                            }
+                            
                         }
                         else if (curtouched_obj.tag == "hyper")
                         {
@@ -1373,6 +1386,7 @@ public class Paintable : MonoBehaviour
 
         graph_count++;
         GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
         tempgraph.name = "graph_"+graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
@@ -1485,6 +1499,7 @@ public class Paintable : MonoBehaviour
 
         graph_count++;
         GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
         tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
@@ -1592,6 +1607,7 @@ public class Paintable : MonoBehaviour
 
         graph_count++;
         GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
         tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.transform.parent = Objects_parent.transform;
@@ -1877,7 +1893,7 @@ public class Paintable : MonoBehaviour
         if (Input.GetKeyUp(KeyCode.G))
         {
             
-            graphlocked = true;
+            graphlocked = !graphlocked;
             Debug.Log("NOT WORKING?");
         }/*
         else
