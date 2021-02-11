@@ -71,7 +71,8 @@ public class GraphElementScript : MonoBehaviour
         }
 
     }
-
+    
+    /*
     public void edges_as_Str()
     {
         edges_str = "";
@@ -176,7 +177,7 @@ public class GraphElementScript : MonoBehaviour
 
         Graph_init();
     }
-
+    */
 
     public void edges_init()
     {

@@ -1367,7 +1367,8 @@ public class iconicElementScript : MonoBehaviour
         Transform node_parent = transform.parent;
         if (node_parent.tag == "node_parent")
         {
-            node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
+            node_parent.parent.GetComponent<GraphElementScript>().Graph_init();
+            //node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
         }
     }
 

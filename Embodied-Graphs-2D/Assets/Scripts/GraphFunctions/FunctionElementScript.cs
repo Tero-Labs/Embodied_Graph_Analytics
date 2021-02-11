@@ -203,7 +203,8 @@ public class FunctionElementScript : MonoBehaviour
             EdgeCreation("edge", nodes_of_edge, 1);
         }
 
-        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        tempgraph.GetComponent<GraphElementScript>().Graph_init();
     }
 
 
@@ -282,7 +283,8 @@ public class FunctionElementScript : MonoBehaviour
             EdgeCreation("edge", nodes_of_edge, 1);
         }
 
-        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        tempgraph.GetComponent<GraphElementScript>().Graph_init();
+        //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     public void InstantiateTopoGraph()
@@ -628,6 +630,7 @@ public class FunctionElementScript : MonoBehaviour
                 .ToList();
     }
 
+    // Previous drag function
     public void checkHitAndMove()
     {
         // TO CONSIDER: INSTEAD OF CHECKING TOUCH-MOVED, CAN WE CHECK TOUCH INIT, WAIT TILL TOUCH END, AND THEN MOVE OBJECT? WOULD THAT BE
@@ -1983,7 +1986,8 @@ public class FunctionElementScript : MonoBehaviour
         Transform node_parent = transform.parent;
         if (node_parent.tag == "node_parent")
         {
-            node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
+            node_parent.parent.GetComponent<GraphElementScript>().Graph_init();
+            //node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
         }
     }
 }

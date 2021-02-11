@@ -727,7 +727,7 @@ public class Paintable : MonoBehaviour
                     Destroy(Hit.collider.gameObject);
 
                     if (temp.tag == "node_parent")
-                        temp.parent.GetComponent<GraphElementScript>().Graph_as_Str();
+                        temp.parent.GetComponent<GraphElementScript>().Graph_init();
                 }
                 // simplicial edge
                 else if (Hit.collider.gameObject.tag == "simplicial")
@@ -737,7 +737,7 @@ public class Paintable : MonoBehaviour
                     Destroy(Hit.collider.gameObject);
 
                     if (temp.tag == "simplicial_parent")
-                        temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+                        temp.parent.GetComponent<GraphElementScript>().simplicial_init();
                 }
                 // set anchor
                 else if(Hit.collider.gameObject.tag == "hyper")
@@ -747,7 +747,7 @@ public class Paintable : MonoBehaviour
                     Destroy(Hit.collider.gameObject);
 
                     if (temp.tag == "hyper_parent")
-                        temp.parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
+                        temp.parent.GetComponent<GraphElementScript>().hyperedges_init();
                 }             
             }
 
@@ -757,7 +757,8 @@ public class Paintable : MonoBehaviour
                 Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
                 if (temp.tag == "edge_parent")
-                    temp.parent.GetComponent<GraphElementScript>().edges_as_Str();
+                    temp.parent.GetComponent<GraphElementScript>().edges_init();
+                    //temp.parent.GetComponent<GraphElementScript>().edges_as_Str();
 
             }
             else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "simplicial")
@@ -765,7 +766,8 @@ public class Paintable : MonoBehaviour
                 Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
                 if (temp.tag == "simplicial_parent")
-                    temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+                    temp.parent.GetComponent<GraphElementScript>().simplicial_init();
+                    //temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
             }
         }
         #endregion
@@ -1164,7 +1166,8 @@ public class Paintable : MonoBehaviour
                         
                     }
 
-                    potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
+                    potential_tapped_graph.GetComponent<GraphElementScript>().Graph_init();
+                    //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                     Destroy(functionline);
                     functionline = null;
@@ -1363,7 +1366,8 @@ public class Paintable : MonoBehaviour
         {
             Transform Prev_graph_parent = edge_start.transform.parent.transform.parent;
             edgeline.transform.parent = Prev_graph_parent.GetChild(1);
-            Prev_graph_parent.GetComponent<GraphElementScript>().edges_as_Str();
+            Prev_graph_parent.GetComponent<GraphElementScript>().edges_init();
+            //Prev_graph_parent.GetComponent<GraphElementScript>().edges_as_Str();
             return;
         }
 
@@ -1453,7 +1457,8 @@ public class Paintable : MonoBehaviour
             }
         }
 
-        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        tempgraph.GetComponent<GraphElementScript>().Graph_init();
     }
 
     // normal simple graph
@@ -1473,7 +1478,8 @@ public class Paintable : MonoBehaviour
         {
             Transform Prev_graph_parent = Simplicialnodes[0].transform.parent.transform.parent;
             simplicialline.transform.parent = Prev_graph_parent.GetChild(2);
-            Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+            Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_init();
+            //Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_as_Str();
             return;
         }
 
@@ -1558,7 +1564,8 @@ public class Paintable : MonoBehaviour
             }
         }
 
-        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        tempgraph.GetComponent<GraphElementScript>().Graph_init();
+        //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     void hypergraphCreation()
@@ -1578,7 +1585,8 @@ public class Paintable : MonoBehaviour
             Transform Prev_graph_parent = hypernodes[0].transform.parent.transform.parent;
             // 3 is hyper edge parent index
             hyperline.transform.parent = Prev_graph_parent.GetChild(3);
-            Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
+            Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_init();
+            //Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
             return;
         }
 
@@ -1663,7 +1671,8 @@ public class Paintable : MonoBehaviour
             }
         }
 
-        tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
+        tempgraph.GetComponent<GraphElementScript>().Graph_init();
+        //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
 
     void CreateEmptyEdgeObjects()

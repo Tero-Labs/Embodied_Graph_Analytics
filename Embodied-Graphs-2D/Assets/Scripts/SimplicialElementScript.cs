@@ -118,7 +118,8 @@ public class SimplicialElementScript : MonoBehaviour
         Transform node_parent = transform.parent;
         if (node_parent.tag == "simplicial_parent")
         {
-            node_parent.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+            node_parent.parent.GetComponent<GraphElementScript>().simplicial_init();
+            //node_parent.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
         }
     }
 }
