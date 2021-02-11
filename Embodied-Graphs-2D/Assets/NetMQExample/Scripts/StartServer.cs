@@ -21,18 +21,33 @@ public class StartServer : MonoBehaviour
         processInfo.CreateNoWindow = true;
         processInfo.UseShellExecute = false;
 
-        var process = Process.Start(processInfo);
+        Process process = Process.Start(processInfo);
 
         process.WaitForExit();
         //UnityEngine.Debug.Log("server_closed");
         process.Close();
     }
 
-    
+    static void Run_Command(string Path)
+    {
+        var processInfo = new ProcessStartInfo("python.exe", Path + "\\NetMQExample\\Scripts\\Graphserver.py" );
+        processInfo.CreateNoWindow = false;
+        processInfo.UseShellExecute = true;
+
+        var process = Process.Start(processInfo);
+
+        process.WaitForExit();
+        UnityEngine.Debug.Log("server_closed");
+        process.Close();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        // Auto start upon application starting, so that we need not call the function again and again
+        string Path = Application.dataPath;
+        var thread = new Thread(delegate () { Run_Command(Path); });
+        thread.Start();
     }
 
     // Update is called once per frame

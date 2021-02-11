@@ -353,8 +353,6 @@ MonoBehaviour:
     m_RotationOrder: 4
   is_this_double_function_operand: 0
   global_details_on_path: 1
-  name_label: {fileID: 3301679829052323173, guid: 5528d08858022314fba9e25609c4754f,
-    type: 3}
   function_menu: {fileID: 8904246517432354550, guid: abec833af9871414e885d49a5f5982b4,
     type: 3}
   mainInputField: {fileID: 0}
@@ -370,7 +368,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6047713414169321321}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f9e29012a408f0f49860f46f761c8d5e, type: 3}
   m_Name: 

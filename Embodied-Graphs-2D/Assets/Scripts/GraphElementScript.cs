@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 using System.Linq;
 using TMPro;
 
@@ -280,6 +281,18 @@ public class GraphElementScript : MonoBehaviour
         hyperedges_init();
     }
 
+    public void GetGraphJson()
+    {
+        Graphs graphs = new Graphs();
+        graphs.graphs = new List<Graph>();
+
+        graphs.graphs.Add(graph);
+
+        Debug.Log(JsonUtility.ToJson(graphs));
+        File.WriteAllText("Assets/Resources/" + "data.json", JsonUtility.ToJson(graphs));
+    }
+
+
     public void StartConversion(string target_layer)
     {
         
@@ -340,11 +353,12 @@ public class GraphElementScript : MonoBehaviour
 
         Debug.Log("abstraction_layer: " + abstraction_layer + ", target_layer:" + target_layer);
 
-        Graph_as_Str();
+        //Graph_as_Str();
+        Graph_init();
+        GetGraphJson();
 
         bool flag = false;
 
-        // ToDo: visualize the changes
         if (abstraction_layer == "graph")
         {
             flag = transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + edges_str, abstraction_layer + "_to_" + target_layer);

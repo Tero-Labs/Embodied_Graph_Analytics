@@ -13,6 +13,32 @@ import subprocess
 
 from itertools import combinations
 
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+parser = argparse.ArgumentParser()
+#https://stackoverflow.com/a/43357954
+parser.add_argument('--graph_to_hypergraph', type=str2bool, nargs='?', const=True, default=False, help= "convert a graph to simplicial.")
+parser.add_argument('--graph_to_simplicial', type=str2bool, nargs='?', const=True, default=False, help ="convert a graph to hypergraph")
+parser.add_argument('--simplicial_to_graph', type=str2bool, nargs='?', const=True, default=False, help = "convert a simplicial to graph")
+parser.add_argument('--simplicial_to_hypergraph', type=str2bool, nargs='?', const=True, default=False, help ="convert a simplicial to hypergraph.")
+parser.add_argument('--hypergraph_to_graph', type=str2bool, nargs='?', const=True, default=False, help ="convert a hypergraph to graph.")
+parser.add_argument('--hypergraph_to_simplicial', type=str2bool, nargs='?', const=True, default=False, help ="convert a hypergraph to simplicial.")
+
+
+#functions
+parser.add_argument('--addition', type=str2bool, nargs='?', const=True, default=False, help= "combines a list of graphs together.")
+
+
+
+
 
 context = zmq.Context()
 socket = context.socket(zmq.REP)
@@ -42,7 +68,7 @@ def unpackJson():
         
     for cur_graph in graph_dict['graphs']:
 
-        each_graph = {"node": None, "edges": None, "simplicials": None, "hyperedges": None}
+        each_graph = {"node": None, "edges": None, "simplices": None, "hyperedges": None}
 
         graph_edge_list = []    
         for cur_edge in cur_graph['edges']:
@@ -63,42 +89,13 @@ def unpackJson():
 
         each_graph["node"] = cur_graph['nodes']
         each_graph["edges"] = graph_edge_list
-        each_graph["simplicials"] = simplicial_edge_list
+        each_graph["simplices"] = simplicial_edge_list
         each_graph["hyperedges"] = hypergraph_edge_list
 
         all_graphs.append(each_graph)
         #print(each_graph)   
         
     return all_graphs
-
-
-def packGraphConversionJson(nodes, frozenedges, simplices, hyper):
-    
-    edges = []
-    frozenedges = list(frozenedges)
-    for cur_edge in frozenedges:
-        cur_edge = list(cur_edge)
-        edges.append({"edge_start":cur_edge[0], "edge_end":cur_edge[-1], "weight":1})
-        
-    simplicials = []
-    simplices = list(simplices)
-    for cur_edge in simplices:
-        cur_edge = list(cur_edge)
-
-        simplicials.append({"nodes":cur_edge, "weight":1})        
-    
-    hyperedges = []
-    hyper = list(hyper)
-    for cur_edge in hyper:
-        cur_edge = list(cur_edge)
-        hyperedges.append({"nodes":cur_edge, "weight":1})   
-
-
-    graph = {"edges": edges, "simplicials": simplicials, "hyperedges": hyperedges, "nodes": list(nodes)}
-    print(graph)
-
-    with open("../../Resources/output.json", 'w') as json_file:
-        json.dump(graph, json_file)
 
 # format: {<nodes seperated by comma>-{edge_1}{edge_2}....}
 def parse_message(sent_Str):
@@ -434,7 +431,7 @@ class HyperGraph:
 
 
 if __name__ == '__main__':
-    #args = parser.parse_args()    
+    args = parser.parse_args()    
     
     while True:
         #  Wait for next request from client
@@ -479,68 +476,50 @@ if __name__ == '__main__':
             find_shortest_path(all_graphs, int(source), int(target))
             socket.send(("shortestpath").encode('ascii'))
             
-        elif message.decode('utf8') == "graph_to_simplicial":
+        elif args.graph_to_simplicial:
             #TypeError: a bytes-like object is required, not 'str'
-            #nodes_list, edges_list = parse_message(message.decode('utf8'))
-            all_graphs = unpackJson()
-            nodes_list, edges_list = all_graphs[0]["node"], all_graphs[0]["edges"]
+            nodes_list, edges_list = parse_message(message.decode('utf8'))
             graph = Graph(nodes_list, edges_list)
             graph_to_simplicial_complex = graph.to_simplicial_complex()
             print("graph_to_simplicial_complex",graph_to_simplicial_complex.simplices)
-            packGraphConversionJson(graph_to_simplicial_complex.nodes, [], graph_to_simplicial_complex.simplices, [])
             socket.send((frozen_set_to_list(graph_to_simplicial_complex.simplices)).encode('ascii'))  
 
-        elif message.decode('utf8') == "graph_to_hypergraph":
+        elif args.graph_to_hypergraph:
             #TypeError: a bytes-like object is required, not 'str'
-            #nodes_list, edges_list = parse_message(message.decode('utf8'))
-            all_graphs = unpackJson()
-            nodes_list, edges_list = all_graphs[0]["node"], all_graphs[0]["edges"]
+            nodes_list, edges_list = parse_message(message.decode('utf8'))
             graph = Graph(nodes_list, edges_list)
             graph_to_hypergraph = graph.to_hypergraph()
             print("graph_to_hypergraph",graph_to_hypergraph.hyperedges)
-            packGraphConversionJson(graph_to_hypergraph.nodes, [], [], graph_to_hypergraph.hyperedges)
             socket.send((frozen_set_to_list(graph_to_hypergraph.hyperedges)).encode('ascii'))    
 
-        elif message.decode('utf8') == "hypergraph_to_graph":
+        elif args.hypergraph_to_graph:
             #TypeError: a bytes-like object is required, not 'str'
-            #nodes_list, edges_list = parse_message(message.decode('utf8'))
-            all_graphs = unpackJson()
-            nodes_list, edges_list = all_graphs[0]["node"], all_graphs[0]["hyperedges"]
+            nodes_list, edges_list = parse_message(message.decode('utf8'))
             hypergraph = HyperGraph(nodes_list, edges_list)
             hypergraph_to_graph = hypergraph.to_graph()
             print("hypergraph_to_graph",hypergraph_to_graph.edges)
-            packGraphConversionJson(hypergraph_to_graph.nodes, hypergraph_to_graph.edges, [], [])
             socket.send((frozen_set_to_list(hypergraph_to_graph.edges)).encode('ascii'))  
 
-        elif message.decode('utf8') == "hypergraph_to_simplicial":
+        elif args.hypergraph_to_simplicial:
             #TypeError: a bytes-like object is required, not 'str'
-            #nodes_list, edges_list = parse_message(message.decode('utf8'))
-            all_graphs = unpackJson()
-            nodes_list, edges_list = all_graphs[0]["node"], all_graphs[0]["hyperedges"]
+            nodes_list, edges_list = parse_message(message.decode('utf8'))
             hypergraph = HyperGraph(nodes_list, edges_list)
             hypergraph_to_simplicial = hypergraph.to_simplicial_complex()
             print("hypergraph_to_simplicial",hypergraph_to_simplicial.simplices)
-            packGraphConversionJson(hypergraph_to_simplicial.nodes, [], hypergraph_to_simplicial.simplices, [])
             socket.send((frozen_set_to_list(hypergraph_to_simplicial.simplices)).encode('ascii'))  
 
-        elif message.decode('utf8') == "simplicial_to_graph":
+        elif args.simplicial_to_graph:
             #TypeError: a bytes-like object is required, not 'str'
-            #nodes_list, edges_list = parse_message(message.decode('utf8'))
-            all_graphs = unpackJson()
-            nodes_list, edges_list = all_graphs[0]["node"], all_graphs[0]["simplicials"]
+            nodes_list, edges_list = parse_message(message.decode('utf8'))
             simplicial = SimplicialComplex(nodes_list, edges_list)
             simplicial_to_graph = simplicial.to_graph()
             print("simplicial_to_graph",simplicial_to_graph.edges)
-            packGraphConversionJson(simplicial_to_graph.nodes, simplicial_to_graph.edges, [], [])
             socket.send((frozen_set_to_list(simplicial_to_graph.edges)).encode('ascii'))  
 
-        elif message.decode('utf8') == "simplicial_to_hypergraph":
+        elif args.simplicial_to_hypergraph:
             #TypeError: a bytes-like object is required, not 'str'
-            #nodes_list, edges_list = parse_message(message.decode('utf8'))
-            all_graphs = unpackJson()
-            nodes_list, edges_list = all_graphs[0]["node"], all_graphs[0]["simplicials"]
+            nodes_list, edges_list = parse_message(message.decode('utf8'))
             simplicial = SimplicialComplex(nodes_list, edges_list)
             simplicial_to_hypergraph = simplicial.to_hypergraph()
-            print("simplicial_to_hypergraph",simplicial_to_hypergraph.hyperedges)
-            packGraphConversionJson(simplicial_to_hypergraph.nodes, [], [], simplicial_to_hypergraph.hyperedges)
+            print("graph_from_hypergraph",simplicial_to_hypergraph.hyperedges)
             socket.send((frozen_set_to_list(simplicial_to_hypergraph.hyperedges)).encode('ascii'))  
