@@ -34,6 +34,7 @@ public class Paintable : MonoBehaviour
 
     // Prefabs
     public GameObject IconicElement;
+    public GameObject ImageIconicElement;
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
@@ -333,13 +334,15 @@ public class Paintable : MonoBehaviour
             {
                 
                 GameObject temp = Hit.collider.gameObject;
+                Debug.Log("collided_with"+temp.tag);
 
                 if (activeTouches.phase == UnityEngine.TouchPhase.Ended && okayToPan)
                 {
                     previousTouchEnded = true;
                     if (curtouched_obj.tag == "iconic")
                     {
-                        curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
+                        curtouched_obj.transform.localScale = curtouched_obj.transform.localScale / 1.05f;
+                        //curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
                         curtouched_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
                     }
                         
@@ -354,7 +357,7 @@ public class Paintable : MonoBehaviour
                         //does_not_work
                         //curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
                         if (!graphlocked)
-                        curtouched_obj.transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
+                            curtouched_obj.transform.localScale = curtouched_obj.transform.localScale*1.05f; //new Vector3(1.25f, 1.25f, 1.25f);
                     }
 
                     Vector3 vec = Hit.point; 
@@ -1041,6 +1044,18 @@ public class Paintable : MonoBehaviour
 
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
+    }
+    
+    // create iconic element from an image
+    public void createImageIcon(string FilePath)
+    {
+        GameObject temp = Instantiate(ImageIconicElement, new Vector3(0,0,-5f), Quaternion.identity, Objects_parent.transform);
+        totalLines++;
+        temp.name = "iconic_" + totalLines.ToString();
+        temp.tag = "iconic";
+        temp.GetComponent<iconicElementScript>().icon_number = totalLines;
+        temp.GetComponent<iconicElementScript>().LoadNewSprite(FilePath);
+
     }
 
     void OnGraphAdditionInteraction()

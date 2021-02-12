@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -94,6 +95,8 @@ public class iconicElementScript : MonoBehaviour
     // global stroke details
     public GameObject details_dropdown;
     public bool global_details_on_path = true;
+
+    public Sprite recognized_sprite;
 
     public void computeCentroid()
     {
@@ -1200,15 +1203,60 @@ public class iconicElementScript : MonoBehaviour
         }
     }*/
 
-    /*public Mesh SpriteToMesh()
+    // load a new image and convert to sprite 
+    // https://forum.unity.com/threads/generating-sprites-dynamically-from-png-or-jpeg-files-in-c.343735/ (the solution by Freznosis#5)        
+    public Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
     {
-        Mesh mesh = new Mesh();
-        mesh.vertices = Array.ConvertAll(recognized_sprite.vertices, i => (Vector3)i);
-        mesh.uv = recognized_sprite.uv;
-        mesh.triangles = Array.ConvertAll(recognized_sprite.triangles, i => (int)i);
 
-        return mesh;
-    }*/
+        // Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
+
+        Texture2D SpriteTexture = LoadTexture(FilePath);
+        Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
+        recognized_sprite = NewSprite;
+        SpriteToRender();
+        return NewSprite;
+    }
+
+    public Texture2D LoadTexture(string FilePath)
+    {
+
+        // Load a PNG or JPG file from disk to a Texture2D
+        // Returns null if load fails
+
+        Texture2D Tex2D;
+        byte[] FileData;
+
+        if (File.Exists(FilePath))
+        {
+            FileData = File.ReadAllBytes(FilePath);
+            Tex2D = new Texture2D(2, 2);           // Create new "empty" texture
+            if (Tex2D.LoadImage(FileData))           // Load the imagedata into the texture (size is set automatically)
+                return Tex2D;                 // If data = readable -> return texture
+        }
+        return null;                     // Return null if load failed
+    }
+
+    public void SpriteToRender()
+    {
+        
+        // rescaling, otherwise the projected mesh is too small
+        transform.localScale = new Vector3(50f, 50f, 1f);
+
+        transform.gameObject.AddComponent<BoxCollider>();
+        transform.gameObject.AddComponent<SpriteRenderer>();
+        transform.GetComponent<SpriteRenderer>().sprite = recognized_sprite;
+
+        //Debug.Log("box collider before: " + templine.GetComponent<BoxCollider>().center.ToString());
+        transform.GetComponent<BoxCollider>().size = transform.GetComponent<SpriteRenderer>().sprite.bounds.size;
+        transform.GetComponent<BoxCollider>().center = transform.GetComponent<SpriteRenderer>().sprite.bounds.center;
+        transform.GetComponent<iconicElementScript>().edge_position = new Vector3(transform.GetComponent<SpriteRenderer>().sprite.bounds.center.x,
+                                                        transform.GetComponent<SpriteRenderer>().sprite.bounds.center.y, -5.5f);
+
+        // set collider trigger
+        transform.GetComponent<BoxCollider>().isTrigger = true;
+        transform.GetComponent<BoxCollider>().enabled = true;
+
+    }
 
     public Mesh createQuad(float width, float height)
     {

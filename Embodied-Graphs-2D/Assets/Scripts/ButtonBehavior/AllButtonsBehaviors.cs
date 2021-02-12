@@ -93,8 +93,8 @@ public class AllButtonsBehaviors : MonoBehaviour
 
         else if (this.name == "video_op")
         {            
-            paint_canvas.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
-            paint_canvas.GetComponent<Paintable>().videoplayer.GetComponent<FileLoadDialog>().DialogShow();
+            //paint_canvas.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
+            paint_canvas.GetComponent<FileLoadDialog>().DialogShow();
         }
 
         // deselect all other buttons

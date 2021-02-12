@@ -25,7 +25,7 @@ public class FileLoadDialog : MonoBehaviour
         // Set default filter that is selected when the dialog is shown (optional)
         // Returns true if the default filter is set successfully
         // In this case, set Images filter as the default filter
-        FileBrowser.SetDefaultFilter(".mp4");
+        // FileBrowser.SetDefaultFilter(".mp4");
 
         // Set excluded file extensions (optional) (by default, .lnk and .tmp extensions are excluded)
         // Note that when you use this function, .lnk and .tmp extensions will no longer be
@@ -71,7 +71,7 @@ public class FileLoadDialog : MonoBehaviour
 
         // Dialog is closed
         // Print whether the user has selected some files/folders or cancelled the operation (FileBrowser.Success)
-        Debug.Log(FileBrowser.Success);
+        // Debug.Log(FileBrowser.Success);
 
         if (FileBrowser.Success)
         {
@@ -79,8 +79,16 @@ public class FileLoadDialog : MonoBehaviour
             for (int i = 0; i < FileBrowser.Result.Length; i++)
             {
                 Debug.Log(FileBrowser.Result[i]);
-                transform.GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
-                transform.GetComponent<VideoPlayer>().Play();
+                if (FileBrowser.Result[i].EndsWith(".mp4"))
+                {
+                    transform.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
+                    transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
+                    transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().Play();
+                }
+                else if(FileBrowser.Result[i].EndsWith(".jpg") || FileBrowser.Result[i].EndsWith(".png"))
+                {
+                    transform.GetComponent<Paintable>().createImageIcon(FileBrowser.Result[i]);
+                }
             }
                 
 
