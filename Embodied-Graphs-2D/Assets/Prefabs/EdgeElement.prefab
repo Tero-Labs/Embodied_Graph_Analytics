@@ -165,6 +165,9 @@ MonoBehaviour:
   minx: 100000
   miny: 100000
   draggable_now: 0
+  directed_edge: 0
+  directed_edge_sprite: {fileID: 21300000, guid: 70187cb4def0f0644be93719911a0829,
+    type: 3}
   icon_elem_material: {fileID: 2100000, guid: eed04dd1a9ac1ec41b0e758c4373d1bb, type: 2}
   paintable_object: {fileID: 0}
   current_attribute: 0

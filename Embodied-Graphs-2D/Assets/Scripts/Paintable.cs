@@ -28,6 +28,7 @@ public class Paintable : MonoBehaviour
     public bool okayToPan = true;
 	public bool panZoomLocked = false;
     public bool graphlocked;
+    public bool directed_edge = false;
 
     private Vector2 prev_move_pos;
     public Vector3 touchDelta;
@@ -547,6 +548,12 @@ public class Paintable : MonoBehaviour
                             var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0),
                                 edgeline.GetComponent<LineRenderer>().GetPosition(1));
                             edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+                            if (directed_edge)
+                            {
+                                Debug.Log("directed_edge");
+                                edgeline.GetComponent<EdgeElementScript>().directed_edge = true;
+                            }
+
                             edgeline.GetComponent<EdgeElementScript>().addDot();
                             //edgeline = edgeline.GetComponent<EdgeElementScript>().FinishEdgeLine();                            
                             GraphCreation();
@@ -1915,6 +1922,11 @@ public class Paintable : MonoBehaviour
         {
             graphlocked = false;
         }*/
+
+        if (Input.GetKeyUp(KeyCode.D))
+        {
+            directed_edge = !directed_edge;
+        }
     }
 
     void deleteTempLineIfDoubleFinger()

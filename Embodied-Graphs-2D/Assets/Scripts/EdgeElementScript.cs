@@ -26,6 +26,10 @@ public class EdgeElementScript : MonoBehaviour
     public float maxx = -100000f, maxy = -100000f, minx = 100000f, miny = 100000f;
     public bool draggable_now = false;
 
+    // for directed edge
+    public bool directed_edge = false;
+    public Sprite directed_edge_sprite;
+
     public Material icon_elem_material;
     public GameObject paintable_object;
 
@@ -1311,6 +1315,9 @@ public class EdgeElementScript : MonoBehaviour
             temp.name = "dot_child";
             temp.transform.parent = transform;
             temp.transform.SetSiblingIndex(x);
+
+            if (directed_edge && x == 1)
+                temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
         }
     }
 
