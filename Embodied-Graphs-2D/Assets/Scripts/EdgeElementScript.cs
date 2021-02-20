@@ -1403,7 +1403,8 @@ public class EdgeElementScript : MonoBehaviour
         List<Vector3> spline_pts = new List<Vector3>();
         Vector3 center = (edge_start.GetComponent<iconicElementScript>().edge_position + edge_end.GetComponent<iconicElementScript>().edge_position) / 2;
         float a = edge_end.GetComponent<iconicElementScript>().edge_position.x - center.x;
-        float b = edge_start.GetComponent<iconicElementScript>().radius + edge_end.GetComponent<iconicElementScript>().radius;
+        float b = edge_start.GetComponent<iconicElementScript>().radius + edge_end.GetComponent<iconicElementScript>().radius +
+            Math.Abs(edge_start.GetComponent<iconicElementScript>().edge_position.x - edge_end.GetComponent<iconicElementScript>().edge_position.x);
 
         //spline_pts.Add(edge_start.GetComponent<iconicElementScript>().edge_position);
         for (int i = 0; i < 90; i = i + 6)
@@ -1427,19 +1428,33 @@ public class EdgeElementScript : MonoBehaviour
 
     public void updateSplineEndPoint()
     {
-        recorded_path = myEllipseSpline();
-        Debug.Log("my_spline:" + recorded_path.Count.ToString());
+        //recorded_path = myEllipseSpline();
 
-        
-        /*GameObject spline = new GameObject("spline");
+        GameObject spline = new GameObject("spline");
         spline.AddComponent<BezierSpline>();
         BezierSpline bs = spline.transform.GetComponent<BezierSpline>();
-        bs.Initialize(recorded_path.Count);
+        /*bs.Initialize(recorded_path.Count);
 
         for (int ss = 0; ss < recorded_path.Count; ss++)
         {
             bs[ss].position = recorded_path[ss];
-        }
+        }*/
+
+        // free handle mode and set the control point so that we get a eclipse like shape even with only two points! 
+        bs.Initialize(2);
+        bs[0].position = edge_start.GetComponent<iconicElementScript>().edge_position;
+        bs[0].handleMode = BezierPoint.HandleMode.Free;
+
+        float temp_rad = Math.Max(edge_start.GetComponent<iconicElementScript>().radius, edge_end.GetComponent<iconicElementScript>().radius);
+        float temp_x = (edge_start.GetComponent<iconicElementScript>().edge_position.x + edge_end.GetComponent<iconicElementScript>().edge_position.x) / 2;
+        float temp_y = edge_start.GetComponent<iconicElementScript>().edge_position.y - temp_rad -
+            Math.Abs(edge_start.GetComponent<iconicElementScript>().edge_position.x - edge_end.GetComponent<iconicElementScript>().edge_position.x)/3;
+        
+        bs[0].followingControlPointPosition = new Vector3(temp_x, temp_y, edge_start.GetComponent<iconicElementScript>().edge_position.z);
+
+        bs[1].position = edge_end.GetComponent<iconicElementScript>().edge_position;
+        bs[1].handleMode = BezierPoint.HandleMode.Free;
+        bs[1].precedingControlPointPosition = new Vector3(temp_x, temp_y, edge_start.GetComponent<iconicElementScript>().edge_position.z);
 
         // Now sample 50 points, but decide how many to sample in each section
         // ...
@@ -1451,7 +1466,9 @@ public class EdgeElementScript : MonoBehaviour
             recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, 9, i)));
         }
 
-        Destroy(spline);*/
+        Destroy(spline);
+
+        Debug.Log("my_spline:" + recorded_path.Count.ToString());
 
         transform.GetComponent<LineRenderer>().positionCount = recorded_path.Count;
         transform.GetComponent<LineRenderer>().SetPositions(recorded_path.ToArray());

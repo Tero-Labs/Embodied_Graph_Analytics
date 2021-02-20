@@ -20,6 +20,7 @@ public class CreatePrimitives : MonoBehaviour
 
     // Length, area, distance units
     public static float unitScale = 0.025f;
+    public Material solid_mat;
 
     public GameObject PenLine;
     public GameObject SetLine;
@@ -186,7 +187,7 @@ public class CreatePrimitives : MonoBehaviour
     }
 
     // Assumes templine has been initialized in pointer.start and pointer.moved
-    public GameObject FinishFunctionLine(GameObject templine, Mesh combinedMesh = null)
+    public GameObject FinishFunctionLine(GameObject templine, bool lassocolor = false)
     {
 
         // compute centroid and bounds
@@ -203,25 +204,32 @@ public class CreatePrimitives : MonoBehaviour
         templine.GetComponent<LineRenderer>().SetPositions(templine.GetComponent<FunctionElementScript>().points.ToArray());
 
         var lineRenderer = templine.GetComponent<LineRenderer>();
+        if (lassocolor)
+        {
+            Color color = new Color(UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f));            
+            Debug.Log("Changing lasso color");
+            
+            lineRenderer.startColor = color; // UnityEngine.Random.ColorHSV();
+            lineRenderer.endColor = lineRenderer.startColor;
+        }        
+
         var meshFilter = templine.GetComponent<MeshFilter>();
+                
 
-
-        // If a combined mesh is not passed, use the line renderer mesh (default case)
-        if (combinedMesh == null)
-        {
-            Mesh mesh = new Mesh();
-            lineRenderer.BakeMesh(mesh, true);
-            meshFilter.sharedMesh = mesh;
-            templine.GetComponent<FunctionElementScript>()._mesh = mesh;
-        }
-        else
-        {
-            meshFilter.sharedMesh = combinedMesh;
-            templine.GetComponent<FunctionElementScript>()._mesh = combinedMesh;
-        }
+        // If a combined mesh is not passed, use the line renderer mesh (default case)        
+        Mesh mesh = new Mesh();
+        lineRenderer.BakeMesh(mesh, true);
+        meshFilter.sharedMesh = mesh;
+        templine.GetComponent<FunctionElementScript>()._mesh = mesh;
+        
 
         templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<FunctionElementScript>().icon_elem_material;
-        
+        /*How to change color of material -Unity Forum
+        https://forum.unity.com/threads/how-to-change-color-of-material.874921/ */
+        /*Material new_material = new Material(templine.GetComponent<FunctionElementScript>().icon_elem_material);
+        new_material.SetColor("_Color", UnityEngine.Random.ColorHSV());
+        templine.GetComponent<MeshRenderer>().sharedMaterial = new_material;*/
+
         //Destroy(templine.GetComponent<LineRenderer>());
 
         // disable trail renderer, no longer needed

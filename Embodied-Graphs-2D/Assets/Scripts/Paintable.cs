@@ -1359,15 +1359,21 @@ public class Paintable : MonoBehaviour
                             /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
                             Quaternion.identity,
                             canvas_radial.transform);
-                        radmenu.GetComponent<GraphSliderMenu>().setparent(node_parent.parent.gameObject);
-                        radmenu.GetComponent<GraphSliderMenu>().UpdateLayer(node_parent.parent.GetComponent<GraphElementScript>().abstraction_layer);
+
+                        node_parent.parent.GetComponent<GraphElementScript>().MenuClickSetup(radmenu);
+                        
+                        /*radmenu.GetComponent<GraphSliderMenu>().setparent(node_parent.parent.gameObject);
+                        radmenu.GetComponent<GraphSliderMenu>().UpdateLayer(node_parent.parent.GetComponent<GraphElementScript>().abstraction_layer);*/
                     }                    
                 }
                 else
                 {
                     Debug.Log("node_menu_created");
+
+                    var radius_offset = Hit.collider.gameObject.GetComponent<iconicElementScript>().radius;
+                    Vector3 vec_radius_offset = new Vector3(0f, radius_offset, 0f);
                     GameObject radmenu = Instantiate(node_radial_menu,
-                            canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position)
+                            canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position - vec_radius_offset)
                             /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
                             Quaternion.identity,
                             canvas_radial.transform);

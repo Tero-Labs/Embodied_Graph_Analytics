@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -38,6 +39,8 @@ public class GraphElementScript : MonoBehaviour
     public Graph graph;
 
     public Dictionary<string, Transform> nodeMaps;
+
+    TMP_Text tmptextlabel;
 
     // Start is called before the first frame update
     void Start()
@@ -294,6 +297,87 @@ public class GraphElementScript : MonoBehaviour
         File.WriteAllText("Assets/Resources/" + "data.json", JsonUtility.ToJson(graphs));
     }
 
+    public void MenuClickSetup(GameObject Radmenu)
+    {
+        Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().parent = transform.gameObject;
+        Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().setup();
+
+        Transform rad_menu = Radmenu.transform.GetChild(1);
+        for (int i = 0; i < 8; i++)
+        {
+            Transform child = rad_menu.GetChild(i);
+
+            if (child.name == "delete")
+            {
+                Button button = child.GetComponent<Button>();
+                button.onClick.AddListener(delegate { DestroyMenu(Radmenu); });                
+            }
+            else if (child.name == "show_node")
+            {
+                Toggle toggle = child.GetChild(0).GetComponent<Toggle>();
+                toggle.onValueChanged.AddListener(delegate { ShowNodes(toggle); });
+            }
+            else if (child.name == "name")
+            {
+                tmptextlabel = child.GetComponent<TMP_Text>();
+                tmptextlabel.text = graph_name;
+            }
+            else if (child.name == "show_edges")
+            {
+                Toggle toggle = child.GetChild(0).GetComponent<Toggle>();
+                toggle.onValueChanged.AddListener(delegate { ShowEdges(toggle); });
+            }
+            else if (child.name == "layer_lock")
+            {
+                Toggle toggle = child.GetChild(0).GetComponent<Toggle>();
+                toggle.onValueChanged.AddListener(delegate { GraphLock(toggle); });
+            }
+            else if (child.name == "change_name")
+            {
+                InputField mainInputField = child.GetComponent<InputField>();
+                mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
+            }
+                        
+
+        }
+    }
+
+    void DestroyMenu(GameObject Radmenu)
+    {
+        Destroy(Radmenu);
+        Destroy(transform.gameObject);
+    }
+
+    // Checks if there is anything entered into the input field.
+    void LockInput(InputField input)
+    {
+        if (input.text.Length > 0)
+        {
+            graph_name = input.text;
+            tmptextlabel.text = graph_name;
+        }
+    }
+
+
+    void ShowNodes(Toggle toggle)
+    {
+        transform.GetChild(0).gameObject.SetActive(toggle.isOn);
+    }
+
+    void ShowEdges(Toggle toggle)
+    {
+        transform.GetChild(1).gameObject.SetActive(toggle.isOn);
+        transform.GetChild(2).gameObject.SetActive(toggle.isOn);
+        transform.GetChild(3).gameObject.SetActive(toggle.isOn);
+    }
+
+    void GraphLock(Toggle toggle)
+    {
+        graph_lock = toggle.isOn;
+        simplicial_lock = graph_lock;
+        hyper_edges_lock = graph_lock;
+        abstract_lock = graph_lock;
+    }
 
     public void StartConversion(string target_layer)
     {
