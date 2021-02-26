@@ -428,13 +428,25 @@ public class FunctionElementScript : MonoBehaviour
                 continue;
 
             GameObject edgeline = EdgeCreation("edge", nodes_of_edge, 1);
+            IEnumerator coroutine = material_update(edgeline);
+            StartCoroutine(coroutine);
 
-            edgeline.GetComponent<LineRenderer>().startColor = Color.red;
+            /*edgeline.GetComponent<LineRenderer>().startColor = Color.red;
             edgeline.GetComponent<LineRenderer>().endColor = Color.red;
             edgeline.GetComponent<LineRenderer>().startWidth = 10;
-            edgeline.GetComponent<LineRenderer>().endWidth = 10;
+            edgeline.GetComponent<LineRenderer>().endWidth = 10;*/
         }              
 
+    }
+
+    IEnumerator material_update(GameObject edgeline)
+    {
+        yield return null;
+        edgeline.GetComponent<LineRenderer>().startColor = Color.red;
+        edgeline.GetComponent<LineRenderer>().endColor = Color.red;
+        edgeline.GetComponent<LineRenderer>().startWidth = 10;
+        edgeline.GetComponent<LineRenderer>().endWidth = 10;
+        edgeline.GetComponent<LineRenderer>().material = null;
     }
 
     public void InstantiateCommunityGraph()

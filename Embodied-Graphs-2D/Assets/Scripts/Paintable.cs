@@ -1857,6 +1857,13 @@ public class Paintable : MonoBehaviour
 
     void handleKeyInteractions()
     {
+        //we don't want any redundant operation when a function name is being typed
+
+        if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            return;
+        }
+
         if (Input.GetKeyUp(KeyCode.L))
         {
             panZoomLocked = !panZoomLocked;

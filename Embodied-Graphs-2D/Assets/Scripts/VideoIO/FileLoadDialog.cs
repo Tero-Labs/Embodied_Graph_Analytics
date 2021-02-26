@@ -84,6 +84,11 @@ public class FileLoadDialog : MonoBehaviour
                     transform.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
                     transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
                     transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().Play();
+
+                    // load the annotate file as well
+                    int trim_pos = FileBrowser.Result[i].IndexOf(".");
+                    GameObject slider = transform.GetComponent<Paintable>().videoplayer.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider;
+                    slider.GetComponent<VideoController>().loadAnnotation(FileBrowser.Result[i].Substring(0, trim_pos) + ".json");
                 }
                 else if(FileBrowser.Result[i].EndsWith(".jpg") || FileBrowser.Result[i].EndsWith(".png"))
                 {
