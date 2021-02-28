@@ -12,6 +12,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     private VideoPlayer videoplayer;
     public Slider mainSlider;
     frames frames_annotation;
+    public float width, height;
+    public Vector3[] vec;
+    long prev_frame;
+
+    public GameObject icon_prefab;
+    public GameObject edge_prefab;
+    GameObject temp_parent;
 
     // Start is called before the first frame update
     void Start()
@@ -23,7 +30,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     {
         Debug.Log("filename:" + filename);
         frames_annotation = JsonUtility.FromJson<frames>(File.ReadAllText(filename));
-        Debug.Log(JsonUtility.ToJson(frames_annotation.all_frame[0].objects[0]));        
+        Debug.Log(JsonUtility.ToJson(frames_annotation.all_frame[0].objects[0]));
+
+        width = videoplayer.transform.localScale.x;
+        height = videoplayer.transform.localScale.y;
     }
 
     // Update is called once per frame
@@ -34,15 +44,79 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             mainSlider.value = (float)videoplayer.frame / (float)videoplayer.frameCount;
         }
 
-        if (videoplayer.frame %5 == 0)
+        if (videoplayer.frame %5 == 0 && prev_frame!= videoplayer.frame)
         {
+            prev_frame = videoplayer.frame;
             Debug.Log("current_frame: " + videoplayer.frame.ToString());
+            if (temp_parent != null) Destroy(temp_parent);
+            temp_parent = new GameObject();
 
-            frame cur_frame = frames_annotation.all_frame[(int)videoplayer.frame];
-            bounds first_obj = cur_frame.objects[0].bounds[0];
+            List<GameObject> all_icons = new List<GameObject>();
+            List<tracked_object> all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;
+            Vector3 edge_pos = Vector3.zero;
 
-            Debug.Log("transformed_pt: " + videoplayer.transform.InverseTransformPoint(new Vector3(first_obj.x, first_obj.y, -5f)));
-            //Debug.Log(JsonUtility.ToJson(frames_annotation.all_frame[(int)videoplayer.frame]));
+            foreach (tracked_object cur_obj in all_objects)
+            {
+                GameObject temp = Instantiate(icon_prefab, temp_parent.transform);
+                all_icons.Add(temp);
+
+                temp.GetComponent<TrailRenderer>().enabled = false;
+                temp.GetComponent<MeshRenderer>().enabled = false;
+
+                LineRenderer l = temp.GetComponent<LineRenderer>();
+                l.material.color = Color.black;
+                l.startWidth = 2f;
+                l.endWidth = 2f;
+
+                List<Vector3> points = new List<Vector3>();
+                
+                foreach (bounds first_obj in cur_obj.bounds)
+                {
+                    float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, 853, first_obj.x));
+                    float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, 480, first_obj.y));
+
+                    Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -5f);
+                    edge_pos += pos_vec;
+
+                    points.Add(pos_vec);
+                    //Debug.Log("transformed_pt_lerped: " + pos_vec);
+                    //Debug.Log("transformed_pt: " + videoplayer.transform.InverseTransformPoint(new Vector3(first_obj.x, first_obj.y, -5f)));
+                    //Debug.Log(JsonUtility.ToJson(frames_annotation.all_frame[(int)videoplayer.frame]));
+                }
+
+                // connect the end and statr position as well
+                l.loop = true;
+                // if we don't manually change the position count, it only takes the first two positions
+                l.positionCount = points.Count;
+                l.SetPositions(points.ToArray());
+                //temp.transform.localScale = new Vector3(2f, 2f, 2f);
+
+                edge_pos = edge_pos / points.Count;
+                temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
+
+
+            }
+
+            //videoplayer.Pause();
+            Debug.Log("all_icons: " + all_icons.Count.ToString());
+
+            // create graph based on node radius
+            // tODo: try updated algorithm
+            for (int i = 0; i < all_icons.Count; i++ )
+            {
+                for (int j = (i+1); j < all_icons.Count; j++)
+                {
+                    if (Vector3.Distance(all_icons[i].GetComponent<iconicElementScript>().edge_position, 
+                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < 10f)
+                    {
+                        GameObject temp = Instantiate(edge_prefab, all_icons[i].GetComponent<iconicElementScript>().edge_position, Quaternion.identity, temp_parent.transform);
+                        temp.GetComponent<EdgeElementScript>().edge_start = all_icons[i];
+                        temp.GetComponent<EdgeElementScript>().edge_end = all_icons[j];
+                        temp.GetComponent<EdgeElementScript>().addDot();
+                        temp.GetComponent<EdgeElementScript>().updateEndPoint();
+                    }
+                }
+            }
         }
     }
 

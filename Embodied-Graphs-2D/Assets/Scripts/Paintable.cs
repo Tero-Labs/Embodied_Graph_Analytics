@@ -1371,7 +1371,7 @@ public class Paintable : MonoBehaviour
                     Debug.Log("node_menu_created");
 
                     var radius_offset = Hit.collider.gameObject.GetComponent<iconicElementScript>().radius;
-                    Vector3 vec_radius_offset = new Vector3(0f, radius_offset, 0f);
+                    Vector3 vec_radius_offset = new Vector3(0f, 1.25f * radius_offset, 0f);
                     GameObject radmenu = Instantiate(node_radial_menu,
                             canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position - vec_radius_offset)
                             /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
@@ -1388,8 +1388,9 @@ public class Paintable : MonoBehaviour
         if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
         {
             Debug.Log("hit:" + hit2d.collider.gameObject.tag);
+            Vector3 vec_radius_offset = new Vector3(0f, 10f, 0f);
             GameObject radmenu = Instantiate(edge_radial_menu,
-                        canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center)
+                        canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center - vec_radius_offset)
                         /*hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center*/,
                         Quaternion.identity,
                         canvas_radial.transform);
