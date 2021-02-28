@@ -595,7 +595,7 @@ public class GraphElementScript : MonoBehaviour
         }
     }
 
-    void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
+    public void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
     {
         List<GameObject> temp_nodes = new List<GameObject>();
         foreach (string node in nodes_of_edge)

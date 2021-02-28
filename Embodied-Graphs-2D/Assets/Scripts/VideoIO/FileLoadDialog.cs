@@ -10,6 +10,8 @@ public class FileLoadDialog : MonoBehaviour
     // Warning: paths returned by FileBrowser dialogs do not contain a trailing '\' character
     // Warning: FileBrowser can only show 1 dialog at a time
 
+    public GameObject videoplayer;
+
     void Start()
     {
         
@@ -81,13 +83,22 @@ public class FileLoadDialog : MonoBehaviour
                 Debug.Log(FileBrowser.Result[i]);
                 if (FileBrowser.Result[i].EndsWith(".mp4"))
                 {
-                    transform.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
+                    GameObject temp = Instantiate(videoplayer, new Vector3(0, 0, -2f), Quaternion.identity 
+                        /*transform.GetComponent<Paintable>().canvas_radial.transform*/);
+
+                    temp.transform.GetChild(0).GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
+                    temp.transform.GetChild(0).GetComponent<VideoPlayer>().Play();
+                    GameObject slider = temp.transform.GetComponent<VideoPlayerChildrenAccess>().slider;
+                    /*temp.transform.GetComponent<VideoPlayerChildrenAccess>().canvas.renderMode = RenderMode.ScreenSpaceOverlay;*/
+
+                    /*transform.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
                     transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
                     transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().Play();
+                    GameObject slider = transform.GetComponent<Paintable>().videoplayer.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider;
+                    */
 
                     // load the annotate file as well
-                    int trim_pos = FileBrowser.Result[i].IndexOf(".");
-                    GameObject slider = transform.GetComponent<Paintable>().videoplayer.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider;
+                    int trim_pos = FileBrowser.Result[i].IndexOf(".");                    
                     slider.GetComponent<VideoController>().loadAnnotation(FileBrowser.Result[i].Substring(0, trim_pos) + ".json");
                 }
                 else if(FileBrowser.Result[i].EndsWith(".jpg") || FileBrowser.Result[i].EndsWith(".png"))

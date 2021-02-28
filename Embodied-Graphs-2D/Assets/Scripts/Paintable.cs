@@ -29,6 +29,10 @@ public class Paintable : MonoBehaviour
 	public bool panZoomLocked = false;
     public bool graphlocked;
     public bool directed_edge = false;
+    public bool vertex_add = false;
+    public bool vertex_del = false;
+    public bool edge_add = false;
+    public bool edge_del = false;
 
     private Vector2 prev_move_pos;
     public Vector3 touchDelta;
@@ -1091,8 +1095,8 @@ public class Paintable : MonoBehaviour
 
         else if (functionline != null &&
             currentTouch.phase == UnityEngine.TouchPhase.Moved //currentPen.tip.isPressed
-            && (currentTouch.position -
-            (Vector2)functionline.GetComponent<FunctionElementScript>().points[functionline.GetComponent<FunctionElementScript>().points.Count - 1]).magnitude > 0f)
+            /*&& (currentTouch.position -
+            (Vector2)functionline.GetComponent<FunctionElementScript>().points[functionline.GetComponent<FunctionElementScript>().points.Count - 1]).magnitude > 0f*/)
         {
             // add points to the last line
             var ray = Camera.main.ScreenPointToRay(currentTouch.position);
@@ -1125,87 +1129,213 @@ public class Paintable : MonoBehaviour
                 if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
                 {
                     Debug.Log("finished_templine_with_tap");
-                    List<GameObject> selected_graphs = new List<GameObject>();
-                    GameObject[] grapharray = GameObject.FindGameObjectsWithTag("graph");
 
-                    for (int i = 0; i < grapharray.Length; i++)
+                    if (vertex_add)
                     {
+                        List<GameObject> selected_icons = new List<GameObject>();
+                        GameObject[] iconarray = GameObject.FindGameObjectsWithTag("iconic");
 
-                        // check if the lines are inside the drawn set polygon -- in respective local coordinates
-                        // we checked if the first node is inside the drawn lasso
-                        if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
-                            functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
-                            grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)
+                        for (int i = 0; i < iconarray.Length; i++)
                         {
-                            selected_graphs.Add(grapharray[i]);
+                            // check if the lines are inside the drawn set polygon -- in respective local coordinates
+                            // we checked if the icon is inside the drawn lasso
+                            if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(iconarray[i].GetComponent<iconicElementScript>().edge_position))
+                            {
+                                selected_icons.Add(iconarray[i]);
+                            }
                         }
-                    }
 
-                    //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
-                    if (selected_graphs.Count == 0)
-                    {
+                        //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
+                        if (selected_icons.Count == 0)
+                        {
+                            Destroy(functionline);
+                            functionline = null;
+                            return;
+                        }
+
+                        GameObject tempnodeparent = potential_tapped_graph.transform.GetChild(0).gameObject;
+                        GameObject tempedgeparent = potential_tapped_graph.transform.GetChild(1).gameObject;
+                        GameObject tempsimplicialparent = potential_tapped_graph.transform.GetChild(2).gameObject;
+                        GameObject temphyperparent = potential_tapped_graph.transform.GetChild(3).gameObject;
+
+                        //change_parent
+                        foreach (GameObject new_child_icon in selected_icons)
+                        {
+                            //change_parent 
+                            if (new_child_icon.transform.parent.tag != "node_parent")
+                            {
+                                new_child_icon.transform.parent = tempnodeparent.transform;
+                            }
+                            // if already in a graph, change parent of every siblings of it,but make sure not under the current graph
+                            else if (new_child_icon.transform.parent != potential_tapped_graph.transform)
+                            {
+                                Transform Prev_node_parent = new_child_icon.transform.parent;
+                                Transform Prev_graph_parent = Prev_node_parent.parent;
+                                Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+                                Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+                                Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
+                                Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+                                Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+                                Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+                                Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+
+                                foreach (Transform child in allChildrennode)
+                                {
+                                    child.parent = tempnodeparent.transform;
+                                }
+
+                                foreach (Transform child in allChildrenedge)
+                                {
+                                    if (child.tag == "edge")
+                                        child.parent = tempedgeparent.transform;
+                                }
+
+                                foreach (Transform child in allChildrensimpli)
+                                {
+                                    if (child.tag == "simplicial")
+                                        child.parent = tempsimplicialparent.transform;
+                                }
+
+                                foreach (Transform child in allChildrenhyper)
+                                {
+                                    if (child.tag == "hyper")
+                                        child.parent = temphyperparent.transform;
+                                }
+
+                                Destroy(Prev_graph_parent.gameObject);
+                                Destroy(Prev_node_parent.gameObject);
+                                Destroy(Prev_edge_parent.gameObject);
+                                Destroy(Prev_simplicial_parent.gameObject);
+                                Destroy(Prev_hyper_parent.gameObject);
+                            }            
+                        }
+
+                        potential_tapped_graph.GetComponent<GraphElementScript>().Graph_init();
+                        //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
+
                         Destroy(functionline);
                         functionline = null;
-                        return;
                     }
-                    
-                    GameObject tempnodeparent = potential_tapped_graph.transform.GetChild(0).gameObject;
-                    GameObject tempedgeparent = potential_tapped_graph.transform.GetChild(1).gameObject;
-                    GameObject tempsimplicialparent = potential_tapped_graph.transform.GetChild(2).gameObject;
-                    GameObject temphyperparent = potential_tapped_graph.transform.GetChild(3).gameObject;
 
-                    //change_parent
-                    foreach (GameObject new_child_graph in selected_graphs)
+                    else if (vertex_del)
                     {
-                        //change_parent 
-                        // if already in a graph, change parent of every siblings of it,but make sure not under the current graph
-                        
-                        Transform Prev_node_parent = new_child_graph.transform.GetChild(0);
-                        Transform Prev_graph_parent = new_child_graph.transform;
-                        Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
-                        Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
-                        Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
-                        Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
-                        Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
-                        Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
-                        Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+                        GameObject tempnodeparent = potential_tapped_graph.transform.GetChild(0).gameObject;
+                        Transform[] allChildrennode = tempnodeparent.GetComponentsInChildren<Transform>();
 
                         foreach (Transform child in allChildrennode)
                         {
-                            child.parent = tempnodeparent.transform;
+                            if (child.tag != "iconic")
+                                continue;
+                            Debug.Log("checkfor_vertex_del:"+child.name);
+                            if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(child.GetComponent<iconicElementScript>().edge_position))
+                            {
+                                string possible_edge_node_name = child.gameObject.name;
+                                searchNodeAndDeleteEdge(possible_edge_node_name);
+                                Destroy(child.gameObject);
+                            }
                         }
+                               
+                        potential_tapped_graph.GetComponent<GraphElementScript>().Graph_init();
+                        //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
+
+                        Destroy(functionline);
+                        functionline = null;
+                    }
+
+                    else if (edge_add)
+                    {
+                        List<string> selected_icons = new List<string>();
+                        GameObject tempnodeparent = potential_tapped_graph.transform.GetChild(0).gameObject;
+                        Transform[] allChildrennode = tempnodeparent.GetComponentsInChildren<Transform>();
+
+                        foreach (Transform child in allChildrennode)
+                        {
+                            if (child.tag != "iconic")
+                                continue;
+
+                            if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(child.GetComponent<iconicElementScript>().edge_position))
+                            {
+                                selected_icons.Add(child.GetComponent<iconicElementScript>().icon_number.ToString());
+                            }
+                        }
+
+                        if (selected_icons.Count == 0)
+                        {
+                            Destroy(functionline);
+                            functionline = null;
+                            return;
+                        }
+
+
+                        for (int i = 0; i < selected_icons.Count; i++)
+                        {                            
+                            for (int j = (i+1); j < selected_icons.Count; j++)
+                            {
+                                List<string> icons = new List<string>();
+                                icons.Add(selected_icons[i]);
+                                icons.Add(selected_icons[j]);
+                                potential_tapped_graph.GetComponent<GraphElementScript>().EdgeCreation("edge", icons.ToArray(), 1);
+                            }
+                        }
+
+                        potential_tapped_graph.GetComponent<GraphElementScript>().edges_init();
+                        //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
+
+                        Destroy(functionline);
+                        functionline = null;
+                    }
+
+                    else if (edge_del)
+                    {
+                        List<GameObject> selected_icons = new List<GameObject>();
+                        GameObject tempnodeparent = potential_tapped_graph.transform.GetChild(0).gameObject;
+                        Transform[] allChildrennode = tempnodeparent.GetComponentsInChildren<Transform>();
+
+                        foreach (Transform child in allChildrennode)
+                        {
+                            if (child.tag != "iconic")
+                                continue;
+                            Debug.Log("checkfor_vertex_del:" + child.name);
+                            if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(child.GetComponent<iconicElementScript>().edge_position))
+                            {
+                                selected_icons.Add(child.gameObject);
+                            }
+                        }
+
+                        if (selected_icons.Count == 0)
+                        {
+                            Destroy(functionline);
+                            functionline = null;
+                            return;
+                        }
+
+                        GameObject tempedgeparent = potential_tapped_graph.transform.GetChild(1).gameObject;
+                        Transform[] allChildrenedge = tempedgeparent.GetComponentsInChildren<Transform>();
 
                         foreach (Transform child in allChildrenedge)
                         {
-                            if (child.tag == "edge")
-                                child.parent = tempedgeparent.transform;
+                            if (child.tag != "edge")
+                                continue;
+                            
+                            if (selected_icons.Contains(child.GetComponent<EdgeElementScript>().edge_start) &&
+                                selected_icons.Contains(child.GetComponent<EdgeElementScript>().edge_end))
+                            {
+                                Destroy(child.gameObject);
+                            }
                         }
 
-                        foreach (Transform child in allChildrensimpli)
-                        {
-                            if (child.tag == "simplicial")
-                                child.parent = tempsimplicialparent.transform;
-                        }
+                        potential_tapped_graph.GetComponent<GraphElementScript>().edges_init();
+                        //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
-                        foreach (Transform child in allChildrenhyper)
-                        {
-                            if (child.tag == "hyper")
-                                child.parent = temphyperparent.transform;
-                        }
-
-                        Destroy(Prev_graph_parent.gameObject);
-                        Destroy(Prev_node_parent.gameObject);
-                        Destroy(Prev_edge_parent.gameObject);
-                        Destroy(Prev_simplicial_parent.gameObject);
-                        Destroy(Prev_hyper_parent.gameObject);
-                        
+                        Destroy(functionline);
+                        functionline = null;
                     }
 
-                    potential_tapped_graph.GetComponent<GraphElementScript>().Graph_init();
-                    //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
-
-                    Destroy(functionline);
-                    functionline = null;
+                    else
+                    {
+                        Destroy(functionline);
+                        functionline = null;
+                    }
                 }
                 else
                 {
@@ -1254,10 +1384,24 @@ public class Paintable : MonoBehaviour
 
             case UnityEngine.TouchPhase.Moved:
                 //if (LastPhaseHappend != 2)
-                if (Vector2.Distance(currentTouch.position, startPos) > 2)
+                if (Vector2.Distance(currentTouch.position, startPos) > 5f)
                 {
-                    taping_flag = false;
-                    potential_tapped_graph = null;
+                    startPos = currentTouch.position;
+                    ray = Camera.main.ScreenPointToRay(startPos);
+
+                    // checking again, as unwanted move might have happened
+                    if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                    {
+                        if (Hit.transform.parent.tag == "node_parent")
+                        {
+                            potential_tapped_graph = Hit.transform.parent.parent.gameObject;
+                        }
+                    }
+                    else
+                    {
+                        taping_flag = false;
+                        potential_tapped_graph = null;
+                    }                    
                 }
                 LastPhaseHappend = 2;
                 break;
@@ -1931,15 +2075,31 @@ public class Paintable : MonoBehaviour
             
             graphlocked = !graphlocked;
             Debug.Log("NOT WORKING?");
-        }/*
-        else
-        {
-            graphlocked = false;
-        }*/
+        }
 
         if (Input.GetKeyUp(KeyCode.D))
         {
             directed_edge = !directed_edge;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha1) || Input.GetKeyUp(KeyCode.Keypad1))
+        {
+            vertex_add = !vertex_add;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha2) || Input.GetKeyUp(KeyCode.Keypad2))
+        {
+            vertex_del = !vertex_del;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha3) || Input.GetKeyUp(KeyCode.Keypad3))
+        {
+            edge_add = !edge_add;
+        }
+
+        if (Input.GetKeyUp(KeyCode.Alpha4) || Input.GetKeyUp(KeyCode.Keypad4))
+        {
+            edge_del = !edge_del;
         }
     }
 
