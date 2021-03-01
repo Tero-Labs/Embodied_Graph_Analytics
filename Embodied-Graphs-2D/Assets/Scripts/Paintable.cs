@@ -265,7 +265,7 @@ public class Paintable : MonoBehaviour
                         // Debug.Log("here_in_save_mode " + templine.GetComponent<iconicElementScript>().points.Count.ToString());
                         // TODO: FINISH THE ICONIC ELEMENT
                         templine = transform.GetComponent<CreatePrimitives>().FinishPenLine(templine);
-
+                        templine.GetComponent<iconicElementScript>().paintable_object = transform.gameObject;
 						// set templine to null, otherwise, if an existing touch from color picker makes it to the canvas,
 						// then the object jumps to the color picker (as a new templine hasn't been initialized from touch.begin).
 						templine = null;

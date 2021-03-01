@@ -1367,6 +1367,46 @@ public class EdgeElementScript : MonoBehaviour
         }
     }
 
+    public void addEndPoint()
+    {
+        GameObject source = edge_start;
+        GameObject target = edge_end;
+
+        //transform.GetComponent<LineRenderer>().useWorldSpace = true;
+
+        // set line renderer end point
+        transform.GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
+
+        transform.GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
+        
+        // assuming edge_start is always an anchor
+        var edgepoints = new List<Vector3>() { transform.GetComponent<LineRenderer>().GetPosition(0), transform.GetComponent<LineRenderer>().GetPosition(1) };
+
+        transform.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+        {
+            var pos = transform.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+            return new Vector2(pos.x, pos.y);
+        }).ToArray();
+
+        transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+        // set line renderer texture scale
+        var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
+            transform.GetComponent<LineRenderer>().GetPosition(1));
+        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+
+        for (int x = 0; x < 2; x++)
+        {
+            GameObject temp = Instantiate(dot_prefab, transform.GetComponent<LineRenderer>().GetPosition(x), Quaternion.identity, transform);
+            temp.name = "dot_child";
+            temp.transform.parent = transform;
+            temp.transform.SetSiblingIndex(x);
+            temp.transform.localScale = new Vector3(5f, 5f, 5f);
+
+            if (directed_edge && x == 1)
+                temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
+        }
+    }
 
     public void updateEndPoint()
     {

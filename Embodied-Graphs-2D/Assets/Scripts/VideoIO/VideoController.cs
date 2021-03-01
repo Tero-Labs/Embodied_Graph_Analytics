@@ -18,12 +18,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
     public GameObject icon_prefab;
     public GameObject edge_prefab;
-    GameObject temp_parent;
+    public GameObject Objects_parent;
+    public GameObject temp_parent;
 
     // Start is called before the first frame update
     void Start()
     {
-
+        temp_parent = null;
     }
 
     public void loadAnnotation(string filename)
@@ -48,25 +49,30 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         {
             prev_frame = videoplayer.frame;
             Debug.Log("current_frame: " + videoplayer.frame.ToString());
-            if (temp_parent != null) Destroy(temp_parent);
+            if (temp_parent != null)
+            {
+                Destroy(temp_parent);
+                temp_parent = null;
+            }
+
             temp_parent = new GameObject();
 
             List<GameObject> all_icons = new List<GameObject>();
-            List<tracked_object> all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;
-            Vector3 edge_pos = Vector3.zero;
+            List<tracked_object> all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;            
 
             foreach (tracked_object cur_obj in all_objects)
             {
+                Vector3 edge_pos = Vector3.zero;
                 GameObject temp = Instantiate(icon_prefab, temp_parent.transform);
                 all_icons.Add(temp);
 
                 temp.GetComponent<TrailRenderer>().enabled = false;
                 temp.GetComponent<MeshRenderer>().enabled = false;
 
-                LineRenderer l = temp.GetComponent<LineRenderer>();
+                /*LineRenderer l = temp.GetComponent<LineRenderer>();
                 l.material.color = Color.black;
                 l.startWidth = 2f;
-                l.endWidth = 2f;
+                l.endWidth = 2f;*/
 
                 List<Vector3> points = new List<Vector3>();
                 
@@ -79,17 +85,14 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     edge_pos += pos_vec;
 
                     points.Add(pos_vec);
-                    //Debug.Log("transformed_pt_lerped: " + pos_vec);
-                    //Debug.Log("transformed_pt: " + videoplayer.transform.InverseTransformPoint(new Vector3(first_obj.x, first_obj.y, -5f)));
-                    //Debug.Log(JsonUtility.ToJson(frames_annotation.all_frame[(int)videoplayer.frame]));
                 }
 
+                /*
                 // connect the end and statr position as well
                 l.loop = true;
                 // if we don't manually change the position count, it only takes the first two positions
                 l.positionCount = points.Count;
-                l.SetPositions(points.ToArray());
-                //temp.transform.localScale = new Vector3(2f, 2f, 2f);
+                l.SetPositions(points.ToArray());*/
 
                 edge_pos = edge_pos / points.Count;
                 temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
@@ -107,18 +110,22 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 for (int j = (i+1); j < all_icons.Count; j++)
                 {
                     if (Vector3.Distance(all_icons[i].GetComponent<iconicElementScript>().edge_position, 
-                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < 10f)
+                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < 20f)
                     {
-                        GameObject temp = Instantiate(edge_prefab, all_icons[i].GetComponent<iconicElementScript>().edge_position, Quaternion.identity, temp_parent.transform);
+                        GameObject temp = Instantiate(edge_prefab, Vector3.zero, Quaternion.identity, temp_parent.transform);
+
                         temp.GetComponent<EdgeElementScript>().edge_start = all_icons[i];
                         temp.GetComponent<EdgeElementScript>().edge_end = all_icons[j];
-                        temp.GetComponent<EdgeElementScript>().addDot();
-                        temp.GetComponent<EdgeElementScript>().updateEndPoint();
+
+                        //temp.GetComponent<EdgeElementScript>().addDot();
+                        //temp.GetComponent<EdgeElementScript>().updateEndPoint();
+                        temp.GetComponent<EdgeElementScript>().addEndPoint();
                     }
                 }
             }
         }
     }
+       
 
     public void OnSliderValueChanged(PointerEventData eventData)
     {

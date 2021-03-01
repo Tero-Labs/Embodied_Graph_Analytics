@@ -747,6 +747,7 @@ MonoBehaviour:
     type: 3}
   edge_prefab: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
     type: 3}
+  Objects_parent: {fileID: 0}
 --- !u!1 &2040663511566986959
 GameObject:
   m_ObjectHideFlags: 0
@@ -926,6 +927,7 @@ MonoBehaviour:
   quad: {fileID: 2040663511566986959}
   canvas: {fileID: 2040663511566986976}
   settings: {fileID: 6730050790235981775}
+  delete: {fileID: 4244648356463772785}
   settings_menu: {fileID: 2045892074275407521}
 --- !u!1 &2040663511566986968
 GameObject:
@@ -3284,7 +3286,7 @@ GameObject:
   - component: {fileID: 898600093398216253}
   - component: {fileID: 4244648356463772785}
   m_Layer: 5
-  m_Name: Button
+  m_Name: Delete
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
