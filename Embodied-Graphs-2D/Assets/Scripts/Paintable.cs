@@ -176,7 +176,8 @@ public class Paintable : MonoBehaviour
 				// start drawing a new line
 				var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
 				RaycastHit Hit;
-				if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+				if (Physics.Raycast(ray, out Hit) && 
+                   ( Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
 				{
 					//Debug.Log("instantiated_templine");
 
@@ -230,7 +231,8 @@ public class Paintable : MonoBehaviour
 				// add points to the last line
 				var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
 				RaycastHit Hit;
-				if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+				if (Physics.Raycast(ray, out Hit) &&
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
 				{
 
 					Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
@@ -258,7 +260,8 @@ public class Paintable : MonoBehaviour
 				var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); //currentPen.position.ReadValue());// Input.GetTouch(0).position);
 				RaycastHit Hit;
 
-				if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+				if (Physics.Raycast(ray, out Hit) &&
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
 				{
 					if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
 					{
@@ -359,8 +362,6 @@ public class Paintable : MonoBehaviour
 
                     if (curtouched_obj.tag == "iconic")
                     {
-                        //does_not_work
-                        //curtouched_obj.GetComponent<MeshRenderer>().material.color = Color.red;
                         if (!graphlocked)
                             curtouched_obj.transform.localScale = curtouched_obj.transform.localScale*1.05f; //new Vector3(1.25f, 1.25f, 1.25f);
                     }
@@ -420,6 +421,10 @@ public class Paintable : MonoBehaviour
                             }
                             
                         }
+                        else if (curtouched_obj.tag == "video_player")
+                        {
+                            curtouched_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().checkHitAndMove(diff); 
+                        }
                         else if (curtouched_obj.tag == "hyper")
                         {
                             //curtouched_obj.transform.position -= (Vector3)panDirection;
@@ -478,7 +483,7 @@ public class Paintable : MonoBehaviour
 
                     //https://generalistprogrammer.com/unity/unity-line-renderer-tutorial/
                     LineRenderer l = edgeline.GetComponent<LineRenderer>();
-                    l.material.color = Color.black;
+                    l.material.color = Color.gray;
                     l.startWidth = 2f;
                     l.endWidth = 2f;
 
@@ -917,7 +922,8 @@ public class Paintable : MonoBehaviour
         if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
         {
             //Debug.Log("entered");
-            if (no_func_menu_open)
+            //if (no_func_menu_open)
+            if (dragged_arg_textbox == null)
             {
                 OnGraphTap();
 
@@ -930,7 +936,8 @@ public class Paintable : MonoBehaviour
                         var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                         RaycastHit Hit;
                         //Debug.Log("here");
-                        if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                        if (Physics.Raycast(ray, out Hit) &&
+                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
                         {
                             Debug.Log("instantiated_templine");
 
@@ -953,7 +960,8 @@ public class Paintable : MonoBehaviour
                         // add points to the last line
                         var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                         RaycastHit Hit;
-                        if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                        if (Physics.Raycast(ray, out Hit) &&
+                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
                         {
 
                             Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
@@ -978,34 +986,29 @@ public class Paintable : MonoBehaviour
 
                         /*if (potential_tapped_graph == null)
                         {*/
-                            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
+                            if (Physics.Raycast(ray, out Hit) &&
+                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
                             {
                                 if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
                                 {
 
-                                    List<GameObject> selected_graphs = new List<GameObject>();
-                                    GameObject[] grapharray = GameObject.FindGameObjectsWithTag("iconic");
+                                    List<GameObject> selected_icons = new List<GameObject>();
+                                    GameObject[] iconarray = GameObject.FindGameObjectsWithTag("iconic");
 
-                                    for (int i = 0; i < grapharray.Length; i++)
+                                    for (int i = 0; i < iconarray.Length; i++)
                                     {
-
-                                    // check if the lines are inside the drawn set polygon -- in respective local coordinates
-                                    // we checked if the first node is inside the drawn lasso
-                                    /*if (grapharray[i].transform.GetChild(0).GetChild(0) != null &&
-                                        functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
-                                        grapharray[i].transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position))//)*/
-
+                                    
                                         if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(
-                                                grapharray[i].GetComponent<iconicElementScript>().edge_position))//)
+                                                iconarray[i].GetComponent<iconicElementScript>().edge_position))//)
                                         {
-                                            selected_graphs.Add(grapharray[i]);
+                                            selected_icons.Add(iconarray[i]);
                                                 // MARKER: as everything is recalculated in functionmenuscript, we added break for fast op.
                                                 break;
                                         }
                                     }
 
                                     //Debug.Log("found graph count in lasso: " + selected_graphs.Count.ToString());
-                                    if (selected_graphs.Count == 0)
+                                    if (selected_icons.Count == 0)
                                     {
                                         Destroy(functionline);
                                         functionline = null;

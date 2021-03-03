@@ -18,7 +18,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
     public GameObject icon_prefab;
     public GameObject edge_prefab;
-    public GameObject Objects_parent;
+    public GameObject graph_prefab;
+    public GameObject paintable;
     public GameObject temp_parent;
 
     // Start is called before the first frame update
@@ -55,15 +56,22 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 temp_parent = null;
             }
 
-            temp_parent = new GameObject();
+            temp_parent = Instantiate(graph_prefab);
 
             List<GameObject> all_icons = new List<GameObject>();
-            List<tracked_object> all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;            
+            List<tracked_object> all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;
+            // because, we do not want to increase total icon numbers in each frame, which will be ambigious
+            int num = paintable.GetComponent<Paintable>().totalLines;
 
             foreach (tracked_object cur_obj in all_objects)
             {
                 Vector3 edge_pos = Vector3.zero;
                 GameObject temp = Instantiate(icon_prefab, temp_parent.transform);
+
+                num++;                
+                temp.tag = "iconic";
+                temp.name = "iconic_" + num.ToString();
+                temp.GetComponent<iconicElementScript>().icon_number = num;
                 all_icons.Add(temp);
 
                 temp.GetComponent<TrailRenderer>().enabled = false;

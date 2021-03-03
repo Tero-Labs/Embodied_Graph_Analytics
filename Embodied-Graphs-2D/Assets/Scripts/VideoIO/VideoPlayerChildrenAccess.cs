@@ -9,6 +9,8 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     public Canvas canvas;
     public Button settings, delete;
     public GameObject settings_menu;
+    public GameObject control_menu;
+    public GameObject paintable;
     // Start is called before the first frame update
     void Start()
     {
@@ -36,4 +38,13 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     {
         
     }
+
+    public void checkHitAndMove(Vector3 diff)
+    {
+        transform.position += diff;
+        control_menu.transform.position += diff;
+        settings_menu.transform.position += diff;
+        slider.GetComponent<VideoController>().temp_parent.transform.position += diff;
+    }
+
 }

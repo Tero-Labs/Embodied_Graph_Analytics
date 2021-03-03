@@ -19,6 +19,7 @@ TagManager:
   - hyper_parent
   - hyper_child_edge
   - function
+  - video_player
   layers:
   - Default
   - TransparentFX

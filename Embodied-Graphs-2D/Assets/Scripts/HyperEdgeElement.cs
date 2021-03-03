@@ -21,7 +21,13 @@ public class HyperEdgeElement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        spline_flag = Mathf.RoundToInt(UnityEngine.Random.Range(1f, 2f));
+        float temp = UnityEngine.Random.Range(1f, 2f);
+        print("rand:" + temp.ToString());
+        if (temp > 1.5f)
+            spline_flag = 1;            
+        else
+            spline_flag = 2;
+        //spline_flag = Mathf.RoundToInt(UnityEngine.Random.Range(1f, 2f));
     }
 
     // Update is called once per frame

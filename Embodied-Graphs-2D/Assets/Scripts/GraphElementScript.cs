@@ -299,8 +299,9 @@ public class GraphElementScript : MonoBehaviour
 
     public void MenuClickSetup(GameObject Radmenu)
     {
-        Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().parent = transform.gameObject;
-        Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().setup();
+        Radmenu.transform.GetChild(2).GetComponent<GraphSliderMenu>().parent = transform.gameObject;
+        /*Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().parent = transform.gameObject;
+        Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().setup();*/
 
         Transform rad_menu = Radmenu.transform.GetChild(1);
         for (int i = 0; i < 8; i++)
@@ -492,15 +493,17 @@ public class GraphElementScript : MonoBehaviour
                 transform.GetChild(1).gameObject.SetActive(false);
             }
 
-            // the follwings are basically copy of paintable script
+            // the follwings are basically copy of graph creation in paintable script
             if (abstraction_layer == "graph")
             {
                 transform.GetChild(1).gameObject.SetActive(true);
+                // delete all previous children, draw again
                 if (graph_lock == false)
                 {
                     DeleteChildren(transform.GetChild(1));
                 }
-                // force initial conversion
+                // else keep previous children, no need to redraw
+                // however, we force a mandatory initial conversion
                 else if (graph_drawn)
                 {
                     return;

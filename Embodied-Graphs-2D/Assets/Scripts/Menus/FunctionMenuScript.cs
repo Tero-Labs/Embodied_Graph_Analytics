@@ -10,11 +10,13 @@ public class FunctionMenuScript : MonoBehaviour
     public Toggle evaluation_type;
     public bool instant_eval;
     public Toggle keepchilden;
+    public Toggle show_result;
     public bool keep_child_object;
     public bool eval_finished;
 
     public InputField mainInputField;
     public Button perform_action;
+    public Button settings;
     public GameObject text_label;
     public GameObject input_option;
     public bool match_found;
@@ -66,6 +68,8 @@ public class FunctionMenuScript : MonoBehaviour
         //Passes the main input field into the method when "LockInput" is invoked
         mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
         perform_action.onClick.AddListener(delegate { OnClickButton(perform_action); });
+        settings.onClick.AddListener(delegate { OnSettingsButton(settings); });
+        show_result.onValueChanged.AddListener(delegate { ResultVisiblity(show_result); });
 
         argument_text = null;
         dragged_arg_object = null;
@@ -122,8 +126,7 @@ public class FunctionMenuScript : MonoBehaviour
 
     private void Update()
     {
-        //TodO:add_for_drag
-
+        
         if (paintable.GetComponent<Paintable>().function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
         {
             if (PenTouchInfo.PressedThisFrame)
@@ -132,11 +135,12 @@ public class FunctionMenuScript : MonoBehaviour
                 if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
                 {
                     paintable.GetComponent<Paintable>().dragged_arg_textbox = transform.gameObject;
-                    if (!textbox_open && !eval_finished)
+
+                    /*if (!textbox_open && !eval_finished)
                     {
                         if (input_option.activeSelf) input_option.SetActive(false);
                         else input_option.SetActive(true);
-                    }
+                    }*/
 
                     if (match_found && !eval_finished)
                     {
@@ -187,10 +191,10 @@ public class FunctionMenuScript : MonoBehaviour
                         }
                     }
                 }
-                //remove active textbox, if any
+                //else check if any other object is clicked on
                 else
                 {
-
+                    //remove active textbox, if any
                     if (textbox_open)
                     {
                         int index = argument_text.GetComponent<FunctionTextInputMenu>().str_index;
@@ -202,8 +206,6 @@ public class FunctionMenuScript : MonoBehaviour
                             string arg_Str = get_arguments_string();
                             text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.ToUpper() + arg_Str;
                             cur_iter++;
-                            //ToDo: store for calculation
-                            //argument_objects[cur_order_dict[index]] = text_label;
                             argument_objects[index] = text_label;
                         }
 
@@ -592,29 +594,35 @@ public class FunctionMenuScript : MonoBehaviour
                 transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects);
                 transform.parent.GetComponent<FunctionCaller>().Function_Caller(mainInputField.text.ToLower());  
             }
-            else
-            {
-                PostProcess("5");
-            }
             
             input_option.SetActive(false);
             paintable.GetComponent<Paintable>().no_func_menu_open = true;            
         }
     }
-
-    public void PostProcess(string output = null)
+    
+    public void Hide()
     {
-        if (!keep_child_object)
+        foreach (GameObject child_graph in argument_objects)
         {
-            foreach (GameObject child_graph in argument_objects)
+            if (child_graph.tag == "graph")
             {
-                if (child_graph.tag == "graph")
+                // if it is under a function, hide that as well 
+                if (child_graph.transform.parent.name.Contains("function_line_"))
+                {
+                    child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().Hide();
+                    child_graph.transform.parent.gameObject.SetActive(false);
+                }
+                else
                 {
                     child_graph.SetActive(false);
                 }
             }
         }
+    }
 
+    public void PostProcess(string output = null)
+    {
+        
         if (mainInputField.text.ToLower().Equals("topological") || mainInputField.text.ToLower().Equals("degree_measure"))
         {
             transform.parent.GetComponent<FunctionElementScript>().InstantiateTopoGraph();
@@ -628,11 +636,44 @@ public class FunctionMenuScript : MonoBehaviour
             Debug.Log("finished");
             transform.parent.GetComponent<FunctionElementScript>().InstantiateCommunityGraph();
         }
-        else if (instant_eval)
+        else
+        {
+            if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(); //(output);
+        }
+
+        if (instant_eval)
         {
             // show results instantly
-            transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();
-            if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(); //(output);
+            transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();            
+            settings.transform.gameObject.SetActive(false);
+        }
+        else
+        {
+            if (output_type == "graph")
+            {
+                transform.parent.GetChild(1).gameObject.SetActive(false);
+            }
+        }
+
+        if (!keep_child_object)
+        {
+            foreach (GameObject child_graph in argument_objects)
+            {
+                if (child_graph.tag == "graph")
+                {
+                    // if it is under a function, hide that as well 
+                    if (child_graph.transform.parent.name.Contains("function_line_"))
+                    {
+                        // recursive hide call
+                        child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().Hide();
+                        child_graph.transform.parent.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        child_graph.SetActive(false);
+                    }
+                }
+            }
         }
 
         message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text ;
@@ -653,5 +694,31 @@ public class FunctionMenuScript : MonoBehaviour
     {
         if (toggle.isOn) instant_eval = true;
         else instant_eval = false;
+    }
+
+    void OnSettingsButton(Button settings)
+    {
+        input_option.SetActive(!(input_option.activeSelf));
+        if (eval_finished)
+        {
+            evaluation_type.gameObject.SetActive(false);
+            keepchilden.gameObject.SetActive(false);
+            mainInputField.gameObject.SetActive(false);
+            show_result.gameObject.SetActive(true);
+            /*keepchilden.interactable = false;
+            mainInputField.interactable = false;*/
+        }
+    }
+
+    void ResultVisiblity(Toggle toggle)
+    {
+        if (eval_finished)
+        {
+            if (output_type == "graph")
+            {
+                transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
+                transform.parent.GetComponent<MeshRenderer>().enabled = !toggle.isOn;
+            }
+        }
     }
 }

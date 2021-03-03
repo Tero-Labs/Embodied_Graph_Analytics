@@ -134,7 +134,7 @@ Material:
     - _RendererColor: {r: 1, g: 1, b: 1, a: 1}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
     - _SpecColor: {r: 1, g: 1, b: 1, a: 1}
-    - _Specular: {r: 0, g: 0, b: 0, a: 0}
+    - _Specular: {r: 1, g: 1, b: 1, a: 0.043137256}
     - _TintColor: {r: 0.80784315, g: 0.92941177, b: 0.5019608, a: 0.5}
     - _TreeInstanceColor: {r: 1, g: 1, b: 1, a: 1}
     - _TreeInstanceScale: {r: 1, g: 1, b: 1, a: 1}

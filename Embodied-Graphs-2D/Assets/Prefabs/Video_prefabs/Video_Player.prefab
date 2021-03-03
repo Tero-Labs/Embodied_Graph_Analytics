@@ -235,7 +235,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Enter text...
+  m_Text: Radius
 --- !u!1 &1920623180394484130
 GameObject:
   m_ObjectHideFlags: 0
@@ -747,7 +747,10 @@ MonoBehaviour:
     type: 3}
   edge_prefab: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
     type: 3}
-  Objects_parent: {fileID: 0}
+  graph_prefab: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
+    type: 3}
+  paintable: {fileID: 0}
+  temp_parent: {fileID: 0}
 --- !u!1 &2040663511566986959
 GameObject:
   m_ObjectHideFlags: 0
@@ -763,7 +766,7 @@ GameObject:
   - component: {fileID: 2040663511566986952}
   m_Layer: 0
   m_Name: Quad
-  m_TagString: Untagged
+  m_TagString: video_player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -929,6 +932,8 @@ MonoBehaviour:
   settings: {fileID: 6730050790235981775}
   delete: {fileID: 4244648356463772785}
   settings_menu: {fileID: 2045892074275407521}
+  control_menu: {fileID: 2040663511566987000}
+  paintable: {fileID: 0}
 --- !u!1 &2040663511566986968
 GameObject:
   m_ObjectHideFlags: 0
@@ -1367,7 +1372,7 @@ GameObject:
   - component: {fileID: 2040663511566987006}
   - component: {fileID: 2040663511566987007}
   m_Layer: 5
-  m_Name: Image
+  m_Name: Control_menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1485,7 +1490,7 @@ GameObject:
   - component: {fileID: 8650612637963155467}
   - component: {fileID: 9002001763285529979}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: Settings_menu
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

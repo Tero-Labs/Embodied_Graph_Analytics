@@ -1,5 +1,6 @@
 ﻿using BezierSolution;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -14,6 +15,7 @@ public class EdgeElementScript : MonoBehaviour
     // previous first child, instead of creating a separate child, we now want to keep it in the script
     public Mesh _mesh;
     public GameObject dot_prefab;
+    public Material none;
 
     public List<GameObject> node_obj = new List<GameObject>();
     public GameObject edge_start, edge_end;
@@ -1359,9 +1361,9 @@ public class EdgeElementScript : MonoBehaviour
             transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
 
             // set line renderer texture scale
-            var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
+            /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
                 transform.GetComponent<LineRenderer>().GetPosition(1));
-            transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+            transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);*/
 
             updateDot();
         }
@@ -1372,15 +1374,23 @@ public class EdgeElementScript : MonoBehaviour
         GameObject source = edge_start;
         GameObject target = edge_end;
 
-        //transform.GetComponent<LineRenderer>().useWorldSpace = true;
+        LineRenderer l = transform.GetComponent<LineRenderer>();
+        l.material.color = Color.blue;        
+        //l.material.SetColor("_EmissionColor",Color.red);
+        l.startColor = Color.blue; //new Color(1f, 1f, 1f, 0.5f);
+        l.endColor = Color.blue; //new Color(1f, 1f, 1f, 0.5f);
+
+        /*Material[] mats = new Material[1];
+        mats[0] = none;
+        l.materials = mats;*/
 
         // set line renderer end point
-        transform.GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
 
-        transform.GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
-        
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
+
         // assuming edge_start is always an anchor
-        var edgepoints = new List<Vector3>() { transform.GetComponent<LineRenderer>().GetPosition(0), transform.GetComponent<LineRenderer>().GetPosition(1) };
+        var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
 
         transform.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
         {
@@ -1391,13 +1401,12 @@ public class EdgeElementScript : MonoBehaviour
         transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
 
         // set line renderer texture scale
-        var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
-            transform.GetComponent<LineRenderer>().GetPosition(1));
-        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+        //var linedist = Vector3.Distance(l.GetPosition(0), l.GetPosition(1));
+        //l.materials[0].mainTextureScale = new Vector2(linedist, 1);
 
         for (int x = 0; x < 2; x++)
         {
-            GameObject temp = Instantiate(dot_prefab, transform.GetComponent<LineRenderer>().GetPosition(x), Quaternion.identity, transform);
+            GameObject temp = Instantiate(dot_prefab, l.GetPosition(x), Quaternion.identity, transform);
             temp.name = "dot_child";
             temp.transform.parent = transform;
             temp.transform.SetSiblingIndex(x);
@@ -1407,6 +1416,7 @@ public class EdgeElementScript : MonoBehaviour
                 temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
         }
     }
+        
 
     public void updateEndPoint()
     {
@@ -1431,9 +1441,9 @@ public class EdgeElementScript : MonoBehaviour
         transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
 
         // set line renderer texture scale
-        var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
+        /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
             transform.GetComponent<LineRenderer>().GetPosition(1));
-        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);*/
 
         updateDot();        
     }
