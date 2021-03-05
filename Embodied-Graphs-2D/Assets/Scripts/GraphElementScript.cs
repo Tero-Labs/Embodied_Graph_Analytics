@@ -9,22 +9,23 @@ using TMPro;
 
 public class GraphElementScript : MonoBehaviour
 {
+    public Vector3 edge_position;
     public string graph_name;
     public string nodes_str;
     public string edges_str;
     public string hyper_edges_str;
     public string simplicial_str;
     public string abstraction_layer;
-    public GameObject Objects_parent;
 
     public bool splined_edge_flag;
-    public GameObject paintable;
 
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
     public GameObject LabelElement;
-    //public GameObject canvas;
+    public GameObject graph_radial_menu;
+    public GameObject canvas_radial;
+    public GameObject paintable;
 
     public bool graph_lock;
     public bool simplicial_lock;
@@ -46,7 +47,7 @@ public class GraphElementScript : MonoBehaviour
     void Start()
     {
         abstraction_layer = "graph";
-        //Objects_parent = GameObject.Find("Objects");
+        //canvas_radial = GameObject.Find("canvas_radial");
 
         graph_lock = true;
         simplicial_lock = true;
@@ -56,6 +57,7 @@ public class GraphElementScript : MonoBehaviour
         graph_drawn = false;
         simplicial_drawn = false;
         hyper_edges_drawn = false;
+        
         //splined_edge_flag = false;
     }
 
@@ -260,6 +262,7 @@ public class GraphElementScript : MonoBehaviour
     // express the graph as string, so that we can pass to the python server
     public void Graph_init()
     {
+        edge_position = Vector3.zero;
         graph = new Graph();
         graph.nodes = new List<int>();
 
@@ -275,6 +278,12 @@ public class GraphElementScript : MonoBehaviour
                 icon_count++;
                 graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
                 nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
+                
+                if (edge_position == Vector3.zero)
+                    edge_position = child.GetComponent<iconicElementScript>().edge_position;
+
+                if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
+                    edge_position = child.GetComponent<iconicElementScript>().edge_position;
             }
         }
 
@@ -300,6 +309,7 @@ public class GraphElementScript : MonoBehaviour
     public void MenuClickSetup(GameObject Radmenu)
     {
         Radmenu.transform.GetChild(2).GetComponent<GraphSliderMenu>().parent = transform.gameObject;
+        Radmenu.transform.GetChild(2).GetComponent<GraphSliderMenu>().UpdateLayer(abstraction_layer);
         /*Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().parent = transform.gameObject;
         Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().setup();*/
 
@@ -356,6 +366,10 @@ public class GraphElementScript : MonoBehaviour
         {
             graph_name = input.text;
             tmptextlabel.text = graph_name;
+            if (transform.childCount > 4)
+            {
+                transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
+            }
         }
     }
 
@@ -683,6 +697,8 @@ public class GraphElementScript : MonoBehaviour
 
     public void checkHitAndMove(Vector3 diff)
     {
+        edge_position = Vector3.zero;
+
         if (transform.GetChild(0).gameObject.activeSelf)
         {
             Transform[] allChildrennode = transform.GetChild(0).GetComponentsInChildren<Transform>();
@@ -690,7 +706,15 @@ public class GraphElementScript : MonoBehaviour
             foreach (Transform child in allChildrennode)
             {
                 if (child.tag == "iconic")
+                {
                     child.GetComponent<iconicElementScript>().edge_position += diff;
+
+                    if (edge_position == Vector3.zero)
+                        edge_position = child.GetComponent<iconicElementScript>().edge_position;
+
+                    if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
+                        edge_position = child.GetComponent<iconicElementScript>().edge_position;
+                }                    
             }
         }
 
@@ -737,4 +761,16 @@ public class GraphElementScript : MonoBehaviour
 
     }
 
+    public void createMenu(GameObject arg_canvas_radial = null)
+    {
+        if (arg_canvas_radial != null)
+            canvas_radial = arg_canvas_radial;
+
+        GameObject radmenu = Instantiate(graph_radial_menu,
+                            canvas_radial.transform.TransformPoint(edge_position + new Vector3(10f, 0f, 0f)),
+                            Quaternion.identity,
+                            canvas_radial.transform);
+
+        MenuClickSetup(radmenu);
+    }
 }

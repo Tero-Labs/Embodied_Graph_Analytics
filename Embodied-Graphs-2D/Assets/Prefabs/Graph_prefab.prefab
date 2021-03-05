@@ -69,6 +69,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcda76ad329caab43975e8d17facb7f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  edge_position: {x: 0, y: 0, z: 0}
   graph_name: 
   nodes_str: 
   edges_str: 
@@ -77,6 +78,7 @@ MonoBehaviour:
   abstraction_layer: 
   Objects_parent: {fileID: 0}
   splined_edge_flag: 0
+  paintable: {fileID: 0}
   EdgeElement: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
     type: 3}
   SimplicialEdgeElement: {fileID: 1055627867345056870, guid: 9f6f6e0dc7f26fa4d91a0cb6de947cac,
@@ -85,6 +87,9 @@ MonoBehaviour:
     type: 3}
   LabelElement: {fileID: 6996262343074260104, guid: 9ff5c8999e810ac4da2446d02ba14b20,
     type: 3}
+  graph_radial_menu: {fileID: 2838677255334079668, guid: 5eacde4eadc27db49963d370df814a64,
+    type: 3}
+  canvas_radial: {fileID: 0}
   graph_lock: 0
   simplicial_lock: 0
   hyper_edges_lock: 0

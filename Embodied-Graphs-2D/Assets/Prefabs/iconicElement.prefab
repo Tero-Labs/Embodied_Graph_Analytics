@@ -53,7 +53,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -107,7 +107,7 @@ LineRenderer:
     colorGradient:
       serializedVersion: 2
       key0: {r: 0, g: 0, b: 0, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 0, g: 0, b: 0, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -160,7 +160,7 @@ TrailRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -212,7 +212,7 @@ TrailRenderer:
     colorGradient:
       serializedVersion: 2
       key0: {r: 0, g: 0, b: 0, a: 1}
-      key1: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 0, g: 0, b: 0, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -262,18 +262,21 @@ MonoBehaviour:
   _mesh: {fileID: 0}
   points: []
   centroid: {x: 0, y: 0, z: 0}
+  radius: 0
+  radius_margin: 0
   maxx: -100000
   maxy: -100000
   minx: 100000
   miny: 100000
   draggable_now: 0
-  icon_elem_material: {fileID: 2100000, guid: eed04dd1a9ac1ec41b0e758c4373d1bb, type: 2}
+  icon_elem_material: {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   paintable_object: {fileID: 0}
   icon_name: 
   icon_number: 0
   current_attribute: 0
   previous_position: {x: 0, y: 0, z: 0}
   recorded_path: []
+  hull_pts: []
   record_path_enable: 0
   position_before_record: {x: 0, y: 0, z: 0}
   edge_position: {x: 0, y: 0, z: 0}
@@ -304,6 +307,7 @@ MonoBehaviour:
   is_this_double_function_operand: 0
   details_dropdown: {fileID: 0}
   global_details_on_path: 1
+  recognized_sprite: {fileID: 0}
 --- !u!23 &1675982206330334959
 MeshRenderer:
   m_ObjectHideFlags: 0

@@ -18,6 +18,7 @@ public class FunctionMenuScript : MonoBehaviour
     public Button perform_action;
     public Button settings;
     public GameObject text_label;
+    
     public GameObject input_option;
     public bool match_found;
     private bool textbox_open;
@@ -30,6 +31,7 @@ public class FunctionMenuScript : MonoBehaviour
     public TMP_Text tmptextlabel;
     public Image img;
 
+    public GameObject topo_label;
 
     public GameObject message_box;
     public GameObject argument_text_box;
@@ -47,6 +49,7 @@ public class FunctionMenuScript : MonoBehaviour
     //private Dictionary<int, int> dummy_order_dict;
 
     private GameObject argument_text;
+    public GameObject drag_text_ui;
 
     public GameObject[] argument_objects;
 
@@ -220,6 +223,22 @@ public class FunctionMenuScript : MonoBehaviour
                     if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
                     {
                         dragged_arg_object = Hit.collider.gameObject;
+
+                        // label instantiate
+                        drag_text_ui = Instantiate(topo_label,
+                            paintable.GetComponent<Paintable>().canvas_radial.transform.TransformPoint(Hit.point),
+                            Quaternion.identity,
+                            paintable.GetComponent<Paintable>().canvas_radial.transform);
+
+                        drag_text_ui.GetComponent<TMP_Text>().text = "icon: " +
+                            dragged_arg_object.GetComponent<iconicElementScript>().icon_number.ToString();
+
+                        //show graph name too
+                        if (dragged_arg_object.transform.parent.tag == "node_parent")
+                        {
+                            drag_text_ui.GetComponent<TMP_Text>().text += "\n" + "graph: " +
+                            dragged_arg_object.transform.parent.parent.GetComponent<GraphElementScript>().graph_name;
+                        }                            
                     }
                 }
             }
@@ -228,8 +247,14 @@ public class FunctionMenuScript : MonoBehaviour
                 && (dragged_arg_object != null ||
                 (paintable.GetComponent<Paintable>().dragged_arg_textbox != null && paintable.GetComponent<Paintable>().dragged_arg_textbox != transform.gameObject)))
             {
-                if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+                if (drag_text_ui != null)
                 {
+                    Destroy(drag_text_ui);
+                    drag_text_ui = null;
+                }
+
+                if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+                {                    
                     var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera, false);
 
                     if (dragged_arg_object == null && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
@@ -314,6 +339,7 @@ public class FunctionMenuScript : MonoBehaviour
                             message_box.GetComponent<TextMeshProUGUI>().text = "Invalid argument!";
                         }
 
+                        
                         // clearing the clicked gameobject insided if block for ensuring the previous information is not lost
                         // in other FunctionMenuScripts that are not clicked on
                         paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
@@ -322,6 +348,24 @@ public class FunctionMenuScript : MonoBehaviour
                 }
 
                 dragged_arg_object = null;
+            }
+
+            else if (PenTouchInfo.PressedNow
+                && drag_text_ui != null)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit))
+                {
+                    drag_text_ui.transform.position = paintable.GetComponent<Paintable>().canvas_radial.transform.TransformPoint(Hit.point);
+                }                
+            }
+
+            else if (PenTouchInfo.ReleasedThisFrame
+                && drag_text_ui != null)
+            {
+                Destroy(drag_text_ui);
+                drag_text_ui = null;
             }
         }
 

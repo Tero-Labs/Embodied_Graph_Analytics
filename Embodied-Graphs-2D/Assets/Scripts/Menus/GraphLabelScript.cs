@@ -8,7 +8,9 @@ public class GraphLabelScript : MonoBehaviour
 {
     public TMP_Text tmptextlabel;
     bool draggable_now;
+    bool menu_create;
     private Vector3 touchDelta = new Vector3();
+    private Vector3 prevpos;
     public Image img;
 
     // Start is called before the first frame update
@@ -47,6 +49,7 @@ public class GraphLabelScript : MonoBehaviour
                 touchDelta = transform.GetChild(0).position - vec;
                 // change anchor color
                 img.color = Color.gray;
+                prevpos = transform.GetChild(0).position;
             }
 
             else
@@ -63,7 +66,7 @@ public class GraphLabelScript : MonoBehaviour
             {
                 //Debug.Log(transform.name);
 
-                draggable_now = true;
+                draggable_now = true;                
                 Vector3 vec = Vector3.zero;
                 RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition,
                     transform.parent.GetComponent<GraphElementScript>().paintable.GetComponent<Paintable>().main_camera, out vec);
@@ -75,19 +78,22 @@ public class GraphLabelScript : MonoBehaviour
 
                 // don't move right away, move if a threshold has been crossed
                 // 5 seems to work well in higher zoom levels and for my finger
-                //if (Vector3.Distance(transform.position, vec) > 5)
-                // update the function position. 
-                transform.position += diff;
+                // update the function position.               
 
                 transform.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
-
             }
 
         }
 
         else if (PenTouchInfo.ReleasedThisFrame && draggable_now)//(Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended && draggable_now)
-        {
+        {            
+            if (Vector3.Distance(prevpos, transform.GetChild(0).position)<5f)
+            {
+                transform.parent.GetComponent<GraphElementScript>().createMenu();
+            }
+
             draggable_now = false;
+            menu_create = false;
 
             touchDelta = new Vector3(); // reset touchDelta
             img.color = new Color32(125, 255, 165, 255);            

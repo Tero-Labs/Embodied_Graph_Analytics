@@ -11,8 +11,9 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     [SerializeField]
     private VideoPlayer videoplayer;
     public Slider mainSlider;
+
     frames frames_annotation;
-    public float width, height;
+    public float width, height;    
     public Vector3[] vec;
     long prev_frame;
 
@@ -22,10 +23,15 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     public GameObject paintable;
     public GameObject temp_parent;
 
+    public float node_radius;
+    public string graph_type;
+    public bool auto_track;
+
     // Start is called before the first frame update
     void Start()
     {
         temp_parent = null;
+        node_radius = 20f;
     }
 
     public void loadAnnotation(string filename)
@@ -72,6 +78,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 temp.tag = "iconic";
                 temp.name = "iconic_" + num.ToString();
                 temp.GetComponent<iconicElementScript>().icon_number = num;
+                temp.GetComponent<iconicElementScript>().video_icon = true;
                 all_icons.Add(temp);
 
                 temp.GetComponent<TrailRenderer>().enabled = false;
@@ -104,7 +111,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                 edge_pos = edge_pos / points.Count;
                 temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
-
+                temp.GetComponent<iconicElementScript>().points = points;
 
             }
 
@@ -118,7 +125,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 for (int j = (i+1); j < all_icons.Count; j++)
                 {
                     if (Vector3.Distance(all_icons[i].GetComponent<iconicElementScript>().edge_position, 
-                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < 20f)
+                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < node_radius)
                     {
                         GameObject temp = Instantiate(edge_prefab, Vector3.zero, Quaternion.identity, temp_parent.transform);
 
@@ -127,7 +134,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                         //temp.GetComponent<EdgeElementScript>().addDot();
                         //temp.GetComponent<EdgeElementScript>().updateEndPoint();
-                        temp.GetComponent<EdgeElementScript>().addEndPoint();
+                        temp.GetComponent<EdgeElementScript>().addEndPoint(true);
                     }
                 }
             }

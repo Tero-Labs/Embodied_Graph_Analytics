@@ -69,7 +69,7 @@ public class Paintable : MonoBehaviour
     public GameObject function_menu;
     public GameObject edge_radial_menu;
     public GameObject node_radial_menu;
-    public GameObject graph_radial_menu;
+    public GameObject graph_radial_menu;   
     public GameObject function_radial_menu;
 
     // needed for drawing
@@ -186,7 +186,7 @@ public class Paintable : MonoBehaviour
 
 					totalLines++;
 					templine = Instantiate(IconicElement, vec, Quaternion.identity, Objects_parent.transform);
-					templine.GetComponent<TrailRenderer>().material.color = Color.black;
+					//templine.GetComponent<TrailRenderer>().material.color = Color.black;
 
 					templine.name = "iconic_" + totalLines.ToString();
 					templine.tag = "iconic";
@@ -482,8 +482,9 @@ public class Paintable : MonoBehaviour
                     CreateEmptyEdgeObjects();
 
                     //https://generalistprogrammer.com/unity/unity-line-renderer-tutorial/
-                    LineRenderer l = edgeline.GetComponent<LineRenderer>();
-                    l.material.color = Color.gray;
+                    LineRenderer l = edgeline.transform.GetComponent<LineRenderer>();
+                    l.material.SetColor("_Color", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+
                     l.startWidth = 2f;
                     l.endWidth = 2f;
 
@@ -539,32 +540,8 @@ public class Paintable : MonoBehaviour
                             edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
 
                             // set line renderer end point
-                            edgeline.GetComponent<LineRenderer>().SetPosition(1, edge_end.GetComponent<iconicElementScript>().edge_position);
+                            edgeline.GetComponent<EdgeElementScript>().addEndPoint();
 
-                            // assuming edge_start is always an anchor
-                            var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0),
-                                edgeline.GetComponent<LineRenderer>().GetPosition(1)};
-
-                            edgeline.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
-                            {
-                                var pos = edgeline.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
-                                return new Vector2(pos.x, pos.y);
-                            }).ToArray();
-
-                            edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;
-                            
-                            // set line renderer texture scale
-                            var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0),
-                                edgeline.GetComponent<LineRenderer>().GetPosition(1));
-                            edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
-                            if (directed_edge)
-                            {
-                                Debug.Log("directed_edge");
-                                edgeline.GetComponent<EdgeElementScript>().directed_edge = true;
-                            }
-
-                            edgeline.GetComponent<EdgeElementScript>().addDot();
-                            //edgeline = edgeline.GetComponent<EdgeElementScript>().FinishEdgeLine();                            
                             GraphCreation();
 
                             // set edge_end and edge_start back to null
@@ -820,7 +797,6 @@ public class Paintable : MonoBehaviour
 
                     Vector3 vec = Hit.point + new Vector3(0, 0, -5);
                     setline = Instantiate(CombineLineElement, vec, Quaternion.identity, Objects_parent.transform);
-                    setline.GetComponent<TrailRenderer>().material.color = Color.black;
 
                     setline.name = "temp_set_line";
                     setline.GetComponent<iconicElementScript>().points.Add(vec);
@@ -1500,17 +1476,7 @@ public class Paintable : MonoBehaviour
                     Transform node_parent = Hit.collider.gameObject.transform.parent;
                     if (node_parent.tag == "node_parent")
                     {
-                        //node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
-                        GameObject radmenu = Instantiate(graph_radial_menu,
-                            canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position + new Vector3(5f, 5f, 0f))
-                            /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
-                            Quaternion.identity,
-                            canvas_radial.transform);
-
-                        node_parent.parent.GetComponent<GraphElementScript>().MenuClickSetup(radmenu);
-                        
-                        /*radmenu.GetComponent<GraphSliderMenu>().setparent(node_parent.parent.gameObject);
-                        radmenu.GetComponent<GraphSliderMenu>().UpdateLayer(node_parent.parent.GetComponent<GraphElementScript>().abstraction_layer);*/
+                        node_parent.parent.GetComponent<GraphElementScript>().createMenu(canvas_radial);
                     }                    
                 }
                 else

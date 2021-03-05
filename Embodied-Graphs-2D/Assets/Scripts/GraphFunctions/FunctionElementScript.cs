@@ -353,6 +353,8 @@ public class FunctionElementScript : MonoBehaviour
                         else
                         {
                             position += new Vector3(child.GetComponent<iconicElementScript>().radius * 2, 0, 0);
+                            Vector3 old_pos = child.position;
+                            // we want the edge_position to project
                             child.position = child.InverseTransformDirection(position) -
                                 child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position);
                             child.GetComponent<iconicElementScript>().edge_position = position;
@@ -475,6 +477,7 @@ public class FunctionElementScript : MonoBehaviour
 
         Graphs returned_graphs = JsonUtility.FromJson<Graphs>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
+        int idx = 0;
         foreach (Graph returned_graph in returned_graphs.graphs)
         {
             // direct functionline prefab instantiation was not working for some reason, hence we copy
@@ -482,10 +485,12 @@ public class FunctionElementScript : MonoBehaviour
             // ToDo: assign different colors to different lasso
             GameObject functionline = Instantiate(transform.gameObject, 
                 transform.position, Quaternion.identity, extra_objects.transform);
-            updatechildLassoPoints(graph, returned_graph.nodes, functionline);
+            updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
 
             Destroy(functionline.transform.GetChild(0).gameObject);
             Destroy(functionline.transform.GetChild(1).gameObject);
+
+            idx++;
         }                
     }
 
@@ -978,7 +983,7 @@ public class FunctionElementScript : MonoBehaviour
 
     }
 
-    public void updatechildLassoPoints(GameObject graph, List<int> nodes, GameObject gameObject)
+    public void updatechildLassoPoints(GameObject graph, List<int> nodes, GameObject gameObject, int idx)
     {        
         List<Vector3> hull_pts = new List<Vector3>();
         int center_count = 0;
@@ -1027,7 +1032,7 @@ public class FunctionElementScript : MonoBehaviour
         gameObject.GetComponent<LineRenderer>().positionCount = gameObject.GetComponent<FunctionElementScript>().points.Count;
         gameObject.GetComponent<LineRenderer>().SetPositions(gameObject.GetComponent<FunctionElementScript>().points.ToArray());*/
 
-        paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true);        
+        paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);        
     }
 
 

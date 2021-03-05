@@ -11,11 +11,53 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     public GameObject settings_menu;
     public GameObject control_menu;
     public GameObject paintable;
+
+    public InputField mainInputField;
+    public Toggle node_radius, site_specific;
+    public Toggle auto_track, manual_track;
+
     // Start is called before the first frame update
     void Start()
     {
         settings.onClick.AddListener(delegate { SettingsMenu(); });
         delete.onClick.AddListener(delegate { Delete(); });
+        mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
+
+        node_radius.onValueChanged.AddListener(delegate { GraphType(node_radius); });
+        site_specific.onValueChanged.AddListener(delegate { GraphType(site_specific); });
+
+        auto_track.onValueChanged.AddListener(delegate { TrackType(auto_track); });
+        manual_track.onValueChanged.AddListener(delegate { TrackType(manual_track); });
+
+        // to setup initial values
+        GraphType(node_radius);
+        TrackType(auto_track);
+    }
+
+    void LockInput(InputField input)
+    {
+        // if a function is getting evaluated now, we will not receive any further input
+        /*if (paintable.GetComponent<Paintable>().no_func_menu_open)
+            return;*/
+        if (input.text.Length > 0)
+        {
+            float result = slider.GetComponent<VideoController>().node_radius;
+            float.TryParse(input.text, out result);
+            slider.GetComponent<VideoController>().node_radius = result;
+        }
+    }
+
+    void GraphType(Toggle toggle)
+    {        
+        if (site_specific.isOn) slider.GetComponent<VideoController>().graph_type = "SiteSpecific";
+        else slider.GetComponent<VideoController>().graph_type = "NodeRadius";
+
+        mainInputField.interactable = node_radius.isOn;
+    }
+
+    void TrackType(Toggle toggle)
+    {
+        slider.GetComponent<VideoController>().auto_track = auto_track.isOn;
     }
 
     void SettingsMenu()

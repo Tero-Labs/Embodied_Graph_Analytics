@@ -8,6 +8,11 @@ public class SimplicialElementScript : MonoBehaviour
     public List<Vector3> theVertices;
     public List<GameObject> thenodes;
     public Material myMaterial;
+    public GameObject dot_prefab;
+
+    // for directed edge
+    public bool directed_edge = false;
+    public Sprite directed_edge_sprite;
 
     // Start is called before the first frame update
     void Start()
@@ -15,8 +20,48 @@ public class SimplicialElementScript : MonoBehaviour
         
     }
 
+    // the simplex will start from corner, not center
+    public void UpdateVertices()
+    {
+        for (int i = 0; i < thenodes.Count; i++)
+        {
+            int j = (i + 1) % thenodes.Count;
+            theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().getclosestpoint(thenodes[j].GetComponent<iconicElementScript>().edge_position);
+
+        }
+    }
+
+    public void addDot()
+    {
+        int child_count = transform.childCount;
+
+        if (child_count == 0)
+        {
+            for (int x = 0; x < theVertices.Count; x++)
+            {
+                GameObject temp = Instantiate(dot_prefab, theVertices[x], Quaternion.identity, transform);
+                temp.name = "dot_child";
+                temp.transform.parent = transform;
+                temp.transform.SetSiblingIndex(x);
+
+                if (directed_edge && x == 1)
+                    temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
+            }
+        }
+        else
+        {
+            for (int x = 0; x < theVertices.Count; x++)
+            {
+                Transform temp = transform.GetChild(x);
+                temp.position = theVertices[x];
+            }
+        }
+    }
+
     public void updatePolygon()
-    {        
+    {
+        UpdateVertices();
+
         //New mesh and game object
         GameObject myObject = this.transform.gameObject;
             
@@ -40,6 +85,7 @@ public class SimplicialElementScript : MonoBehaviour
         BC.isTrigger = true;
         BC.enabled = false;
 
+        addDot();
     }
 
     Mesh CreateMesh()

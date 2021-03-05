@@ -11,6 +11,7 @@ using UnityEngine.InputSystem;
 public class iconicElementScript : MonoBehaviour
 {
 
+    public bool video_icon;
 
     // previous first child, instead of creating a separate child, we now want to keep it in the script
     public Mesh _mesh;
@@ -1410,6 +1411,35 @@ public class iconicElementScript : MonoBehaviour
         return inside;
     }
 
+    public Vector3 getclosestpoint(Vector3 target)
+    {
+        if (video_icon) return edge_position;
+        Vector3 desired_point = points[0];
+        float distance = Vector3.Distance(desired_point, target);
+
+        int interval = (int)Math.Floor((float)(points.Count / 10));        
+
+        Vector3 bounds_center = transform.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+        // TODO: for image nodes, this would be sprite bounds center
+
+        for (int i = 0; i < points.Count; i = i + interval)
+        {
+            // recalculate repositioned points
+            Vector3 calibrated_pt = points[i] + (edge_position - bounds_center);
+            float temp_dist = Vector3.Distance(calibrated_pt, target);
+
+            if (temp_dist < distance)
+            {
+                desired_point = points[i];
+                distance = temp_dist;
+            }
+
+        }
+
+        return desired_point;
+    }
+
+
     void OnDestroy()
     {
         Transform node_parent = transform.parent;
@@ -1454,7 +1484,7 @@ public class iconicElementScript : MonoBehaviour
                 {
                     if (each_node == transform.gameObject)
                     {
-                        each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
+                        //each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
                         each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
                         break;
                     }

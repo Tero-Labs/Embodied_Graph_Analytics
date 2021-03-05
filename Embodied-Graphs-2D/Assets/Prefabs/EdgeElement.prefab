@@ -51,7 +51,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -155,6 +155,7 @@ MonoBehaviour:
   _mesh: {fileID: 0}
   dot_prefab: {fileID: 1095668249245509096, guid: 204ec1cd6757fe64595bd9cb3c06035b,
     type: 3}
+  none: {fileID: 0}
   node_obj: []
   edge_start: {fileID: 0}
   edge_end: {fileID: 0}
@@ -168,7 +169,7 @@ MonoBehaviour:
   directed_edge: 0
   directed_edge_sprite: {fileID: 21300000, guid: 70187cb4def0f0644be93719911a0829,
     type: 3}
-  icon_elem_material: {fileID: 2100000, guid: eed04dd1a9ac1ec41b0e758c4373d1bb, type: 2}
+  icon_elem_material: {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   paintable_object: {fileID: 0}
   current_attribute: 0
   previous_position: {x: 0, y: 0, z: 0}
@@ -202,6 +203,7 @@ MonoBehaviour:
   is_this_double_function_operand: 0
   details_dropdown: {fileID: 0}
   global_details_on_path: 1
+  solid_mat: {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
 --- !u!68 &-5722908831877841235
 EdgeCollider2D:
   m_ObjectHideFlags: 0

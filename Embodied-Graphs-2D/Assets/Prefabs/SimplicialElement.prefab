@@ -96,6 +96,11 @@ MonoBehaviour:
   theVertices: []
   thenodes: []
   myMaterial: {fileID: 2100000, guid: d451707ee83607c40ae4bd300695b689, type: 2}
+  dot_prefab: {fileID: 1095668249245509096, guid: 204ec1cd6757fe64595bd9cb3c06035b,
+    type: 3}
+  directed_edge: 0
+  directed_edge_sprite: {fileID: 21300000, guid: 70187cb4def0f0644be93719911a0829,
+    type: 3}
 --- !u!65 &4842920706170736417
 BoxCollider:
   m_ObjectHideFlags: 0

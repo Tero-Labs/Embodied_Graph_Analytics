@@ -15,7 +15,6 @@ public class EdgeElementScript : MonoBehaviour
     // previous first child, instead of creating a separate child, we now want to keep it in the script
     public Mesh _mesh;
     public GameObject dot_prefab;
-    public Material none;
 
     public List<GameObject> node_obj = new List<GameObject>();
     public GameObject edge_start, edge_end;
@@ -95,6 +94,7 @@ public class EdgeElementScript : MonoBehaviour
     // global stroke details
     public GameObject details_dropdown;
     public bool global_details_on_path = true;
+
 
     public void computeCentroid()
     {
@@ -1334,23 +1334,20 @@ public class EdgeElementScript : MonoBehaviour
 
     public void updateEndPoint(GameObject node_name)
     {
+        var l = transform.GetComponent<LineRenderer>();
+
         GameObject source = transform.GetComponent<EdgeElementScript>().edge_start;
         GameObject target = transform.GetComponent<EdgeElementScript>().edge_end;
 
         if (source == node_name || target == node_name)
         {
-            if (source == node_name)
-            {
-                // set line renderer end point
-                transform.GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
-            }
-            else
-            {
-                transform.GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
-            }
+            l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
 
+            l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
+
+           
             // assuming edge_start is always an anchor
-            var edgepoints = new List<Vector3>() { transform.GetComponent<LineRenderer>().GetPosition(0), transform.GetComponent<LineRenderer>().GetPosition(1) };
+            var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
 
             transform.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
             {
@@ -1369,25 +1366,21 @@ public class EdgeElementScript : MonoBehaviour
         }
     }
 
-    public void addEndPoint()
+    // edge creation
+    public void addEndPoint(bool video = false)
     {
         GameObject source = edge_start;
         GameObject target = edge_end;
 
         LineRenderer l = transform.GetComponent<LineRenderer>();
-        l.material.color = Color.blue;        
-        //l.material.SetColor("_EmissionColor",Color.red);
-        l.startColor = Color.blue; //new Color(1f, 1f, 1f, 0.5f);
-        l.endColor = Color.blue; //new Color(1f, 1f, 1f, 0.5f);
-
-        /*Material[] mats = new Material[1];
-        mats[0] = none;
-        l.materials = mats;*/
+        if(video)
+        l.material.SetColor("_Color", Color.blue);
 
         // set line renderer end point
-        l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
 
-        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
+
 
         // assuming edge_start is always an anchor
         var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
@@ -1410,7 +1403,7 @@ public class EdgeElementScript : MonoBehaviour
             temp.name = "dot_child";
             temp.transform.parent = transform;
             temp.transform.SetSiblingIndex(x);
-            temp.transform.localScale = new Vector3(5f, 5f, 5f);
+            if (video) temp.transform.localScale = new Vector3(5f, 5f, 5f);
 
             if (directed_edge && x == 1)
                 temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
@@ -1421,16 +1414,17 @@ public class EdgeElementScript : MonoBehaviour
     public void updateEndPoint()
     {
         GameObject source = edge_start;
-        GameObject target = edge_end;        
-            
+        GameObject target = edge_end;
+
+        LineRenderer l = transform.GetComponent<LineRenderer>();
         // set line renderer end point
-        transform.GetComponent<LineRenderer>().SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(0) - panDirection);
-            
-        transform.GetComponent<LineRenderer>().SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);// edgeList[i].GetComponent<LineRenderer>().GetPosition(1) - panDirection);
-            
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
+
 
         // assuming edge_start is always an anchor
-        var edgepoints = new List<Vector3>() { transform.GetComponent<LineRenderer>().GetPosition(0), transform.GetComponent<LineRenderer>().GetPosition(1) };
+        var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
 
         transform.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
         {
@@ -1538,6 +1532,73 @@ public class EdgeElementScript : MonoBehaviour
 
         transform.GetChild(0).position = edge_start.GetComponent<iconicElementScript>().edge_position;
         transform.GetChild(1).position = edge_end.GetComponent<iconicElementScript>().edge_position;
+    }
+
+    public void updateSplineEndPointVector()
+    {
+        //recorded_path = myEllipseSpline();
+        Vector3 start = edge_start.GetComponent<iconicElementScript>().getclosestpoint(edge_end.GetComponent<iconicElementScript>().edge_position);
+        Vector3 end = edge_end.GetComponent<iconicElementScript>().getclosestpoint(edge_start.GetComponent<iconicElementScript>().edge_position);
+
+        Vector3 dir_vec = start - end;
+        Vector2 unit_vec = new Vector2(-dir_vec.y, dir_vec.x);
+        Debug.Log("before normalized:" + unit_vec.ToString());
+        unit_vec.Normalize();
+        Debug.Log("after normalized:" + unit_vec.ToString());
+
+        float approx_dist;
+        approx_dist = Vector3.Distance(start, end) / UnityEngine.Random.Range(2f, 4f);//3;
+
+        Vector3 first_cpt = Vector3.Lerp(start, end, 0.5f);
+        Vector2 temp_vec = new Vector2(first_cpt.x, first_cpt.y) - (approx_dist * unit_vec);
+        first_cpt = new Vector3(temp_vec.x, temp_vec.y, first_cpt.z);
+
+        GameObject spline = new GameObject("spline");
+        spline.AddComponent<BezierSpline>();
+        BezierSpline bs = spline.transform.GetComponent<BezierSpline>();
+
+        // free handle mode and set the control point so that we get a eclipse like shape even with only two points! 
+        bs.Initialize(2);
+        bs[0].position = start;
+        bs[0].handleMode = BezierPoint.HandleMode.Free;
+        bs[0].followingControlPointPosition = first_cpt;
+
+        bs[1].position = end;
+        bs[1].handleMode = BezierPoint.HandleMode.Free;
+        bs[1].precedingControlPointPosition = first_cpt;
+
+        // Now sample 50 points, but decide how many to sample in each section
+        // ...
+
+        // Now sample 50 points across the spline with a [0, 1] parameter sweep
+        recorded_path = new List<Vector3>(10);
+        for (int i = 0; i < 10; i++)
+        {
+            recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, 9, i)));
+        }
+
+        Destroy(spline);
+
+        Debug.Log("my_spline:" + recorded_path.Count.ToString());
+
+        transform.GetComponent<LineRenderer>().positionCount = recorded_path.Count;
+        transform.GetComponent<LineRenderer>().SetPositions(recorded_path.ToArray());
+
+        transform.GetComponent<EdgeCollider2D>().points = recorded_path.Select(x =>
+        {
+            var pos = transform.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+            return new Vector2(pos.x, pos.y);
+        }).ToArray();
+
+        transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+        // set line renderer texture scale
+        /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
+            transform.GetComponent<LineRenderer>().GetPosition(1));
+        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);*/
+
+        transform.GetChild(0).position = start;
+        transform.GetChild(1).position = end;
     }
 
     void OnDestroy()

@@ -23,21 +23,10 @@ public class CreatePrimitives : MonoBehaviour
     public Material solid_mat;
 
     public GameObject PenLine;
-    public GameObject SetLine;
     public GameObject EdgeLinePrefab;
     public GameObject FunctionLine;
-    public GameObject StaticPenLine;
-    public GameObject ParameterUIField;
-    public GameObject EdgeUIField;
 
-    /*public GameObject radial_menu;  // prefab
-    public GameObject set_radial_menu;
-    public GameObject pen_radial_menu;
-    public GameObject function_radial_menu;
-    public GameObject set_timer_submenu;
-    public Slider abstraction_slider; // prefab
-    public GameObject popup_radial;
-    public Canvas canvas_radial;*/
+    public Color[] colors;
 
     public static GameObject iconicElementButton;
     public static GameObject pan_button;
@@ -76,14 +65,16 @@ public class CreatePrimitives : MonoBehaviour
     {
         iconicElementButton = GameObject.Find("IconicPen");
         pan_button = GameObject.Find("Pan");
-        /*
-        select_button = GameObject.Find("Select");
-        edge_button = GameObject.Find("Edge_draw");
-        function_button = GameObject.Find("FunctionButton");
-        eraser_button = GameObject.Find("Eraser");
-        staticpen_button = GameObject.Find("StaticPen");*/
 
         paintable_object = GameObject.FindGameObjectWithTag("paintable_canvas_object");
+
+        colors = new Color[6];
+        colors[0] = Color.blue;
+        colors[1] = Color.magenta;
+        colors[2] = Color.red;
+        colors[3] = Color.cyan;
+        colors[4] = Color.yellow;
+        colors[5] = Color.gray;
 
         // Predictive stroke
         // Load pre-made gestures
@@ -187,9 +178,9 @@ public class CreatePrimitives : MonoBehaviour
     }
 
     // Assumes templine has been initialized in pointer.start and pointer.moved
-    public GameObject FinishFunctionLine(GameObject templine, bool lassocolor = false)
+    public GameObject FinishFunctionLine(GameObject templine, bool lassocolor = false, int rank = 0)
     {
-
+        
         // compute centroid and bounds
         templine.GetComponent<FunctionElementScript>().computeCentroid();
         templine.GetComponent<FunctionElementScript>().computeBounds();
@@ -206,12 +197,18 @@ public class CreatePrimitives : MonoBehaviour
         var lineRenderer = templine.GetComponent<LineRenderer>();
         if (lassocolor)
         {
-            Color color = new Color(UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f));            
-            Debug.Log("Changing lasso color");
+            Color color = colors[rank % (colors.Length)];
+            //color = new Color(UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f)); 
             
             lineRenderer.startColor = color; // UnityEngine.Random.ColorHSV();
-            lineRenderer.endColor = lineRenderer.startColor;
-        }        
+            lineRenderer.endColor = color;
+
+            /*How to change color of material -Unity Forum
+            https://forum.unity.com/threads/how-to-change-color-of-material.874921/ */
+            Material new_material = new Material(solid_mat);
+            new_material.SetColor("_Color", color);
+            templine.GetComponent<MeshRenderer>().sharedMaterial = new_material;
+        }
 
         var meshFilter = templine.GetComponent<MeshFilter>();
                 
@@ -221,34 +218,19 @@ public class CreatePrimitives : MonoBehaviour
         lineRenderer.BakeMesh(mesh, true);
         meshFilter.sharedMesh = mesh;
         templine.GetComponent<FunctionElementScript>()._mesh = mesh;
-        
 
-        templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<FunctionElementScript>().icon_elem_material;
-        /*How to change color of material -Unity Forum
-        https://forum.unity.com/threads/how-to-change-color-of-material.874921/ */
-        /*Material new_material = new Material(templine.GetComponent<FunctionElementScript>().icon_elem_material);
-        new_material.SetColor("_Color", UnityEngine.Random.ColorHSV());
-        templine.GetComponent<MeshRenderer>().sharedMaterial = new_material;*/
 
-        //Destroy(templine.GetComponent<LineRenderer>());
+        if (!lassocolor)       
+        {
+            templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<FunctionElementScript>().icon_elem_material;
+        }                      
 
         // disable trail renderer, no longer needed
         templine.GetComponent<TrailRenderer>().enabled = false;
         templine.GetComponent<LineRenderer>().enabled = false;
-
-        // add a collider
-       /* templine.AddComponent<BoxCollider>();
-        templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
-        templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;*/
-
+        
         templine.GetComponent<FunctionElementScript>().edge_position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
-
-        // set collider trigger
-        //templine.GetComponent<BoxCollider>().isTrigger = true;
-
-        // disable the collider because we are in the pen mode right now. Pan mode enables back all colliders.
-        //templine.GetComponent<BoxCollider>().enabled = false;
-
+                
         // set transform position
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
 
@@ -324,55 +306,7 @@ public class CreatePrimitives : MonoBehaviour
         return templine;
     }
 
-    // ASSUMES: 1. points are in global space (not local)
-    /*public GameObject CreatePenLine(List<Vector3> points, Color color, float widthMultiplier = 1f, AnimationCurve widthCurve = null)
-    {
-        GameObject templine;
-
-        // CODE FROM POINTER.START
-
-        paintable_object.GetComponent<Paintable>().totalLines++;
-
-        templine = Instantiate(PenLine, this.gameObject.transform);
-        templine.GetComponent<TrailRenderer>().material.color = Color.black;
-
-        templine.name = "penLine_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
-        templine.tag = "penline";
-
-        templine.transform.GetChild(1).GetComponent<MeshRenderer>().enabled = true;
-        templine.transform.GetChild(1).GetComponent<BoxCollider2D>().enabled = false;
-
-        // color and width
-        templine.GetComponent<TrailRenderer>().material.color = color;
-        templine.GetComponent<iconicElementScript>().icon_elem_material.color = color;
-        templine.GetComponent<TrailRenderer>().widthMultiplier = widthMultiplier;
-        templine.GetComponent<LineRenderer>().widthMultiplier = widthMultiplier;
-
-        // disable the argument_label button, currently it's at the 3rd index
-        // templine.transform.GetChild(2).gameObject.SetActive(false);
-
-        // CODE FROM POINTER.MOVE
-        templine.GetComponent<iconicElementScript>().calculateLengthAttributeFromPoints();
-
-        // if no width curve exists then assign a generic width
-        if (widthCurve == null)
-        {
-            templine.GetComponent<iconicElementScript>().widthcurve.AddKey(0f, 1f);
-            templine.GetComponent<iconicElementScript>().widthcurve.AddKey(1f, 1f);
-        }
-        else
-        {
-            templine.GetComponent<iconicElementScript>().widthcurve = widthCurve;
-        }
-
-        templine.GetComponent<iconicElementScript>().points = points;
-
-        // FINISH THE TEMPLINE
-        templine = FinishPenLine(templine);
-
-        return templine;
-    }*/
-
+    
     // LOAD A SPRITE AS A PENLINE OBJECT
     /*public GameObject CreatePenLine(string sprite_filename)
     {
@@ -631,398 +565,7 @@ public class CreatePrimitives : MonoBehaviour
         //paintable_object.GetComponent<Paintable>().templine = templine;
         return templine;
     }
-
-    // ASSUMES: 1. points are in global space
-    /*public GameObject CreateSet(List<Vector3> points)
-    {
-        GameObject templine;
-
-        // ==============CODE FROM POINTER.START=================
-        paintable_object.GetComponent<Paintable_Script>().totalLines++;
-
-        templine = Instantiate(SetLine, this.gameObject.transform);
-
-        templine.name = "Set_" + paintable_object.GetComponent<Paintable_Script>().totalLines.ToString();
-        templine.tag = "set";
-
-        // disable the argument_label button
-        templine.transform.GetChild(0).GetChild(2).gameObject.SetActive(false);
-
-        //==========================================================
-
-        // explicitly set the points
-        templine.GetComponent<setLine_script>().points = points;
-
-        // =================CODE FROM POINTER.END==================
-
-        // set the gesture/legible layer fields: set previous_gestureType to initiate change in updateLegibleLayer().
-        templine.GetComponent<setLine_script>().previous_gestureType = "";
-        templine.GetComponent<setLine_script>().updateGestureType = true;
-
-        // this one is needed for the setline script functions
-        templine.GetComponent<setLine_script>().paintable_object =
-            GameObject.FindGameObjectWithTag("paintable_canvas_object");
-
-        //templine.GetComponent<LineRenderer>().useWorldSpace = false;
-        templine.GetComponent<LineRenderer>().positionCount = templine.GetComponent<setLine_script>().points.Count;
-        templine.GetComponent<LineRenderer>().SetPositions(templine.GetComponent<setLine_script>().points.ToArray());
-
-        // compute centroid and bounds
-        templine.GetComponent<setLine_script>().computeCentroid();
-        templine.GetComponent<setLine_script>().computeBounds();
-
-        //Debug.Log(templine.GetComponent<LineRenderer>().positionCount);
-        templine.GetComponent<LineRenderer>().Simplify(1.2f);
-        Vector3[] pts = new Vector3[templine.GetComponent<LineRenderer>().positionCount];
-        templine.GetComponent<LineRenderer>().GetPositions(pts);
-        templine.GetComponent<setLine_script>().points = new List<Vector3>(pts);
-        //Debug.Log(templine.GetComponent<LineRenderer>().positionCount);
-
-        // set transform position
-        templine.transform.position = new Vector3(templine.GetComponent<setLine_script>().centroid.x,
-            templine.GetComponent<setLine_script>().centroid.y, 0);
-
-        // now transform all points in the line script to local positions
-        templine.GetComponent<setLine_script>().fromGlobalToLocalPoints();
-
-        //Debug.Log("transform position: " + templine.transform.position.ToString());
-
-        // bake into mesh: create a new child object. Direct mesh addition in the Set messes up the transform of the mesh
-        // for some reason.
-        GameObject meshObj = new GameObject("_meshobj");
-        meshObj.AddComponent<MeshFilter>();
-        //meshObj.AddComponent<BoxCollider>();
-        meshObj.AddComponent<MeshRenderer>();
-        meshObj.transform.SetParent(templine.transform);
-
-        var lineRenderer = templine.GetComponent<LineRenderer>();
-        var meshFilter = meshObj.GetComponent<MeshFilter>();
-        Mesh mesh = new Mesh();
-        lineRenderer.BakeMesh(mesh, true);
-        meshFilter.sharedMesh = mesh;
-
-        var meshRenderer = meshObj.GetComponent<MeshRenderer>();
-        //meshRenderer.sharedMaterial = templine.GetComponent<Material>();
-        meshRenderer.sharedMaterial = set_line_material;
-
-        // get rid of the line renderer?
-        templine.GetComponent<LineRenderer>().enabled = false;
-
-        // set anchor position now, after gameobject transform. Order matters.
-        templine.transform.GetChild(0).position =
-            templine.transform.TransformPoint(
-                templine.transform.GetComponent<setLine_script>().points[
-                    templine.GetComponent<setLine_script>().LowestMeshPointIndex()]
-            );
-        templine.transform.GetChild(0).position += new Vector3(0, 0, -40f); // set z separately
-
-        // remember the anchor offset
-        templine.GetComponent<setLine_script>().calculateAnchorOffset();
-
-        // set the properties of the draggable anchor
-        templine.transform.GetChild(0).Rotate(new Vector3(90, 0, 0));
-
-        templine.transform.GetChild(0).localScale = new Vector3(100f, 10f, 100f) / 2f;
-
-        // disable the anchor collider for now for free drawing of next objects. Pan mode enables the collider back.
-        templine.transform.GetChild(0).GetComponent<BoxCollider>().enabled = false;
-
-        // create a material instance
-        templine.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial = templine.transform.GetChild(0).GetComponent<MeshRenderer>().materials[0];
-
-        // The following takes care of some details based on where the anchor is, to move the text ahead and make it visible
-        templine.transform.GetChild(0).Find("_text").transform.localPosition = new Vector3(0f, -1.5f, 0f);
-        templine.transform.GetChild(0).Find("_text").GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
-
-        // set up the TeX legible layer text box
-        templine.transform.GetChild(0).Find("_TeX").transform.position = templine.transform.position;
-        //templine.GetComponent<setLine_script>().centroid;
-
-        // Fit the sizeDelta within bounding box
-        float bxdiff = templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.max.x -
-            templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.min.x;
-        float bydiff = templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.max.y -
-            templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.min.y;
-        float range1param = Mathf.InverseLerp(30f, 300f, bxdiff);
-        //float range1param = Mathf.Lerp(30f, 300f, bxdiff);
-        float sd = Mathf.LerpUnclamped(1, 5, range1param); // possible values for sizeDelta = [1, 5].
-        templine.transform.GetChild(0).Find("_TeX").GetComponent<RectTransform>().sizeDelta = new Vector2(sd, sd);
-
-        // turn off the text component until abstraction slider asks for the legible layer
-        templine.transform.GetChild(0).Find("_TeX").GetComponent<TEXDraw>().enabled = false;
-
-        // disable trail renderer, no longer needed
-        templine.GetComponent<TrailRenderer>().enabled = false;
-
-        // Set up the argument_label button and text.
-        templine.transform.GetChild(0).GetChild(2).gameObject.SetActive(false);
-
-        templine.transform.GetChild(0).GetChild(2).GetComponent<RectTransform>().sizeDelta = new Vector2(0.5f, 0.5f);
-        templine.transform.GetChild(0).GetChild(2).GetChild(0).GetComponent<RectTransform>().sizeDelta = new Vector2(0.5f, 0.5f);   // TMP text
-        templine.transform.GetChild(0).GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>().text =
-            templine.GetComponent<setLine_script>().this_set_name;
-
-        // set the argument label position at the highest (max y) of points. Use global position (TransformPoint)
-        templine.transform.GetChild(0).GetChild(2).transform.position =
-            templine.transform.TransformPoint(
-                templine.transform.GetComponent<setLine_script>().points[
-            templine.GetComponent<setLine_script>().HighestMeshPointIndex()]
-            );
-
-        templine.transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
-
-        // check what pencil lines were included when drawing the set, and make them children of this set
-        // find all game objects under Paintable canvas
-        // the pen lines should be made a child after the transform position of the parent is calculated.
-        // otherwise, there might be unwanted offset.
-
-        //GameObject[] penLines = GameObject.FindGameObjectsWithTag("penline");
-
-        // transform.childcount changes dynamically as we change the children's parent to a set,
-        // so don't use it in an increasing for-loop: it ends up leaving out alternate elements
-        for (int i = transform.childCount - 1; i > -1; i--)
-        //for(int i = 0; i < penLines.Length; i++)
-        {
-            // find all pen lines
-            if (transform.GetChild(i).name.Contains("penLine_"))
-            {
-                // check if the lines are inside the drawn set polygon -- in respective local coordinates
-                if (templine.GetComponent<setLine_script>().isInsidePolygon(
-                    templine.GetComponent<setLine_script>().transform.InverseTransformPoint(
-                    transform.GetChild(i).transform.position)
-                    ))
-                {
-                    transform.GetChild(i).SetParent(templine.transform);
-                    //Debug.Log("parent found");
-
-                }
-            }
-        }
-
-        // update the feature and text on the anchor
-        templine.GetComponent<setLine_script>().updateFeature();
-
-        return templine;
-    }
-    */
-
-    // ASSUMES: 1. points are in global space
-    /*public GameObject CreateFunction(List<Vector3> points)
-    {
-        GameObject templine;
-
-        // ==============CODE FROM POINTER.START=================
-        paintable_object.GetComponent<Paintable_Script>().totalLines++;
-
-        templine = Instantiate(FunctionLine, this.gameObject.transform);
-
-        templine.name = "Function_" + paintable_object.GetComponent<Paintable_Script>().totalLines.ToString();
-        templine.tag = "function";
-
-        // disable the argument_label button
-        templine.transform.GetChild(0).GetChild(2).gameObject.SetActive(false);
-
-        //==========================================================
-
-        // explicitly set the points
-        templine.GetComponent<functionLine_script>().points = points;
-
-        // =================CODE FROM POINTER.END==================
-
-        // set the gesture/legible layer fields: set previous_gestureType to initiate change in updateLegibleLayer().
-        templine.GetComponent<functionLine_script>().previous_gestureType = "";
-        templine.GetComponent<functionLine_script>().updateGestureType = true;
-
-        // this one is needed for the setline script functions
-        templine.GetComponent<functionLine_script>().paintable_object =
-            GameObject.FindGameObjectWithTag("paintable_canvas_object");
-
-        //templine.GetComponent<LineRenderer>().useWorldSpace = false;
-        templine.GetComponent<LineRenderer>().positionCount = templine.GetComponent<functionLine_script>().points.Count;
-        templine.GetComponent<LineRenderer>().SetPositions(templine.GetComponent<functionLine_script>().points.ToArray());
-
-        // compute centroid and bounds
-        templine.GetComponent<functionLine_script>().computeCentroid();
-        templine.GetComponent<functionLine_script>().computeBounds();
-
-        //Debug.Log(templine.GetComponent<LineRenderer>().positionCount);
-        templine.GetComponent<LineRenderer>().Simplify(1.2f);
-        Vector3[] pts = new Vector3[templine.GetComponent<LineRenderer>().positionCount];
-        templine.GetComponent<LineRenderer>().GetPositions(pts);
-        templine.GetComponent<functionLine_script>().points = new List<Vector3>(pts);
-        //Debug.Log(templine.GetComponent<LineRenderer>().positionCount);
-
-        // set transform position
-        templine.transform.position = new Vector3(templine.GetComponent<functionLine_script>().centroid.x,
-            templine.GetComponent<functionLine_script>().centroid.y, 0);
-
-        // now transform all points in the line script to local positions
-        templine.GetComponent<functionLine_script>().fromGlobalToLocalPoints();
-
-        //Debug.Log("transform position: " + templine.transform.position.ToString());
-
-        // bake into mesh: create a new child object. Direct mesh addition in the Set messes up the transform of the mesh
-        // for some reason.
-        GameObject meshObj = new GameObject("_meshobj");
-        meshObj.AddComponent<MeshFilter>();
-        //meshObj.AddComponent<BoxCollider>();
-        meshObj.AddComponent<MeshRenderer>();
-        meshObj.transform.SetParent(templine.transform);
-
-        var lineRenderer = templine.GetComponent<LineRenderer>();
-        var meshFilter = meshObj.GetComponent<MeshFilter>();
-        Mesh mesh = new Mesh();
-        lineRenderer.BakeMesh(mesh, true);
-        meshFilter.sharedMesh = mesh;
-
-        var meshRenderer = meshObj.GetComponent<MeshRenderer>();
-        //meshRenderer.sharedMaterial = templine.GetComponent<Material>();
-        meshRenderer.sharedMaterial = function_line_material;
-
-        // get rid of the line renderer?
-        templine.GetComponent<LineRenderer>().enabled = false;
-
-        // set anchor position now, after gameobject transform. Order matters.
-        templine.transform.GetChild(0).position =
-            templine.transform.TransformPoint(
-                templine.transform.GetComponent<functionLine_script>().points[
-                    templine.GetComponent<functionLine_script>().LowestMeshPointIndex()]
-            );
-        templine.transform.GetChild(0).position += new Vector3(0, 0, -40f); // set z separately
-
-        // remember the anchor offset
-        templine.GetComponent<functionLine_script>().calculateAnchorOffset();
-
-        // set the properties of the draggable anchor -- children objects and components are affected too.
-        templine.transform.GetChild(0).Rotate(new Vector3(90, 0, 0));
-        // scale it so it's a tapered in the horizontal direction (to accommodate the text)
-        templine.transform.GetChild(0).localScale = new Vector3(200f, 10f, 100f) / 2f; // prev. value: new Vector3(100f, 10f, 100f) / 2f
-
-        // turn off the anchor box collider for now. Pan mode enables it back.
-        templine.transform.GetChild(0).GetComponent<BoxCollider>().enabled = false;
-
-        // create a material instance
-        templine.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial = templine.transform.GetChild(0).GetComponent<MeshRenderer>().materials[0];
-
-        //	------- WHY DOESN'T THIS ROTATION WORK FROM INSIDE THE SCRIPT???? --------
-        //templine.transform.GetChild(0).GetChild(0).transform.Rotate(new Vector3(90, 0, 0));
-        //templine.transform.GetChild(0).Find("_text").transform.Rotate(new Vector3(90, 0, 0));
-
-        // The following takes care of some details based on where the anchor is, to move the text ahead and make it visible
-        templine.transform.GetChild(0).Find("_anchor_TeX").transform.localPosition = new Vector3(0f, -1.5f, 0f);
-        //templine.transform.GetChild(0).Find("_text").GetComponent<TextMeshProUGUI>().alignment = TextAlignmentOptions.Center;
-        // undo the horizontal tapered scaling for the text rect transform
-        templine.transform.GetChild(0).Find("_anchor_TeX").transform.localScale = new Vector3(0.005f, 0.01f, 0.005f);
-
-        // set text container size wrt anchor
-        //templine.transform.GetChild(0).Find("_text").GetComponent<TextMeshProUGUI>().GetComponent<TextContainer>().width = 
-
-        // set up the TeX legible layer text box
-        templine.transform.GetChild(0).Find("_TeX").transform.position =
-            templine.GetComponent<functionLine_script>().centroid;
-
-        // Fit the sizeDelta within bounding box
-
-        float bxdiff = templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.max.x -
-            templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.min.x;
-        float bydiff = templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.max.y -
-            templine.transform.GetChild(1).GetComponent<MeshFilter>().sharedMesh.bounds.min.y;
-        float range1param = Mathf.InverseLerp(30f, 300f, bxdiff);
-        //float range1param = Mathf.Lerp(30f, 300f, bxdiff);
-        float sd = Mathf.LerpUnclamped(5, 20, range1param); // possible values for sizeDelta = [1, 5].
-        templine.transform.GetChild(0).Find("_TeX").GetComponent<RectTransform>().sizeDelta = new Vector2(sd, sd);
-
-        // turn off the text component until abstraction slider asks for the legible layer
-        templine.transform.GetChild(0).Find("_TeX").GetComponent<TEXDraw>().enabled = false;
-
-        // disable trail renderer, no longer needed
-        templine.GetComponent<TrailRenderer>().enabled = false;
-
-        // Set up the argument_label button and text.
-        templine.transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
-
-        templine.transform.GetChild(0).GetChild(2).transform.localScale = new Vector3(0.3f, 0.6f, 1f);  // undo the scale of anchor, and make it smaller too.
-        templine.transform.GetChild(0).GetChild(2).GetComponent<RectTransform>().sizeDelta = new Vector2(0.6f, 0.6f);
-        templine.transform.GetChild(0).GetChild(2).GetChild(0).GetComponent<RectTransform>().sizeDelta = new Vector2(0.3f, 0.3f);   // TMP text
-        templine.transform.GetChild(0).GetChild(2).GetChild(0).GetComponent<TextMeshProUGUI>().text =
-            templine.GetComponent<functionLine_script>().currentOperator();
-
-        templine.transform.GetChild(0).GetChild(2).position =
-            templine.transform.TransformPoint(
-                templine.transform.GetComponent<functionLine_script>().points[
-                    templine.GetComponent<functionLine_script>().HighestMeshPointIndex()]
-            );
-        templine.transform.GetChild(0).GetChild(2).position += new Vector3(0, 0, -40f); // set z separately
-
-        // set up the _top_TeX label with category filters
-        templine.transform.GetChild(0).GetChild(3).position =
-            templine.transform.TransformPoint(
-                templine.transform.GetComponent<functionLine_script>().points[
-                    templine.GetComponent<functionLine_script>().HighestMeshPointIndex()]);
-
-        templine.transform.GetChild(0).GetChild(3).localPosition += new Vector3(0, 0, -0.3f);   // move slightly upwards locally, z is y b/c of anchor rotation
-        templine.transform.GetChild(0).GetChild(3).localScale = new Vector3(0.005f, 0.01f, 1); // undo the scale of anchor, and make it smaller too.
-
-        templine.transform.GetChild(0).GetChild(3).GetComponent<TEXDraw>().text = "(), " + templine.name + ", \\legbox";
-
-        // check what pencil lines were included when drawing the set, and make them children of this set
-        // find all game objects under Paintable canvas
-        // the pen lines should be made a child after the transform position of the parent is calculated.
-        // otherwise, there might be unwanted offset.
-
-        // transform.childcount changes dynamically as we change the children's parent to a set,
-        // so don't use it in an increasing for-loop: it ends up leaving out alternate elements
-        for (int i = transform.childCount - 1; i > -1; i--)
-        {
-            // find all sets/containers
-            if (transform.GetChild(i).tag == "set")
-            {
-                // check if they are inside the drawn function polygon
-                if (templine.GetComponent<functionLine_script>().isInsidePolygon(
-                    templine.GetComponent<functionLine_script>().transform.InverseTransformPoint(
-                    transform.GetChild(i).GetChild(0).transform.position)   // check if the anchor falls inside the function lasso. NOT the default transform.position.
-                    ))
-                {
-                    transform.GetChild(i).SetParent(templine.transform);
-                    //Debug.Log("parent found");
-                }
-            }
-
-            // find all functions
-            else if (transform.GetChild(i).tag == "function")
-            {
-                // check if they are inside the drawn function polygon
-                if (templine.GetComponent<functionLine_script>().isInsidePolygon(
-                    templine.GetComponent<functionLine_script>().transform.InverseTransformPoint(
-                    transform.GetChild(i).GetChild(0).transform.position)   // check if the anchor falls inside the function lasso. NOT the default transform.position.
-                    ))
-                {
-                    transform.GetChild(i).SetParent(templine.transform);
-                    //Debug.Log("parent found");
-                }
-            }
-
-            // find all penlines
-            else if (transform.GetChild(i).tag == "penline")
-            {
-                // check if they are inside the drawn function polygon
-                if (templine.GetComponent<functionLine_script>().isInsidePolygon(
-                    templine.GetComponent<functionLine_script>().transform.InverseTransformPoint(
-                    transform.GetChild(i).GetComponent<penLine_script>().transform.position)
-                    ))
-                {
-                    transform.GetChild(i).SetParent(templine.transform);
-                    //Debug.Log("parent found");
-                }
-            }
-        }
-
-        // update the feature and text on the anchor
-        templine.GetComponent<functionLine_script>().updateFeature();
-
-        return templine;
-    }*/
-
+    
     public int HighestMeshPointIndex(List<Vector3> points)
     {
         // which local point is the highest? Return its index.

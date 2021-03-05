@@ -108,8 +108,8 @@ LineRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.23405714, g: 0.7924528, b: 0.20558919, a: 1}
-      key1: {r: 0.23405714, g: 0.7924528, b: 0.20558919, a: 1}
+      key0: {r: 0.047058824, g: 0.627451, b: 0.10980392, a: 1}
+      key1: {r: 0.047058824, g: 0.627451, b: 0.10980392, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -213,8 +213,8 @@ TrailRenderer:
       m_RotationOrder: 4
     colorGradient:
       serializedVersion: 2
-      key0: {r: 0.41176474, g: 1, b: 0.73010725, a: 1}
-      key1: {r: 0.41176474, g: 1, b: 0.73010725, a: 1}
+      key0: {r: 0.047058824, g: 0.627451, b: 0.10980392, a: 1}
+      key1: {r: 0.047058824, g: 0.627451, b: 0.10980392, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
@@ -320,6 +320,7 @@ MonoBehaviour:
   paintable_object: {fileID: 0}
   icon_name: 
   icon_number: 0
+  edge_offset: 0
   current_attribute: 0
   previous_position: {x: 0, y: 0, z: 0}
   joint_centroid: {x: 0, y: 0, z: 0}

@@ -751,6 +751,9 @@ MonoBehaviour:
     type: 3}
   paintable: {fileID: 0}
   temp_parent: {fileID: 0}
+  node_radius: 0
+  graph_type: 
+  auto_track: 0
 --- !u!1 &2040663511566986959
 GameObject:
   m_ObjectHideFlags: 0
@@ -934,6 +937,11 @@ MonoBehaviour:
   settings_menu: {fileID: 2045892074275407521}
   control_menu: {fileID: 2040663511566987000}
   paintable: {fileID: 0}
+  mainInputField: {fileID: 4208959430946912773}
+  node_radius: {fileID: 60055350538975853}
+  site_specific: {fileID: 6596107324479068415}
+  auto_track: {fileID: 2757064955590834307}
+  manual_track: {fileID: 9047503877266736910}
 --- !u!1 &2040663511566986968
 GameObject:
   m_ObjectHideFlags: 0
@@ -1763,7 +1771,7 @@ GameObject:
   - component: {fileID: 8322767254568668472}
   - component: {fileID: 60055350538975853}
   m_Layer: 5
-  m_Name: nodeRadius
+  m_Name: NodeRadius
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
