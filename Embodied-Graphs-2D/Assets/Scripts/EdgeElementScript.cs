@@ -95,6 +95,8 @@ public class EdgeElementScript : MonoBehaviour
     public GameObject details_dropdown;
     public bool global_details_on_path = true;
 
+    // spline variables
+    public float spline_dist;
 
     public void computeCentroid()
     {
@@ -1292,7 +1294,7 @@ public class EdgeElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        spline_dist = UnityEngine.Random.Range(2f, 4f);
     }
 
     // Update is called once per frame
@@ -1341,11 +1343,11 @@ public class EdgeElementScript : MonoBehaviour
 
         if (source == node_name || target == node_name)
         {
-            l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+            // l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+            // l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
+            l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+            l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
 
-            l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
-
-           
             // assuming edge_start is always an anchor
             var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
 
@@ -1377,10 +1379,8 @@ public class EdgeElementScript : MonoBehaviour
         l.material.SetColor("_Color", Color.blue);
 
         // set line renderer end point
-        l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
-
-        l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
-
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
 
         // assuming edge_start is always an anchor
         var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
@@ -1418,10 +1418,10 @@ public class EdgeElementScript : MonoBehaviour
 
         LineRenderer l = transform.GetComponent<LineRenderer>();
         // set line renderer end point
-        l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
-
-        l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
-
+        //l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+        //l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
 
         // assuming edge_start is always an anchor
         var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
@@ -1470,7 +1470,7 @@ public class EdgeElementScript : MonoBehaviour
         return spline_pts;
     }
 
-    public void updateSplineEndPoint()
+    public void updateSplineEndPointOld()
     {
         //recorded_path = myEllipseSpline();
 
@@ -1534,11 +1534,13 @@ public class EdgeElementScript : MonoBehaviour
         transform.GetChild(1).position = edge_end.GetComponent<iconicElementScript>().edge_position;
     }
 
-    public void updateSplineEndPointVector()
+    public void updateSplineEndPoint()
     {
         //recorded_path = myEllipseSpline();
-        Vector3 start = edge_start.GetComponent<iconicElementScript>().getclosestpoint(edge_end.GetComponent<iconicElementScript>().edge_position);
-        Vector3 end = edge_end.GetComponent<iconicElementScript>().getclosestpoint(edge_start.GetComponent<iconicElementScript>().edge_position);
+        //Vector3 start = edge_start.GetComponent<iconicElementScript>().getclosestpoint(edge_end.GetComponent<iconicElementScript>().edge_position);
+        //Vector3 end = edge_end.GetComponent<iconicElementScript>().getclosestpoint(edge_start.GetComponent<iconicElementScript>().edge_position);
+        Vector3 start = edge_start.GetComponent<iconicElementScript>().edge_position;
+        Vector3 end = edge_end.GetComponent<iconicElementScript>().edge_position;
 
         Vector3 dir_vec = start - end;
         Vector2 unit_vec = new Vector2(-dir_vec.y, dir_vec.x);
@@ -1547,7 +1549,7 @@ public class EdgeElementScript : MonoBehaviour
         Debug.Log("after normalized:" + unit_vec.ToString());
 
         float approx_dist;
-        approx_dist = Vector3.Distance(start, end) / UnityEngine.Random.Range(2f, 4f);//3;
+        approx_dist = Vector3.Distance(start, end) / spline_dist;
 
         Vector3 first_cpt = Vector3.Lerp(start, end, 0.5f);
         Vector2 temp_vec = new Vector2(first_cpt.x, first_cpt.y) - (approx_dist * unit_vec);

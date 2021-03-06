@@ -37,6 +37,8 @@ public class AllButtonsBehaviors : MonoBehaviour
             enableAllPenObjectColliders();
             paint_canvas.GetComponent<Paintable>().okayToPan = true;
             paint_canvas.GetComponent<Paintable>().panZoomLocked = false;
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
         else if (this.name == "IconicPen")
@@ -44,43 +46,64 @@ public class AllButtonsBehaviors : MonoBehaviour
             // allow drawing over existing pen/set etc. objects without interfering
             disableAllPenObjectColliders();
             disablesimplicialColliders();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.red;
         }
 
         else if (this.name == "GraphPen")
         {
             enableAllPenObjectColliders();
             disablesimplicialColliders();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         }
+
         else if (this.name == "SimplicialPen")
         {
             enableAllPenObjectColliders();
             enablesimplicialColliders();
             paint_canvas.GetComponent<Paintable>().SimplicialVertices.Clear();
             paint_canvas.GetComponent<Paintable>().Simplicialnodes.Clear();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0f, 0f, 1f, 0.3f); 
         }
+
         else if (this.name == "HyperPen")
         {
             enableAllPenObjectColliders();
             //enablesimplicialColliders();
             paint_canvas.GetComponent<Paintable>().hyperVertices.Clear();
             paint_canvas.GetComponent<Paintable>().hypernodes.Clear();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         }
+
         else if (this.name == "Eraser")
         {
             enablesimplicialColliders();
             enableAllPenObjectColliders();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
+
         else if (this.name == "Copy")
         {
             enableAllPenObjectColliders();
             disablesimplicialColliders();
             //paint_canvas.GetComponent<Paintable>().okayToPan = false;
             this.transform.GetComponent<CopyIconicObject>().start_copying = false;
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
         else if (this.name == "StrokeCombine")
         {
             disablesimplicialColliders();
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
         else if (this.name == "function_brush")
@@ -88,13 +111,17 @@ public class AllButtonsBehaviors : MonoBehaviour
             enableAllPenObjectColliders();
             //enablesimplicialColliders();
             //disable_menu_creation
-            paint_canvas.GetComponent<Paintable>().panZoomLocked = true; 
+            paint_canvas.GetComponent<Paintable>().panZoomLocked = true;
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
         else if (this.name == "video_op")
         {            
             //paint_canvas.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
             paint_canvas.GetComponent<FileLoadDialog>().DialogShow();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
         // deselect all other buttons

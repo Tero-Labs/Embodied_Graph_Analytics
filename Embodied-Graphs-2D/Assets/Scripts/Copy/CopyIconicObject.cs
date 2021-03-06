@@ -76,6 +76,8 @@ public class CopyIconicObject : MonoBehaviour
                     cp.GetComponent<BoxCollider>().enabled = false;
                     //cp.GetComponent<iconicElementScript>().calculateTranslationPath();
                     cp.GetComponent<iconicElementScript>().edge_position = toCopy.GetComponent<iconicElementScript>().edge_position + target_pos;
+                    cp.GetComponent<iconicElementScript>().icon_number = paint_canvas.GetComponent<Paintable>().totalLines;
+                    cp.GetComponent<iconicElementScript>().icon_name = "iconic_" + paint_canvas.GetComponent<Paintable>().totalLines.ToString();
 
                     // find any edgeline associated with this object and create a copy too
                     // TODO: may need to add it again later

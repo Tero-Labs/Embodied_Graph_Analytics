@@ -131,7 +131,7 @@ public class CreatePrimitives : MonoBehaviour
         }        
 
         //meshObj.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
-        templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
+        templine.GetComponent<MeshRenderer>().sharedMaterial = lineRenderer.material;
 
 
         // get rid of the line renderer?
@@ -489,9 +489,7 @@ public class CreatePrimitives : MonoBehaviour
 
         List<GameObject> pen_meshobjs = new List<GameObject>();
 
-        List<Vector3> points = new List<Vector3>();
-
-        Color newColor;
+        List<Vector3> points = new List<Vector3>();        
 
         int totalLength = 0, totalArea = 0;
 
@@ -510,9 +508,7 @@ public class CreatePrimitives : MonoBehaviour
         // stop if no penline mesh objs found
         if (pen_meshobjs.Count == 0) return null;
         //else Debug.Log("total penline objects "+ pen_meshobjs.Count.ToString());
-
-        newColor = penlines[0].GetComponent<iconicElementScript>().icon_elem_material.color;
-
+        
         CombineInstance[] combine = new CombineInstance[pen_meshobjs.Count];
 
         for (int i = 0; i < pen_meshobjs.Count; i++)
@@ -528,20 +524,20 @@ public class CreatePrimitives : MonoBehaviour
         paintable_object.GetComponent<Paintable>().totalLines++;
 
         templine = Instantiate(paintable_object.GetComponent<Paintable>().IconicElement, paintable_object.GetComponent<Paintable>().Objects_parent.transform);
-        templine.GetComponent<TrailRenderer>().material.color = Color.black;
+        templine.GetComponent<TrailRenderer>().material = penlines[0].GetComponent<MeshRenderer>().sharedMaterial;
+        templine.GetComponent<LineRenderer>().material = penlines[0].GetComponent<MeshRenderer>().sharedMaterial;
 
-        
-        templine.name = "iconic_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
+        int icon_num = paintable_object.GetComponent<Paintable>().totalLines;
+        templine.name = "iconic_" + icon_num.ToString();
         templine.tag = "iconic";
-
+        templine.GetComponent<iconicElementScript>().icon_number = icon_num;
+        templine.GetComponent<iconicElementScript>().icon_name = "iconic_" + icon_num.ToString();
 
         templine.transform.GetComponent<MeshRenderer>().enabled = true;
         if (templine.transform.GetComponent<BoxCollider2D>() != null)
             templine.transform.GetComponent<BoxCollider2D>().enabled = false;
 
         // color and width
-        templine.GetComponent<TrailRenderer>().material.color = newColor;
-        templine.GetComponent<iconicElementScript>().icon_elem_material.color = newColor;
         templine.GetComponent<TrailRenderer>().widthMultiplier = 1f;
         templine.GetComponent<LineRenderer>().widthMultiplier = 1f;
 

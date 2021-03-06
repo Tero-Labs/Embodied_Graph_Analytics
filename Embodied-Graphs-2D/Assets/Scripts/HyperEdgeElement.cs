@@ -30,10 +30,10 @@ public class HyperEdgeElement : MonoBehaviour
         //spline_flag = Mathf.RoundToInt(UnityEngine.Random.Range(1f, 2f));
 
         LineRenderer l = transform.GetComponent<LineRenderer>();
-        l.material.SetColor("_Color", new Color(0.3f, 0.3f, 0.3f, 0.5f));
+        l.material.SetColor("_Color", transform.parent.GetComponent<HyperElementScript>().paintable.GetComponent<Paintable>().color_picker_script.color);
 
-        l.startWidth = 2f;
-        l.endWidth = 2f;
+        l.startWidth = 1f;
+        l.endWidth = 1f;
     }
 
     // Update is called once per frame
@@ -45,7 +45,7 @@ public class HyperEdgeElement : MonoBehaviour
     // start: node. end: hypernode
     public void UpdateEndpoints(Vector3 start, Vector3 end)
     {
-        start = parent_node.GetComponent<iconicElementScript>().getclosestpoint(end);
+        start = parent_node.GetComponent<iconicElementScript>().edge_position;//.getclosestpoint(end);
         transform.position = start;
 
         Vector3 dir_vec = start - end;

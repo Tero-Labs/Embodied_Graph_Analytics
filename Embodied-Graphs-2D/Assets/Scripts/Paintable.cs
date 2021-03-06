@@ -59,6 +59,8 @@ public class Paintable : MonoBehaviour
     public GameObject function_brush_button;
     public GameObject video_op_button;
     public GameObject canvas_radial;
+    public GameObject color_picker;
+    public FlexibleColorPicker color_picker_script;
 
     public GameObject text_message_worldspace;
 
@@ -181,7 +183,7 @@ public class Paintable : MonoBehaviour
 				{
 					//Debug.Log("instantiated_templine");
 
-					Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+					Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
 																	  //Debug.Log(vec);
 
 					totalLines++;
@@ -193,6 +195,10 @@ public class Paintable : MonoBehaviour
 
 					templine.GetComponent<iconicElementScript>().points.Add(vec);
                     templine.GetComponent<iconicElementScript>().icon_number = totalLines;
+
+                    templine.transform.GetComponent<LineRenderer>().material.SetColor("_Color", color_picker_script.color);
+                    templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
+                    Debug.Log("colorpicker_color:"+ color_picker_script.color.ToString());
 
                     /*
 					// Initiate the length display (use an existing text box used for translation parameterization)
@@ -209,17 +215,17 @@ public class Paintable : MonoBehaviour
 
 					templine.GetComponent<penLine_script>().pen_line_material.color =
 						pencil_button.GetComponent<AllButtonsBehavior>().pickerInstance.transform.GetChild(0).GetChild(0).GetComponent<ColorPicker>().Result;
+                        */
+                    templine.GetComponent<TrailRenderer>().widthMultiplier = 2;
+                    //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
 
-					templine.GetComponent<TrailRenderer>().widthMultiplier =
-						pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
-
-					templine.GetComponent<LineRenderer>().widthMultiplier =
-						pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+                    templine.GetComponent<LineRenderer>().widthMultiplier = 2;
+						//pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
 
 					// add to history
 					history.Add(templine);
 
-					*/
+					
                 }
 			}
 
@@ -235,7 +241,7 @@ public class Paintable : MonoBehaviour
                     (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
 				{
 
-					Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+					Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
 
 					templine.GetComponent<TrailRenderer>().transform.position = vec;
 					templine.GetComponent<iconicElementScript>().points.Add(vec);
@@ -483,10 +489,10 @@ public class Paintable : MonoBehaviour
 
                     //https://generalistprogrammer.com/unity/unity-line-renderer-tutorial/
                     LineRenderer l = edgeline.transform.GetComponent<LineRenderer>();
-                    l.material.SetColor("_Color", new Color(0.5f, 0.5f, 0.5f, 0.5f));
+                    l.material.SetColor("_Color", color_picker_script.color);
 
-                    l.startWidth = 2f;
-                    l.endWidth = 2f;
+                    /*l.startWidth = 2f;
+                    l.endWidth = 2f;*/
 
                     // set up the line renderer
                     l.positionCount = 2;
@@ -615,6 +621,7 @@ public class Paintable : MonoBehaviour
 
                         simplicialline.GetComponent<SimplicialElementScript>().theVertices = new List<Vector3>(SimplicialVertices);
                         simplicialline.GetComponent<SimplicialElementScript>().thenodes = new List<GameObject>(Simplicialnodes);
+                        simplicialline.GetComponent<SimplicialElementScript>().paintable = transform.gameObject;
 
                         simplicialline.GetComponent<SimplicialElementScript>().updatePolygon();
                         SimplicialCreation();
@@ -683,6 +690,7 @@ public class Paintable : MonoBehaviour
 
                         hyperline.GetComponent<HyperElementScript>().theVertices = new List<Vector3>(hyperVertices);
                         hyperline.GetComponent<HyperElementScript>().thenodes = new List<GameObject>(hypernodes);
+                        hyperline.GetComponent<HyperElementScript>().paintable = transform.gameObject;
 
                         hyperline.GetComponent<HyperElementScript>().addChildren();
                         hypergraphCreation();

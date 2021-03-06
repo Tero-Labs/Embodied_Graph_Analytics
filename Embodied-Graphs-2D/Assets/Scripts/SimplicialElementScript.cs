@@ -9,6 +9,7 @@ public class SimplicialElementScript : MonoBehaviour
     public List<GameObject> thenodes;
     public Material myMaterial;
     public GameObject dot_prefab;
+    public GameObject paintable;
 
     // for directed edge
     public bool directed_edge = false;
@@ -17,7 +18,9 @@ public class SimplicialElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Material new_material = new Material(transform.GetComponent<MeshRenderer>().material);
+        new_material.SetColor("_Color", paintable.GetComponent<Paintable>().color_picker_script.color);
+        transform.GetComponent<MeshRenderer>().material = new_material;
     }
 
     // the simplex will start from corner, not center
@@ -44,6 +47,16 @@ public class SimplicialElementScript : MonoBehaviour
                 temp.transform.parent = transform;
                 temp.transform.SetSiblingIndex(x);
 
+                Color mat_color = transform.GetComponent<MeshRenderer>().material.color;
+                mat_color = new Color(Mathf.Clamp(mat_color.r - 0.1f, 0f, 1f),
+                    Mathf.Clamp(mat_color.g - 0.1f, 0f, 1f),
+                    Mathf.Clamp(mat_color.b - 0.1f, 0f, 1f),
+                    mat_color.a);
+
+                LineRenderer lr = temp.GetComponent<LineRenderer>();
+                lr.enabled = true;
+                lr.material.SetColor("_Color", mat_color);
+
                 if (directed_edge && x == 1)
                     temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
             }
@@ -56,11 +69,28 @@ public class SimplicialElementScript : MonoBehaviour
                 temp.position = theVertices[x];
             }
         }
+
+        updateLine();
+    }
+
+    public void updateLine()
+    {
+        for (int x = 0; x < theVertices.Count; x++)
+        {
+            Transform temp = transform.GetChild(x);
+            LineRenderer lr = temp.GetComponent<LineRenderer>();
+
+            int y = (x + 1) % theVertices.Count;
+            lr.SetPosition(0, theVertices[x]);
+            lr.SetPosition(1, theVertices[y]);
+
+            temp.position = theVertices[x];
+        }
     }
 
     public void updatePolygon()
     {
-        UpdateVertices();
+        //UpdateVertices();
 
         //New mesh and game object
         GameObject myObject = this.transform.gameObject;

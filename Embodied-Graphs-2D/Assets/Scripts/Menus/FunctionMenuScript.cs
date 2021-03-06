@@ -207,7 +207,8 @@ public class FunctionMenuScript : MonoBehaviour
                         {
                             cur_arg_Str[index] = str_arg;
                             string arg_Str = get_arguments_string();
-                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.ToUpper() + arg_Str;
+                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.Substring(0, 1).ToUpper() +
+                                                   mainInputField.text.Substring(1).ToLower() + arg_Str;
                             cur_iter++;
                             argument_objects[index] = text_label;
                         }
@@ -239,6 +240,13 @@ public class FunctionMenuScript : MonoBehaviour
                             drag_text_ui.GetComponent<TMP_Text>().text += "\n" + "graph: " +
                             dragged_arg_object.transform.parent.parent.GetComponent<GraphElementScript>().graph_name;
                         }                            
+                    }
+
+                    RaycastHit2D hit2d = Physics2D.GetRayIntersection(ray);
+                    if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
+                    {
+                        dragged_arg_object = Hit.collider.gameObject.transform.parent.parent.gameObject;
+
                     }
                 }
             }
@@ -331,7 +339,8 @@ public class FunctionMenuScript : MonoBehaviour
                         {
                             // argument string update for display
                             string arg_Str = get_arguments_string();
-                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.ToUpper() + arg_Str;
+                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.Substring(0, 1).ToUpper() +
+                                                    mainInputField.text.Substring(1).ToLower() + arg_Str;
                             cur_iter++;
                         }
                         else
@@ -619,7 +628,9 @@ public class FunctionMenuScript : MonoBehaviour
 
                 string argument_str = get_arguments_string();
 
-                text_label.GetComponent<TextMeshProUGUI>().text = input.text.ToUpper() + argument_str;
+                text_label.GetComponent<TextMeshProUGUI>().text = input.text.Substring(0,1).ToUpper() +
+                                                    input.text.Substring(1).ToLower() + argument_str;
+
                 paintable.GetComponent<Paintable>().no_func_menu_open = false;
             }
 
@@ -719,6 +730,8 @@ public class FunctionMenuScript : MonoBehaviour
                 }
             }
         }
+                
+        text_label.GetComponent<TextMeshProUGUI>().text = text_label.GetComponent<TextMeshProUGUI>().text.Replace(" ", "");
 
         message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text ;
         if (output_type == "scalar")   text_label.GetComponent<TextMeshProUGUI>().text = output;

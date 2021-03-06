@@ -83,7 +83,7 @@ LineRenderer:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.52083397
+        value: 0.27777672
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -91,8 +91,8 @@ LineRenderer:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.99085355
-        value: 1.0138888
+        time: 1
+        value: 0.52777815
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -155,7 +155,6 @@ MonoBehaviour:
   _mesh: {fileID: 0}
   dot_prefab: {fileID: 1095668249245509096, guid: 204ec1cd6757fe64595bd9cb3c06035b,
     type: 3}
-  none: {fileID: 0}
   node_obj: []
   edge_start: {fileID: 0}
   edge_end: {fileID: 0}
@@ -203,7 +202,7 @@ MonoBehaviour:
   is_this_double_function_operand: 0
   details_dropdown: {fileID: 0}
   global_details_on_path: 1
-  solid_mat: {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
+  spline_dist: 0
 --- !u!68 &-5722908831877841235
 EdgeCollider2D:
   m_ObjectHideFlags: 0

@@ -82,7 +82,7 @@ public class iconicElementScript : MonoBehaviour
     public AnimationCurve widthcurve = new AnimationCurve();
     float totalLength = 0f;
     List<float> cumulativeLength = new List<float>();
-    int movingWindow = 3;
+    int movingWindow = 5;
 
     // Pen Interaction
     Pen currentPen;

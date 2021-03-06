@@ -7,6 +7,7 @@ public class HyperElementScript : MonoBehaviour
     public List<Vector3> theVertices;
     public List<GameObject> thenodes;
     public GameObject edge;
+    public GameObject paintable;
     public Sprite dot_sprite;
 
     // Start is called before the first frame update
@@ -30,6 +31,7 @@ public class HyperElementScript : MonoBehaviour
             temp.transform.SetSiblingIndex(i);
             // show the black dot at the end
             SpriteRenderer sr = temp.AddComponent<SpriteRenderer>();
+            sr.material.SetColor("_Color", paintable.GetComponent<Paintable>().color_picker_script.color);
             sr.sprite = dot_sprite;
         }
     }
