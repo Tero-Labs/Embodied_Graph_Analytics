@@ -178,7 +178,7 @@ Material:
     - __dirty: 1
     m_Colors:
     - _CameraFadeParams: {r: 0, g: Infinity, b: 0, a: 0}
-    - _Color: {r: 0.627451, g: 0.9372549, b: 0.48872325, a: 0.4627451}
+    - _Color: {r: 0.49019608, g: 0.7864494, b: 0.9372549, a: 0.4627451}
     - _DetailColor: {r: 1, g: 1, b: 1, a: 0}
     - _DetailSpecularColor: {r: 1, g: 1, b: 1, a: 0}
     - _Emission: {r: 0, g: 0, b: 0, a: 0}

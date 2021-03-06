@@ -1469,8 +1469,6 @@ public class iconicElementScript : MonoBehaviour
                 child.GetComponent<EdgeElementScript>().updateEndPoint(transform.gameObject);
         }
 
-
-
         foreach (Transform each_simplicial in simplicials)
         {
             if (each_simplicial.tag != "simplicial")
@@ -1484,7 +1482,7 @@ public class iconicElementScript : MonoBehaviour
                 {
                     if (each_node == transform.gameObject)
                     {
-                        //each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
+                        each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
                         each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
                         break;
                     }

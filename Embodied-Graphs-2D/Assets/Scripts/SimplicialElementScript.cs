@@ -14,11 +14,12 @@ public class SimplicialElementScript : MonoBehaviour
     // for directed edge
     public bool directed_edge = false;
     public Sprite directed_edge_sprite;
+    public Material new_material;
 
     // Start is called before the first frame update
     void Start()
     {
-        Material new_material = new Material(transform.GetComponent<MeshRenderer>().material);
+        new_material = new Material(transform.GetComponent<MeshRenderer>().material);
         new_material.SetColor("_Color", paintable.GetComponent<Paintable>().color_picker_script.color);
         transform.GetComponent<MeshRenderer>().material = new_material;
     }
@@ -116,6 +117,7 @@ public class SimplicialElementScript : MonoBehaviour
         BC.enabled = false;
 
         addDot();
+        //transform.GetComponent<MeshRenderer>().material = new_material;
     }
 
     Mesh CreateMesh()

@@ -31,7 +31,8 @@ public class HyperElementScript : MonoBehaviour
             temp.transform.SetSiblingIndex(i);
             // show the black dot at the end
             SpriteRenderer sr = temp.AddComponent<SpriteRenderer>();
-            sr.material.SetColor("_Color", paintable.GetComponent<Paintable>().color_picker_script.color);
+            sr.color = paintable.GetComponent<Paintable>().color_picker_script.color;
+            //sr.material.SetColor("_Color", paintable.GetComponent<Paintable>().color_picker_script.color);
             sr.sprite = dot_sprite;
         }
     }

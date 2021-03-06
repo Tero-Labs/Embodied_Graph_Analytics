@@ -76,6 +76,7 @@ public class CopyIconicObject : MonoBehaviour
                     cp.GetComponent<BoxCollider>().enabled = false;
                     //cp.GetComponent<iconicElementScript>().calculateTranslationPath();
                     cp.GetComponent<iconicElementScript>().edge_position = toCopy.GetComponent<iconicElementScript>().edge_position + target_pos;
+                    paint_canvas.GetComponent<Paintable>().totalLines++;
                     cp.GetComponent<iconicElementScript>().icon_number = paint_canvas.GetComponent<Paintable>().totalLines;
                     cp.GetComponent<iconicElementScript>().icon_name = "iconic_" + paint_canvas.GetComponent<Paintable>().totalLines.ToString();
 
@@ -96,7 +97,7 @@ public class CopyIconicObject : MonoBehaviour
                         }
                     }*/
                     // needs a unique name in the object hierarchy
-                    cp.name = "iconic_" + (++paint_canvas.GetComponent<Paintable>().totalLines).ToString();
+                    cp.name = "iconic_" + (paint_canvas.GetComponent<Paintable>().totalLines).ToString();
                 }                
             }
         }
@@ -128,21 +129,9 @@ public class CopyIconicObject : MonoBehaviour
                 //cp.GetComponent<iconicElementScript>().calculateTranslationPath();
                 cp.GetComponent<iconicElementScript>().edge_position = toCopy.GetComponent<iconicElementScript>().edge_position + target_pos;
 
-                // find any edgeline associated with this object and create a copy too
-                /*GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
-                for (int k = 0; k < edges.Length; k++)
-                {
-                    if (edges[k].GetComponent<EdgeElementScript>().edge_end == toCopy)
-                    {
-                        GameObject newedge = Instantiate(edges[k], edges[k].transform.parent);
-                        // change the target object
-                        newedge.GetComponent<EdgeElementScript>().edge_end = cp;
-                        // don't update the target object, let it sit at the position it was copied to
-                        // newedge.GetComponent<edgeLine_script>().target_is_being_copied = true;
-
-                        //break;
-                    }
-                }*/
+                paint_canvas.GetComponent<Paintable>().totalLines++;
+                cp.GetComponent<iconicElementScript>().icon_number = paint_canvas.GetComponent<Paintable>().totalLines;
+                cp.GetComponent<iconicElementScript>().icon_name = "iconic_" + paint_canvas.GetComponent<Paintable>().totalLines.ToString();
 
                 // needs a unique name in the object hierarchy
                 cp.name = "iconic_" + (++paint_canvas.GetComponent<Paintable>().totalLines).ToString();

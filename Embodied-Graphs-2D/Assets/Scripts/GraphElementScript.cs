@@ -708,6 +708,7 @@ public class GraphElementScript : MonoBehaviour
                 if (child.tag == "iconic")
                 {
                     child.GetComponent<iconicElementScript>().edge_position += diff;
+                    //child.transform.position += diff;
 
                     if (edge_position == Vector3.zero)
                         edge_position = child.GetComponent<iconicElementScript>().edge_position;
@@ -748,10 +749,15 @@ public class GraphElementScript : MonoBehaviour
             }
         }
 
-        if (transform.childCount > 4)
+        /*if (transform.childCount > 4)
         {
             transform.GetChild(4).transform.position += diff;
         }
+
+        if (transform.childCount > 5)
+        {
+            transform.GetChild(5).transform.position += diff;
+        }*/
 
 
         //ToDo: add hyperedge and simplicial dragging; also check if the child is active

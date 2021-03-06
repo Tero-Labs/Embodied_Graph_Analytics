@@ -35,6 +35,7 @@ public class AllButtonsBehaviors : MonoBehaviour
         {
             // enable all colliders to move primitives around
             enableAllPenObjectColliders();
+            enableplayerColliders();
             paint_canvas.GetComponent<Paintable>().okayToPan = true;
             paint_canvas.GetComponent<Paintable>().panZoomLocked = false;
 
@@ -162,6 +163,15 @@ public class AllButtonsBehaviors : MonoBehaviour
         else if (this.name == "Pan")
         {
             paint_canvas.GetComponent<Paintable>().okayToPan = false;
+            disableplayerColliders();
+
+            if (paint_canvas.GetComponent<Paintable>().canvas_radial.transform.childCount > 0)
+            {
+                for (int i = 0; i < paint_canvas.GetComponent<Paintable>().canvas_radial.transform.childCount; i++)
+                {
+                    Destroy(paint_canvas.GetComponent<Paintable>().canvas_radial.transform.GetChild(i).gameObject);
+                }
+            }
         }
 
         else if (this.name == "SimplicialPen")
@@ -239,6 +249,29 @@ public class AllButtonsBehaviors : MonoBehaviour
                 simplicial.GetComponent<BoxCollider>().enabled = false;
         }
     }
+
+    public void enableplayerColliders()
+    {
+        GameObject[] videoplayers = GameObject.FindGameObjectsWithTag("video_player");
+
+        foreach (GameObject vp in videoplayers)
+        {
+            if (vp.GetComponent<MeshCollider>() != null)
+                vp.GetComponent<MeshCollider>().enabled = true;
+        }
+    }
+
+    public void disableplayerColliders()
+    {
+        GameObject[] videoplayers = GameObject.FindGameObjectsWithTag("video_player");
+
+        foreach (GameObject vp in videoplayers)
+        {
+            if (vp.GetComponent<MeshCollider>() != null)
+                vp.GetComponent<MeshCollider>().enabled = false;
+        }
+    }
+
     // Start is called before the first frame update
     void Start()
 	{

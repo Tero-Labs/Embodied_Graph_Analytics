@@ -108,6 +108,10 @@ public class Paintable : MonoBehaviour
     float EndTouchTime; // Time.realtimeSinceStartup at end of touch
     public Vector2 startPos;
 
+    // needed for dragging using mouse
+    public GameObject pen_dragged_obj;
+    public Vector3 drag_prev_pos;
+
     // needed for function
     public bool no_func_menu_open;
     public bool function_name_performed = true;
@@ -305,6 +309,10 @@ public class Paintable : MonoBehaviour
         // Handle screen touches.                     
         //https://docs.unity3d.com/ScriptReference/TouchPhase.Moved.html
 
+        if(pan_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            DragorMenuCreateOnClick();
+        }
         
         if (Input.touchCount == 2 && !panZoomLocked) // && pan_button.GetComponent<PanButtonBehavior>().selected)
         {
@@ -368,8 +376,7 @@ public class Paintable : MonoBehaviour
 
                     if (curtouched_obj.tag == "iconic")
                     {
-                        if (!graphlocked)
-                            curtouched_obj.transform.localScale = curtouched_obj.transform.localScale*1.05f; //new Vector3(1.25f, 1.25f, 1.25f);
+                        curtouched_obj.transform.localScale = curtouched_obj.transform.localScale*1.05f; //new Vector3(1.25f, 1.25f, 1.25f);
                     }
 
                     Vector3 vec = Hit.point; 
@@ -1043,7 +1050,125 @@ public class Paintable : MonoBehaviour
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
     }
-    
+
+    public void DragorMenuCreateOnClick()
+    {
+        if (PenTouchInfo.PressedThisFrame)
+        {
+            var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+            RaycastHit Hit;
+
+            if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "simplicial")
+            {
+                pen_dragged_obj = Hit.collider.gameObject;
+                Debug.Log("collided_with" + pen_dragged_obj.tag);
+
+                if (pen_dragged_obj.tag == "iconic")
+                {
+                    pen_dragged_obj.transform.localScale = pen_dragged_obj.transform.localScale * 1.05f;
+
+                    if (graphlocked) drag_prev_pos = pen_dragged_obj.transform.parent.parent.position;
+                    else drag_prev_pos = pen_dragged_obj.transform.position;
+                }
+
+                Vector3 vec = Hit.point;
+                // enforce the same z coordinate as the rest of the points in the parent set object
+                vec.z = -5f;
+                touchDelta = pen_dragged_obj.transform.position - vec;                
+
+                panTouchStart = Camera.main.ScreenToWorldPoint(PenTouchInfo.penPosition);
+                prev_move_pos = panTouchStart;
+            }
+        }
+
+        else if (PenTouchInfo.PressedNow && pen_dragged_obj != null)
+        {
+            var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+            RaycastHit Hit;
+
+            if (Vector2.Distance(prev_move_pos, (Vector2)Camera.main.ScreenToWorldPoint(PenTouchInfo.penPosition)) < 2)
+                return;
+
+            if (Physics.Raycast(ray, out Hit))
+            {
+                Vector2 panDirection = panTouchStart - (Vector2)Camera.main.ScreenToWorldPoint(PenTouchInfo.penPosition);
+                Vector3 vec = Hit.point;
+
+                // enforce the same z coordinate as the rest of the points in the parent set object
+                vec.z = -5f;
+                Vector3 diff = vec - pen_dragged_obj.transform.position + touchDelta;
+                diff.z = 0;
+                
+                if (pen_dragged_obj.tag == "paintable_canvas_object")
+                {
+                    //Camera.main.transform.position += (Vector3)panDirection;
+                }
+                else if (pen_dragged_obj.tag == "iconic")
+                {
+                    
+                    if (graphlocked)
+                    {
+                        if (pen_dragged_obj.transform.parent.tag == "node_parent")
+                        {
+                            pen_dragged_obj.transform.parent.parent.position += diff;
+                            pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
+                        }
+                    }
+                    else
+                    {
+                        pen_dragged_obj.transform.position += diff;
+                        pen_dragged_obj.GetComponent<iconicElementScript>().edge_position += diff;
+                        pen_dragged_obj.GetComponent<iconicElementScript>().searchNodeAndUpdateEdge();
+                    }
+
+                }
+                else if (pen_dragged_obj.tag == "video_player")
+                {
+                    pen_dragged_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().checkHitAndMove(diff);
+                }
+                else if (pen_dragged_obj.tag == "hyper")
+                {
+                    pen_dragged_obj.transform.position += diff;
+                    pen_dragged_obj.GetComponent<HyperElementScript>().UpdateChildren();
+                }
+
+                prev_move_pos = (Vector2)Camera.main.ScreenToWorldPoint(PenTouchInfo.penPosition);
+            }
+        }
+
+        else if (PenTouchInfo.ReleasedThisFrame && pen_dragged_obj != null)
+        {            
+            if (pen_dragged_obj.tag == "iconic")
+            {
+                pen_dragged_obj.transform.localScale = pen_dragged_obj.transform.localScale / 1.05f;
+                pen_dragged_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
+
+                if (graphlocked)
+                {
+                    if (pen_dragged_obj.transform.parent.tag == "node_parent")
+                    {
+
+                        if (Vector3.Distance(drag_prev_pos, pen_dragged_obj.transform.parent.parent.position) < 5f)
+                        {
+                            menucreation(PenTouchInfo.penPosition);
+                        }
+                    }
+                }
+                else
+                {                    
+                    if (Vector3.Distance(drag_prev_pos, pen_dragged_obj.transform.position) < 5f)
+                    {
+                        menucreation(PenTouchInfo.penPosition);
+                    }
+                }
+            }                     
+
+
+            pen_dragged_obj = null;
+        }
+                
+    }
+
     // create iconic element from an image
     public void createImageIcon(string FilePath)
     {
@@ -1475,7 +1600,8 @@ public class Paintable : MonoBehaviour
 
         if (Physics.Raycast(ray, out Hit))
         {
-            Debug.Log("hit:"+ Hit.collider.gameObject.tag);
+            Debug.Log("hit in menu creation: " + Hit.collider.gameObject.tag);
+
             if (Hit.collider.gameObject.tag == "iconic")
             {
                 if(graphlocked)

@@ -174,10 +174,10 @@ public class FunctionMenuScript : MonoBehaviour
                             if (/*cur_dict[index] == "string" || cur_dict[index] == "int"*/ tmptextlabel.textInfo.characterInfo[index].spriteIndex == 2)
                             {
                                 Vector3 TouchStart = Vector3.zero;
+
                                 RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition, 
                                     paintable.GetComponent<Paintable>().main_camera, out TouchStart);
-
-                                //Vector3 TouchStart = Camera.main.ScreenToWorldPoint(PenTouchInfo.penPosition);
+                                                                
                                 TouchStart = paintable.GetComponent<Paintable>().main_camera.transform.InverseTransformPoint(TouchStart);
 
                                 //Debug.Log(TouchStart.ToString());
@@ -197,8 +197,9 @@ public class FunctionMenuScript : MonoBehaviour
                 //else check if any other object is clicked on
                 else
                 {
-                    //remove active textbox, if any
-                    if (textbox_open)
+                    
+                    //remove active textbox, if any                    
+                    if (textbox_open && argument_text.GetComponent<FunctionTextInputMenu>().str_arg.Length > 0)
                     {
                         int index = argument_text.GetComponent<FunctionTextInputMenu>().str_index;
                         string str_arg = argument_text.GetComponent<FunctionTextInputMenu>().str_arg;
@@ -208,7 +209,7 @@ public class FunctionMenuScript : MonoBehaviour
                             cur_arg_Str[index] = str_arg;
                             string arg_Str = get_arguments_string();
                             text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.Substring(0, 1).ToUpper() +
-                                                   mainInputField.text.Substring(1).ToLower() + arg_Str;
+                                                    mainInputField.text.Substring(1).ToLower() + arg_Str;
                             cur_iter++;
                             argument_objects[index] = text_label;
                         }
@@ -245,8 +246,8 @@ public class FunctionMenuScript : MonoBehaviour
                     RaycastHit2D hit2d = Physics2D.GetRayIntersection(ray);
                     if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
                     {
-                        dragged_arg_object = Hit.collider.gameObject.transform.parent.parent.gameObject;
-
+                        dragged_arg_object = hit2d.collider.gameObject.transform.parent.parent.gameObject;
+                        Debug.Log("graph picked from edge cllick");
                     }
                 }
             }
@@ -776,6 +777,16 @@ public class FunctionMenuScript : MonoBehaviour
                 transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
                 transform.parent.GetComponent<MeshRenderer>().enabled = !toggle.isOn;
             }
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (textbox_open)
+        {
+            Destroy(argument_text);
+            argument_text = null;
+            textbox_open = false;
         }
     }
 }

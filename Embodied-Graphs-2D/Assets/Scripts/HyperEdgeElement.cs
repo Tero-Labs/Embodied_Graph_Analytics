@@ -11,7 +11,10 @@ public class HyperEdgeElement : MonoBehaviour
 {
     public GameObject parent_node;
     public int spline_flag;
-    
+
+    // spline variables
+    public float spline_dist;
+
     private void Awake()
     {
        
@@ -21,6 +24,7 @@ public class HyperEdgeElement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        spline_dist = UnityEngine.Random.Range(2f, 4f);
         float temp = UnityEngine.Random.Range(1f, 2f);
         print("rand:" + temp.ToString());
         if (temp > 1.5f)
@@ -110,7 +114,7 @@ public class HyperEdgeElement : MonoBehaviour
         bs[3].handleMode = BezierPoint.HandleMode.Free;
         bs[3].precedingControlPointPosition = fourth_pt;
 
-        int pts = 100;
+        int pts = 10;
         List<Vector3>  recorded_path = new List<Vector3>(pts);
         for (int i = 0; i < pts; i++)
         {

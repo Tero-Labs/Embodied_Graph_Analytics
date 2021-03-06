@@ -1403,7 +1403,14 @@ public class EdgeElementScript : MonoBehaviour
             temp.name = "dot_child";
             temp.transform.parent = transform;
             temp.transform.SetSiblingIndex(x);
-            if (video) temp.transform.localScale = new Vector3(5f, 5f, 5f);
+            if (video)
+            {
+                temp.transform.localScale = new Vector3(5f, 5f, 5f);
+            }
+            else
+            {
+                temp.GetComponent<SpriteRenderer>().color = l.material.color;
+            }
 
             if (directed_edge && x == 1)
                 temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;

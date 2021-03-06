@@ -176,7 +176,7 @@ public class FunctionElementScript : MonoBehaviour
                     if (current_graph.GetComponent<GraphElementScript>().nodeMaps.ContainsKey(current_node.ToString()))
                     {
                         Transform prev_Trasform = current_graph.GetComponent<GraphElementScript>().nodeMaps[current_node.ToString()];
-                        GameObject tempicon = Instantiate(prev_Trasform.gameObject, new Vector3(0f, 0f, 0f), Quaternion.identity, tempnodeparent.transform);
+                        GameObject tempicon = Instantiate(prev_Trasform.gameObject, prev_Trasform.position, Quaternion.identity, tempnodeparent.transform);
                         paintable_object.GetComponent<Paintable>().totalLines++;
                         tempicon.name = "iconic_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
                         tempicon.GetComponent<iconicElementScript>().icon_number = paintable_object.GetComponent<Paintable>().totalLines;
@@ -356,17 +356,13 @@ public class FunctionElementScript : MonoBehaviour
                             Vector3 old_pos = child.position;
                             // we want the edge_position to project
                             child.position = child.InverseTransformDirection(position) -
-                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position);
+                                child.InverseTransformDirection(child.GetComponent<MeshFilter>().sharedMesh.bounds.center);
+
                             child.GetComponent<iconicElementScript>().edge_position = position;
                             Debug.Log(child.name);
-                            /*Debug.Log("InverseTransformDirection edge:" + child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position).ToString());
-                            Debug.Log("InverseTransformDirection calc pos:" + child.InverseTransformDirection(position).ToString());*/
-                            Debug.Log("InverseTransformDirection diff:" + (child.InverseTransformDirection(position) -
-                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().edge_position)).ToString());
-
+                                                        
                             position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
-                            /*position = child.GetComponent<iconicElementScript>().edge_position +
-                                new Vector3(0, child.GetComponent<iconicElementScript>().radius, 0);*/
+
                         }
 
                         break;
