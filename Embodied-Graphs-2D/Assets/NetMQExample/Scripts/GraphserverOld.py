@@ -8,9 +8,6 @@ import time
 import zmq
 import networkx as nx
 from networkx.algorithms import community
-import itertools
-import hypernetx as hnx
-from hypernetx.classes.entity import Entity, EntitySet
 import argparse, json, os
 import subprocess   
 
@@ -260,49 +257,14 @@ class Graph:
     def __init__(self, nodes=None, edges=None):
         self.nodes = set()
         self.edges = set()
-        self.G = nx.Graph()
         if nodes:
             for node in nodes:
                 self.add_node(node)
-                self.G.add_node(node)
         if edges:
             for edge in edges:
                 self.add_edge(edge)
-                self.G.add_edge(*edge)
-    
-    def get_cliques(self, k = 3):
-        
-#         temp_edges = set()
-#         for each_edge in set(self.G.edges):
-#             temp_edges.add()
-        temp_edges = self.edges.copy()        
-        cliques = set()
-        
-        for clique in nx.find_cliques(self.G):
-            if len(clique) == k:
-                cliques.add(frozenset(clique))
-                
-                edges = list(itertools.combinations(clique, 2))
-                for possible_edge in edges:
-                    possible_edge = frozenset(possible_edge)
-#                     print("possible_edge",possible_edge)
-                    if possible_edge in temp_edges:
-                        temp_edges.remove(possible_edge)
-                
-            elif len(clique) > k:
-                subset_cliques = list(itertools.combinations(clique, k))
-                for subset_clique in subset_cliques:
-                    cliques.add(frozenset(subset_clique))
-                    
-                edges = list(itertools.combinations(clique, 2))
-                for possible_edge in edges:
-                    if possible_edge in temp_edges:
-                        temp_edges.remove(possible_edge)
-                        
-        #print(temp_edges)
-                
-        return list(cliques.union(temp_edges))
-            
+
+
     def add_node(self,node):
         self.nodes.add(node)
 
@@ -317,7 +279,7 @@ class Graph:
     def to_simplicial_complex(self):
         pass
         nodes = self.nodes
-        simplices = self.get_cliques() #self.edges
+        simplices = self.edges
         return(SimplicialComplex(nodes=nodes, simplices=simplices))
 
     def to_hypergraph(self):
@@ -325,6 +287,7 @@ class Graph:
         nodes = self.nodes
         hyperedges = self.edges
         return(HyperGraph(nodes=nodes, hyperedges=hyperedges))
+
 
 def get_subsets(s, n): 
     return [frozenset(i) for i in combinations(s, n)] 
@@ -383,11 +346,11 @@ class SimplicialComplex:
         ## To make sure the downward inclusion
         ## we are adding all the subsets of the simplex
         ## in the simplces set
-        ## for i in range(1,len(simplex)):
+        for i in range(1,len(simplex)):
         ## We do not want any simplex that is empty and
         ## we have already put the whole simplex itself in
         ## the line outside the loop
-            ## self.simplices.update(get_subsets(simplex,i))
+            self.simplices.update(get_subsets(simplex,i))
         for node in simplex:
             self.add_node(node)
 
@@ -417,57 +380,44 @@ class SimplicialComplex:
 
 class HyperGraph:
     def __init__(self, nodes=None, hyperedges=None):
+        self.nodes = set()
         self.hyperedges = set()
-        self.H = hnx.Hypergraph()
-        self.unique_edge_number = 0
-        self.edge_to_unique_edge_number = dict()
+        if nodes:
+            for node in nodes:
+                self.add_node(node)
         if hyperedges:
             for hyperedge in hyperedges:
                 #print(hyperedge)
                 self.add_hyperedge(hyperedge)
-        if nodes:
-            for node in nodes:
-                self.add_node(node)
-                
-        self.get_hyperedges()
-        self.nodes = self.get_nodes()
-
-    def get_nodes(self):
-        return set(self.H.nodes)
-
-    def get_hyperedges(self):
-        self.hyperedges = list(map(frozenset,self.H.incidence_dict.values()))
-        return self.hyperedges #list(map(frozenset,self.H.incidence_dict.values()))
 
     def add_node(self,node):
-        self.H._nodes.add(Entity(node))
+        self.nodes.add(node)
 
     def add_hyperedge(self,hyperedge):
         """
         Add a hyperedge.
+
         Params
         ------
         hyperedge (set): a set of nodes that have interaction
         with each other
+
         """
-        self.H.add_edge(Entity("_%d" %self.unique_edge_number,hyperedge))
-        ## Each of the edge has a unique edge id, also the same 
-        ## edge id can not be a node itself, so we will put an
-        ## underscore before the unique integer and make it a string
-        self.edge_to_unique_edge_number[frozenset(hyperedge)] = "_%d" %self.unique_edge_number
-        self.unique_edge_number += 1
+        self.hyperedges.add(frozenset(hyperedge))
+        for node in hyperedge:
+            self.add_node(node)
 
     def to_simplicial_complex(self):
         pass
-        nodes = self.get_nodes()
-        simplices = self.get_hyperedges()
+        nodes = self.nodes
+        simplices = self.hyperedges
         return SimplicialComplex(nodes=nodes,simplices=simplices)
 
     def to_graph(self):
         pass
-        nodes = self.get_nodes()
+        nodes = self.nodes
         edges = []
-        for hyperedge in self.get_hyperedges():
+        for hyperedge in self.hyperedges:
             ## The following is redundant, we should not 
             ## have a 1 length hyperedge, but keeping
             ## it if it changes in the future
@@ -495,7 +445,7 @@ if __name__ == '__main__':
         #  Try reducing sleep time to 0.01 to see how blazingly fast it communicates
         #  In the real world usage, you just need to replace time.sleep() with
         #  whatever work you want python to do, maybe a machine learning task?
-        #  time.sleep(1)  
+        time.sleep(1)  
     
         
         if message.decode('utf8') == "addition":

@@ -15,7 +15,7 @@ public class FunctionCaller : MonoBehaviour
 
     }
 
-    public void GetGraphStrings(GameObject[] selected_graphs)
+    /*public void GetGraphStrings(GameObject[] selected_graphs)
     {
         graphs_as_string = "";
         for (int i = 0; i < selected_graphs.Length; i++)
@@ -32,11 +32,38 @@ public class FunctionCaller : MonoBehaviour
 
         Debug.Log("combined_string: " + graphs_as_string);
         GetGraphJson(selected_graphs);
-    }
+    }*/
 
-    public void GetGraphJson(GameObject[] selected_graphs)
+    public void GetGraphJson(GameObject[] selected_graphs, string function_name)
     {
         this.selected_graphs = selected_graphs;
+
+        bool coercion = false;
+
+        string abs_layer = "";
+        for (int i = 0; i < selected_graphs.Length; i++)
+        {
+            if (selected_graphs[i].tag != "graph") continue;
+            if (abs_layer == "")
+                abs_layer = selected_graphs[i].GetComponent<GraphElementScript>().abstraction_layer;
+            else
+            {
+                if (abs_layer != selected_graphs[i].GetComponent<GraphElementScript>().abstraction_layer)
+                {
+                    Debug.Log("coercion needed");
+                    coercion = true;
+                    break;
+                }
+            }
+        }
+
+        if (coercion)
+        {
+            StartCoroutine(RunCoercionModel(selected_graphs, function_name));
+            return;
+        }
+
+        Debug.Log("no coercion needed");
         Graphs graphs = new Graphs();
         graphs.graphs = new List<Graph>();
 
@@ -49,6 +76,44 @@ public class FunctionCaller : MonoBehaviour
 
         Debug.Log(JsonUtility.ToJson(graphs));
         File.WriteAllText("Assets/Resources/" + "data.json", JsonUtility.ToJson(graphs));
+        Function_Caller(function_name);
+    }
+
+    IEnumerator RunCoercionModel(GameObject[] selected_graphs, string function_name)
+    {
+        Graphs graphs = new Graphs();
+        graphs.graphs = new List<Graph>();
+
+        for (int i = 0; i < selected_graphs.Length; i++)
+        {
+            if (selected_graphs[i].tag != "graph") continue;
+
+            // if already graph, no more change needed
+            if (selected_graphs[i].GetComponent<GraphElementScript>().abstraction_layer == "graph")
+            {
+                graphs.graphs.Add(selected_graphs[i].GetComponent<GraphElementScript>().graph);
+                continue;
+            }                
+
+            selected_graphs[i].GetComponent<GraphElementScript>().StartConversion("graph");
+
+            // wait until current conversion is done
+            while(true)
+            {
+                yield return null;
+                if (selected_graphs[i].GetComponent<GraphElementScript>().conversion_done)
+                {
+                    Debug.Log("Conversion Done");
+                    break;
+                }                    
+            }
+
+            graphs.graphs.Add(selected_graphs[i].GetComponent<GraphElementScript>().graph);
+        }
+
+        Debug.Log(JsonUtility.ToJson(graphs));
+        File.WriteAllText("Assets/Resources/" + "data.json", JsonUtility.ToJson(graphs));
+        Function_Caller(function_name);
     }
 
     private void OnDestroy()

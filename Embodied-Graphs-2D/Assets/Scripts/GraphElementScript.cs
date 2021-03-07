@@ -18,6 +18,7 @@ public class GraphElementScript : MonoBehaviour
     public string abstraction_layer;
 
     public bool splined_edge_flag;
+    public bool conversion_done;
 
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
@@ -46,7 +47,7 @@ public class GraphElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        abstraction_layer = "graph";
+        //abstraction_layer = "graph";
         //canvas_radial = GameObject.Find("canvas_radial");
 
         graph_lock = true;
@@ -475,7 +476,11 @@ public class GraphElementScript : MonoBehaviour
 
         // set the current layer
         if (flag)
+        {
             abstraction_layer = target_layer;
+            conversion_done = false;
+        }            
+
     }
 
     public void showconversion(string serverUpdate, string command)
@@ -490,7 +495,7 @@ public class GraphElementScript : MonoBehaviour
             // string parsing, edges are separated by hyphen and each node of an edge is separated by a comma 
             string[] newedges = serverUpdate.Split('-');
 
-            if ((command.Split('_'))[0] == "simplicial")
+            /*if ((command.Split('_'))[0] == "simplicial")
             {
                 //DeleteChildren(transform.GetChild(2));
                 transform.GetChild(2).gameObject.SetActive(false);
@@ -505,26 +510,30 @@ public class GraphElementScript : MonoBehaviour
             {
                 //DeleteChildren(transform.GetChild(1));
                 transform.GetChild(1).gameObject.SetActive(false);
-            }
+            }*/
+            
 
             // the follwings are basically copy of graph creation in paintable script
             if (abstraction_layer == "graph")
             {
                 transform.GetChild(1).gameObject.SetActive(true);
+                transform.GetChild(2).gameObject.SetActive(false);
+                transform.GetChild(3).gameObject.SetActive(false);
+
                 // delete all previous children, draw again
                 if (graph_lock == false)
                 {
                     DeleteChildren(transform.GetChild(1));
                 }
                 // else keep previous children, no need to redraw
-                // however, we force a mandatory initial conversion
-                else if (graph_drawn)
-                {
-                    return;
-                }
+                // however, we force a mandatory initial conversion                
                 else if (graph_drawn == false)
                 {
                     graph_drawn = true;
+                }
+                else
+                {
+                    return;
                 }
 
                 foreach (string edge in newedges)
@@ -542,6 +551,8 @@ public class GraphElementScript : MonoBehaviour
             else if (abstraction_layer == "simplicial")
             {
                 transform.GetChild(2).gameObject.SetActive(true);
+                transform.GetChild(3).gameObject.SetActive(false);
+                transform.GetChild(1).gameObject.SetActive(false);
 
                 if (simplicial_lock == false)
                 {
@@ -560,6 +571,7 @@ public class GraphElementScript : MonoBehaviour
                 foreach (string edge in newedges)
                 {
                     string[] nodes_of_edge = edge.Split(',');
+                    Debug.Log("simplicial length: " + nodes_of_edge.Length.ToString());
 
                     // simplicial may have subsets of length 1, will skip those
                     if (nodes_of_edge.Length > 2)
@@ -577,6 +589,8 @@ public class GraphElementScript : MonoBehaviour
             else if (abstraction_layer == "hypergraph")
             {
                 transform.GetChild(3).gameObject.SetActive(true);
+                transform.GetChild(2).gameObject.SetActive(false);
+                transform.GetChild(1).gameObject.SetActive(false);
 
                 if (hyper_edges_lock == false)
                 {
@@ -609,6 +623,8 @@ public class GraphElementScript : MonoBehaviour
                 }
             }
 
+            conversion_done = true;
+            Graph_init();
         }
     }
 
@@ -626,6 +642,7 @@ public class GraphElementScript : MonoBehaviour
         GameObject edgeline = Instantiate(EdgeElement, temp_nodes[0].GetComponent<iconicElementScript>().edge_position, Quaternion.identity, transform.GetChild(idx));
         edgeline.name = "edge_1";
         edgeline.tag = tag;
+        edgeline.GetComponent<EdgeElementScript>().paintable_object = paintable;
 
         edgeline.GetComponent<EdgeElementScript>().edge_start = temp_nodes[0];
         edgeline.GetComponent<EdgeElementScript>().edge_end = temp_nodes[1];
@@ -654,6 +671,7 @@ public class GraphElementScript : MonoBehaviour
         GameObject simplicialline = Instantiate(SimplicialEdgeElement, transform.position, Quaternion.identity, transform.GetChild(2));
         simplicialline.name = "simplicial_1";
         simplicialline.tag = "simplicial";
+        simplicialline.GetComponent<SimplicialElementScript>().paintable = paintable;
 
         foreach (string node in nodes_of_edge)
         {
@@ -673,6 +691,8 @@ public class GraphElementScript : MonoBehaviour
         GameObject hyperline = Instantiate(hyperEdgeElement, transform.position, Quaternion.identity, transform.GetChild(3));
         hyperline.name = "hyper_1";
         hyperline.tag = "hyper";
+        hyperline.GetComponent<HyperElementScript>().paintable = paintable;
+
         Vector3 vec = new Vector3(0, 0, 0);
         foreach (string node in nodes_of_edge)
         {

@@ -96,7 +96,7 @@ public class EdgeElementScript : MonoBehaviour
     public bool global_details_on_path = true;
 
     // spline variables
-    public float spline_dist;
+    public int spline_dist;
 
     public void computeCentroid()
     {
@@ -1294,7 +1294,12 @@ public class EdgeElementScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        spline_dist = UnityEngine.Random.Range(2f, 4f);
+        spline_dist = UnityEngine.Random.Range(2, 4);
+
+        if (paintable_object.GetComponent<Paintable>().color_picker.activeSelf)
+            transform.GetComponent<LineRenderer>().material.SetColor("_Color", paintable_object.GetComponent<Paintable>().color_picker_script.color);
+        else
+            transform.GetComponent<LineRenderer>().material.SetColor("_Color", Color.gray);
     }
 
     // Update is called once per frame

@@ -20,7 +20,9 @@ public class SimplicialElementScript : MonoBehaviour
     void Start()
     {
         new_material = new Material(transform.GetComponent<MeshRenderer>().material);
+        if (paintable.GetComponent<Paintable>().color_picker.activeSelf)
         new_material.SetColor("_Color", paintable.GetComponent<Paintable>().color_picker_script.color);
+
         transform.GetComponent<MeshRenderer>().material = new_material;
     }
 

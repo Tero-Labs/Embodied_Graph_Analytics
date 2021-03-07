@@ -647,8 +647,7 @@ public class FunctionMenuScript : MonoBehaviour
             // ToDo: update string parsing, pass current func name too
             if (output_type != "scalar")
             {                
-                transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects);
-                transform.parent.GetComponent<FunctionCaller>().Function_Caller(mainInputField.text.ToLower());  
+                transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());                
             }
             
             input_option.SetActive(false);

@@ -13,7 +13,7 @@ public class HyperEdgeElement : MonoBehaviour
     public int spline_flag;
 
     // spline variables
-    public float spline_dist;
+    public int spline_dist;
 
     private void Awake()
     {
@@ -24,7 +24,7 @@ public class HyperEdgeElement : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        spline_dist = UnityEngine.Random.Range(2f, 4f);
+        spline_dist = UnityEngine.Random.Range(2, 4);
         float temp = UnityEngine.Random.Range(1f, 2f);
         print("rand:" + temp.ToString());
         if (temp > 1.5f)
@@ -34,8 +34,10 @@ public class HyperEdgeElement : MonoBehaviour
         //spline_flag = Mathf.RoundToInt(UnityEngine.Random.Range(1f, 2f));
 
         LineRenderer l = transform.GetComponent<LineRenderer>();
-        l.material.SetColor("_Color", transform.parent.GetComponent<HyperElementScript>().paintable.GetComponent<Paintable>().color_picker_script.color);
-
+        if (transform.parent.GetComponent<HyperElementScript>().paintable.GetComponent<Paintable>().color_picker.activeSelf)
+            l.material.SetColor("_Color", transform.parent.GetComponent<HyperElementScript>().paintable.GetComponent<Paintable>().color_picker_script.color);
+        else
+            l.material.SetColor("_Color", Color.gray);
         l.startWidth = 1f;
         l.endWidth = 1f;
     }
@@ -65,7 +67,7 @@ public class HyperEdgeElement : MonoBehaviour
         
         float approx_dist;
 
-        approx_dist = Vector3.Distance(start, end) / UnityEngine.Random.Range(2f,4f);//3;
+        approx_dist = Vector3.Distance(start, end) / 3;
 
         if (spline_flag == 1)
         {

@@ -1654,6 +1654,8 @@ public class Paintable : MonoBehaviour
         if (edge_start.transform.parent == edge_end.transform.parent && edge_start.transform.parent.tag == "node_parent")
         {
             Transform Prev_graph_parent = edge_start.transform.parent.transform.parent;
+            Prev_graph_parent.GetComponent<GraphElementScript>().abstraction_layer = "graph";
+            Prev_graph_parent.GetChild(1).gameObject.SetActive(true);
             edgeline.transform.parent = Prev_graph_parent.GetChild(1);
             Prev_graph_parent.GetComponent<GraphElementScript>().edges_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().edges_as_Str();
@@ -1662,6 +1664,7 @@ public class Paintable : MonoBehaviour
 
         graph_count++;
         GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
         tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
         tempgraph.name = "graph_"+graph_count.ToString();
         tempgraph.tag = "graph";
@@ -1767,6 +1770,8 @@ public class Paintable : MonoBehaviour
         if (share_same_parent)
         {
             Transform Prev_graph_parent = Simplicialnodes[0].transform.parent.transform.parent;
+            Prev_graph_parent.GetComponent<GraphElementScript>().abstraction_layer = "simplicial";
+            Prev_graph_parent.GetChild(2).gameObject.SetActive(true);
             simplicialline.transform.parent = Prev_graph_parent.GetChild(2);
             Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_as_Str();
@@ -1775,6 +1780,7 @@ public class Paintable : MonoBehaviour
 
         graph_count++;
         GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "simplicial";
         tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
         tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
@@ -1874,7 +1880,9 @@ public class Paintable : MonoBehaviour
         if (share_same_parent)
         {
             Transform Prev_graph_parent = hypernodes[0].transform.parent.transform.parent;
+            Prev_graph_parent.GetComponent<GraphElementScript>().abstraction_layer = "hypergraph";
             // 3 is hyper edge parent index
+            Prev_graph_parent.GetChild(3).gameObject.SetActive(true);
             hyperline.transform.parent = Prev_graph_parent.GetChild(3);
             Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
@@ -1883,6 +1891,7 @@ public class Paintable : MonoBehaviour
 
         graph_count++;
         GameObject tempgraph = Instantiate(GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "hypergraph";
         tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
         tempgraph.name = "graph_" + graph_count.ToString();
         tempgraph.tag = "graph";
