@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: -7194648794338074013}
   m_Layer: 0
   m_Name: functionlineElement
-  m_TagString: Untagged
+  m_TagString: function
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

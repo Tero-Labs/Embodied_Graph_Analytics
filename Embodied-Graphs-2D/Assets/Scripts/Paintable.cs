@@ -932,7 +932,7 @@ public class Paintable : MonoBehaviour
                         {
                             Debug.Log("instantiated_templine");
 
-                            Vector3 vec = Hit.point + new Vector3(0, 0, -5);
+                            Vector3 vec = Hit.point + new Vector3(0, 0, -40f);
                             functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
 
                             functionline.name = "function_line_" + function_count.ToString();
@@ -955,7 +955,7 @@ public class Paintable : MonoBehaviour
                             (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
                         {
 
-                            Vector3 vec = Hit.point + new Vector3(0, 0, -5); // Vector3.up * 0.1f;
+                            Vector3 vec = Hit.point + new Vector3(0, 0, -40f); // Vector3.up * 0.1f;
 
                             functionline.GetComponent<TrailRenderer>().transform.position = vec;
                             functionline.GetComponent<FunctionElementScript>().AddPoint(vec);

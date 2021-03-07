@@ -7,7 +7,7 @@ public class SimplicialElementScript : MonoBehaviour
 {
     public List<Vector3> theVertices;
     public List<GameObject> thenodes;
-    public Material myMaterial;
+
     public GameObject dot_prefab;
     public GameObject paintable;
 
@@ -98,13 +98,12 @@ public class SimplicialElementScript : MonoBehaviour
             
         //Components
         var MF = myObject.GetComponent<MeshFilter>();
-        var MR = myObject.GetComponent<MeshRenderer>();
         var BC = myObject.GetComponent<BoxCollider>();
 
         //Create mesh
         var mesh = CreateMesh();
         //Assign materials
-        MR.material = myMaterial;
+        //MR.material = new_material;
         //Assign mesh to game object
         MF.mesh = mesh;
 

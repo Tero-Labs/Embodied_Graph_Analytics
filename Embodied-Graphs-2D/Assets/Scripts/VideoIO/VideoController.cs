@@ -72,6 +72,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             foreach (tracked_object cur_obj in all_objects)
             {
                 Vector3 edge_pos = Vector3.zero;
+                Vector3 size = new Vector3(10f, 10f, 10f);
                 GameObject temp = Instantiate(icon_prefab, temp_parent.transform);
 
                 num++;                
@@ -84,10 +85,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 temp.GetComponent<TrailRenderer>().enabled = false;
                 temp.GetComponent<MeshRenderer>().enabled = false;
 
-                /*LineRenderer l = temp.GetComponent<LineRenderer>();
+                LineRenderer l = temp.GetComponent<LineRenderer>();
                 l.material.color = Color.black;
                 l.startWidth = 2f;
-                l.endWidth = 2f;*/
+                l.endWidth = 2f;
 
                 List<Vector3> points = new List<Vector3>();
                 
@@ -102,17 +103,20 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     points.Add(pos_vec);
                 }
 
-                /*
+               
                 // connect the end and statr position as well
                 l.loop = true;
                 // if we don't manually change the position count, it only takes the first two positions
                 l.positionCount = points.Count;
-                l.SetPositions(points.ToArray());*/
+                l.SetPositions(points.ToArray());
 
                 edge_pos = edge_pos / points.Count;
                 temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
                 temp.GetComponent<iconicElementScript>().points = points;
 
+                BoxCollider box_cl = temp.AddComponent<BoxCollider>();
+                box_cl.center = edge_pos;
+                box_cl.size = size;
             }
 
             //videoplayer.Pause();

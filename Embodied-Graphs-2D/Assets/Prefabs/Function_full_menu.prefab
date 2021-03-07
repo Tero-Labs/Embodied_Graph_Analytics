@@ -1041,6 +1041,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Function_input_options
       objectReference: {fileID: 0}
+    - target: {fileID: 136385545334873242, guid: 51b64845954dc034c89be5e951b9cd35,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 136385545334873243, guid: 51b64845954dc034c89be5e951b9cd35,
         type: 3}
       propertyPath: m_LocalPosition.x
