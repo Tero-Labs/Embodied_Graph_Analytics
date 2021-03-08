@@ -39,6 +39,15 @@ public class HyperElementScript : MonoBehaviour
 
     public void UpdateChildren()
     {
+        Vector3 position = Vector3.zero;
+        for (int i = 0; i < theVertices.Count; i++)
+        {
+            position += thenodes[i].GetComponent<iconicElementScript>().edge_position;
+        }
+
+        position = position / theVertices.Count;
+        transform.position = position;
+
         for (int i = 0; i < theVertices.Count; i++)
         {
             GameObject temp = transform.GetChild(i).gameObject;

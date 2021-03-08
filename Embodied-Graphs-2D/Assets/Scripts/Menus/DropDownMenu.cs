@@ -67,11 +67,12 @@ public class DropDownMenu : MonoBehaviour
         //StartCoroutine(ShowNodesResult(toggle));
         bool visibility = toggle.isOn;
         
-        GameObject[] node_par = GameObject.FindGameObjectsWithTag("graph");
+        GameObject[] graphs = GameObject.FindGameObjectsWithTag("graph");
 
-        foreach (GameObject vp in node_par)
+        foreach (GameObject graph in graphs)
         {
-            vp.transform.GetChild(0).gameObject.SetActive(visibility);
+            //graph.transform.GetChild(0).gameObject.SetActive(visibility);
+            graph.GetComponent<GraphElementScript>().ShowNodes(toggle);
         }
     }
     
@@ -81,10 +82,11 @@ public class DropDownMenu : MonoBehaviour
 
         foreach (GameObject graph in graphs)
         {
-            for (int i = 1; i < 4; i++)
+            graph.GetComponent<GraphElementScript>().ShowEdges(toggle);
+            /*for (int i = 1; i < 4; i++)
             {
                 graph.transform.GetChild(i).gameObject.SetActive(toggle.isOn);
-            }
+            }*/
         }
     }
 

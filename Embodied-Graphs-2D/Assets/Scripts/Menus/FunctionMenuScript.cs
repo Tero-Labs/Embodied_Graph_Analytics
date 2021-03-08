@@ -436,16 +436,20 @@ public class FunctionMenuScript : MonoBehaviour
                 // enforce the same z coordinate as the rest of the points in the parent set object
                 vec.z = -5f;
                 Vector3 diff = vec - text_label.transform.position + touchDelta;
-                diff.z = 0;                
+                diff.z = 0;
 
                 // don't move right away, move if a threshold has been crossed
                 // 5 seems to work well in higher zoom levels and for my finger
                 //if (Vector3.Distance(transform.position, vec) > 5)
                 // update the function position. 
-                transform.parent.position += diff;
+                // transform.parent.position += diff;
 
                 if (transform.parent.childCount > 1)
+                {
+                    transform.parent.GetChild(1).position += diff;
                     transform.parent.GetChild(1).GetComponent<GraphElementScript>().checkHitAndMove(diff);
+                }
+                    
 
 
                 // update the menu position if a menu is currently open/created
@@ -701,6 +705,7 @@ public class FunctionMenuScript : MonoBehaviour
             // show results instantly
             transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();            
             settings.transform.gameObject.SetActive(false);
+            transform.gameObject.SetActive(false);
         }
         else
         {
@@ -774,7 +779,8 @@ public class FunctionMenuScript : MonoBehaviour
             if (output_type == "graph")
             {
                 transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
-                transform.parent.GetComponent<MeshRenderer>().enabled = !toggle.isOn;
+
+                transform.parent.GetComponent<MeshRenderer>().enabled = false;// !toggle.isOn;
             }
         }
     }

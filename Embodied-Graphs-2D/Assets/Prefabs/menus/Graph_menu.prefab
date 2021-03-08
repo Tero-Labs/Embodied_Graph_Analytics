@@ -198,7 +198,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 28, y: 95.32}
-  m_SizeDelta: {x: 40, y: 40}
+  m_SizeDelta: {x: 59.31, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &9214468169048173451
 CanvasRenderer:
@@ -850,10 +850,10 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 36
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
-  m_enableAutoSizing: 1
+  m_enableAutoSizing: 0
   m_fontSizeMin: 8
   m_fontSizeMax: 30
   m_fontStyle: 0
@@ -1046,7 +1046,7 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: '
 
-    Show
+    show
 
     edges'
 --- !u!1 &2838677253664170936
@@ -1883,7 +1883,7 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: '
 
-    Show
+    show
 
     nodes'
 --- !u!1 &2838677254911263742
@@ -3118,7 +3118,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Enter text...
+  m_Text: name
 --- !u!1 &8712298318473755628
 GameObject:
   m_ObjectHideFlags: 0
@@ -3198,6 +3198,6 @@ MonoBehaviour:
     m_LineSpacing: 1
   m_Text: '
 
-    Lock
+    lock
 
     layers'

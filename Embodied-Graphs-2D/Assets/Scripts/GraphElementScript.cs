@@ -284,7 +284,13 @@ public class GraphElementScript : MonoBehaviour
                     edge_position = child.GetComponent<iconicElementScript>().edge_position;
 
                 if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
-                    edge_position = child.GetComponent<iconicElementScript>().edge_position;
+                {
+                    edge_position = new Vector3(
+                        child.GetComponent<iconicElementScript>().edge_position.x + child.GetComponent<iconicElementScript>().radius,
+                        child.GetComponent<iconicElementScript>().edge_position.y,
+                        child.GetComponent<iconicElementScript>().edge_position.z
+                        );
+                }
             }
         }
 
@@ -375,16 +381,53 @@ public class GraphElementScript : MonoBehaviour
     }
 
 
-    void ShowNodes(Toggle toggle)
+    public void ShowNodes(Toggle toggle)
     {
         transform.GetChild(0).gameObject.SetActive(toggle.isOn);
+        if (transform.childCount > 5)
+            transform.GetChild(5).gameObject.SetActive(toggle.isOn);
+
+        if (abstraction_layer == "abstract")
+        {
+            transform.GetChild(4).gameObject.SetActive(!toggle.isOn);            
+        }
     }
 
-    void ShowEdges(Toggle toggle)
+    public void ShowEdges(Toggle toggle)
     {
-        transform.GetChild(1).gameObject.SetActive(toggle.isOn);
-        transform.GetChild(2).gameObject.SetActive(toggle.isOn);
-        transform.GetChild(3).gameObject.SetActive(toggle.isOn);
+        if (abstraction_layer == "graph")
+        {
+            transform.GetChild(1).gameObject.SetActive(toggle.isOn);
+            transform.GetChild(2).gameObject.SetActive(false);
+            transform.GetChild(3).gameObject.SetActive(false);
+            transform.GetChild(4).gameObject.SetActive(false);
+        }
+        if (abstraction_layer == "simplicial")
+        {
+            transform.GetChild(1).gameObject.SetActive(false);
+            transform.GetChild(2).gameObject.SetActive(toggle.isOn);
+            transform.GetChild(3).gameObject.SetActive(false);
+            transform.GetChild(4).gameObject.SetActive(false);
+        }
+        if (abstraction_layer == "hypergraph")
+        {
+            transform.GetChild(1).gameObject.SetActive(false);
+            transform.GetChild(2).gameObject.SetActive(false);
+            transform.GetChild(3).gameObject.SetActive(toggle.isOn);
+            transform.GetChild(4).gameObject.SetActive(false);
+        }
+        if (abstraction_layer == "abstract")
+        {
+            transform.GetChild(0).gameObject.SetActive(toggle.isOn);
+            if (transform.childCount > 5)
+                transform.GetChild(5).gameObject.SetActive(toggle.isOn);
+
+            transform.GetChild(1).gameObject.SetActive(toggle.isOn);
+            transform.GetChild(2).gameObject.SetActive(false);
+            transform.GetChild(3).gameObject.SetActive(false);
+            transform.GetChild(4).gameObject.SetActive(!toggle.isOn);
+        }
+
     }
 
     void GraphLock(Toggle toggle)
@@ -403,38 +446,26 @@ public class GraphElementScript : MonoBehaviour
             return;
 
         if (target_layer == "abstract")
-        {
-            // already label present
-            if (transform.childCount > 4)
-            {
-                transform.GetChild(4).gameObject.SetActive(true);
-                transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
-            } 
-            else
-            {
-                GameObject label = Instantiate(LabelElement, transform.GetChild(0).GetChild(0).GetComponent<iconicElementScript>().edge_position, Quaternion.identity, transform);
-                label.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
-                label.transform.SetSiblingIndex(4);
-            }
-                
+        {            
+            transform.GetChild(4).position = edge_position;
+            transform.GetChild(4).gameObject.SetActive(true);
+            transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
+                             
             abstraction_layer = target_layer;
             for (int i = 0; i < 4; i++)
             {
                 transform.GetChild(i).gameObject.SetActive(false);
             }
 
+            if (transform.childCount > 5)
+                transform.GetChild(5).gameObject.SetActive(false);
+
             return;
         }
 
         if (abstraction_layer == "abstract")
-        {
-            // ToDo: need discussion
-            // if a label present
-            if (transform.childCount > 4)
-            {
-                transform.GetChild(4).gameObject.SetActive(false);
-            }
-
+        {            
+            transform.GetChild(4).gameObject.SetActive(false); 
 
             transform.GetChild(0).gameObject.SetActive(true);
             if (target_layer == "graph")
@@ -449,6 +480,10 @@ public class GraphElementScript : MonoBehaviour
             {
                 transform.GetChild(3).gameObject.SetActive(true);
             }
+
+            if (transform.childCount > 5)
+                transform.GetChild(5).gameObject.SetActive(true);
+
             abstraction_layer = target_layer;
             return;
         }
@@ -526,10 +561,11 @@ public class GraphElementScript : MonoBehaviour
                     DeleteChildren(transform.GetChild(1));
                 }
                 // else keep previous children, no need to redraw
-                // however, we force a mandatory initial conversion                
+                // however, we force a mandatory initial conversion if child count is zero           
                 else if (graph_drawn == false)
                 {
                     graph_drawn = true;
+                    if (transform.GetChild(1).childCount > 0) return;
                 }
                 else
                 {
@@ -566,6 +602,7 @@ public class GraphElementScript : MonoBehaviour
                 else if (simplicial_drawn == false)
                 {
                     simplicial_drawn = true;
+                    if (transform.GetChild(2).childCount > 0) return;
                 }
 
                 foreach (string edge in newedges)
@@ -604,6 +641,7 @@ public class GraphElementScript : MonoBehaviour
                 else if (hyper_edges_drawn == false)
                 {
                     hyper_edges_drawn = true;
+                    if (transform.GetChild(3).childCount > 0) return;
                 }
 
                 foreach (string edge in newedges)
@@ -719,8 +757,8 @@ public class GraphElementScript : MonoBehaviour
     {
         edge_position = Vector3.zero;
 
-        if (transform.GetChild(0).gameObject.activeSelf)
-        {
+        /*if (transform.GetChild(0).gameObject.activeSelf)
+        {*/
             Transform[] allChildrennode = transform.GetChild(0).GetComponentsInChildren<Transform>();
 
             foreach (Transform child in allChildrennode)
@@ -733,14 +771,20 @@ public class GraphElementScript : MonoBehaviour
                     if (edge_position == Vector3.zero)
                         edge_position = child.GetComponent<iconicElementScript>().edge_position;
 
-                    if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
-                        edge_position = child.GetComponent<iconicElementScript>().edge_position;
-                }                    
+                if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
+                {
+                    edge_position = new Vector3(
+                        child.GetComponent<iconicElementScript>().edge_position.x + child.GetComponent<iconicElementScript>().radius,
+                        child.GetComponent<iconicElementScript>().edge_position.y,
+                        child.GetComponent<iconicElementScript>().edge_position.z 
+                        );
+                }
+            }                    
             }
-        }
+        //}
 
-        if (transform.GetChild(1).gameObject.activeSelf)
-        {
+        /*if (transform.GetChild(1).gameObject.activeSelf)
+        {*/
             Transform[] allChildrenedge = transform.GetChild(1).GetComponentsInChildren<Transform>();
             foreach (Transform child in allChildrenedge)
             {
@@ -753,21 +797,43 @@ public class GraphElementScript : MonoBehaviour
                 }
 
             }
-        }
+        //}
 
-        if (transform.GetChild(3).gameObject.activeSelf)
-        {
-            Transform[] allChildrenedge = transform.GetChild(3).GetComponentsInChildren<Transform>();
-            foreach (Transform child in allChildrenedge)
+        /*if (transform.GetChild(2).gameObject.activeSelf)
+        {*/
+
+            Transform[] simplicials = transform.GetChild(2).GetComponentsInChildren<Transform>();
+
+            foreach (Transform each_simplicial in simplicials)
+            {
+                if (each_simplicial.tag != "simplicial")
+                    continue;
+
+                if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
+                {                 
+                    each_simplicial.GetComponent<SimplicialElementScript>().UpdateVertices();
+                    //each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
+                }
+                else
+                {
+                    each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint();
+                }
+            }
+        //}
+
+        /*if (transform.GetChild(3).gameObject.activeSelf)
+        {*/
+            Transform[] hyper_edges = transform.GetChild(3).GetComponentsInChildren<Transform>();
+            foreach (Transform child in hyper_edges)
             {
                 if (child.tag == "hyper")
                 {
-                    child.transform.position += diff;
+                    //child.transform.position += diff;
                     child.GetComponent<HyperElementScript>().UpdateChildren();
                 }
 
             }
-        }
+        //}
 
         /*if (transform.childCount > 4)
         {
@@ -779,21 +845,26 @@ public class GraphElementScript : MonoBehaviour
             transform.GetChild(5).transform.position += diff;
         }*/
 
-
-        //ToDo: add hyperedge and simplicial dragging; also check if the child is active
-        // also the graph label
-        /*transform.GetChild(2);
-        transform.GetChild(3);*/
-
     }
 
+   
     public void createMenu(GameObject arg_canvas_radial = null)
     {
         if (arg_canvas_radial != null)
             canvas_radial = arg_canvas_radial;
 
         GameObject radmenu = Instantiate(graph_radial_menu,
-                            canvas_radial.transform.TransformPoint(edge_position + new Vector3(10f, 0f, 0f)),
+                            canvas_radial.transform.TransformPoint(edge_position /*+ new Vector3(10f, 0f, 0f)*/),
+                            Quaternion.identity,
+                            canvas_radial.transform);
+
+        MenuClickSetup(radmenu);
+    }
+
+    public void createMenu(Vector3 pos)
+    {
+        GameObject radmenu = Instantiate(graph_radial_menu,
+                            canvas_radial.transform.TransformPoint(pos + new Vector3(10f, 0f, 0f)),
                             Quaternion.identity,
                             canvas_radial.transform);
 

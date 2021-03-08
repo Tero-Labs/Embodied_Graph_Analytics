@@ -110,6 +110,12 @@ public class FunctionElementScript : MonoBehaviour
     public GameObject graph_prefab;
     public GameObject topo_label;
 
+    // server output store
+    Graphs returned_graphs;
+    Graph returned_graph;
+    bool cascaded_lasso = false;
+
+
     public void InstantiateNameBox()
     {
         //Instantiate(name_label, new Vector3(maxx, maxy, -5), Quaternion.identity, transform);
@@ -141,33 +147,39 @@ public class FunctionElementScript : MonoBehaviour
         tempgraph.name = "graph_" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
+        tempgraph.GetComponent<GraphElementScript>().paintable = paintable_object;
+        tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
 
-        GameObject tempnodeparent = new GameObject("node_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
+        /*new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
         tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);
+        tempnodeparent.transform.SetSiblingIndex(0);*/
 
-        GameObject tempedgeparent = new GameObject("edge_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
+        /*new GameObject("edge_parent_" + graph_count.ToString());
         tempedgeparent.tag = "edge_parent";
         tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);
+        tempedgeparent.transform.SetSiblingIndex(1);*/
 
-        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
+        /*new GameObject("simplicial_parent_" + graph_count.ToString());
         tempsimplicialparent.tag = "simplicial_parent";
         tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);
+        tempsimplicialparent.transform.SetSiblingIndex(2);*/
 
-        GameObject temphyperparent = new GameObject("hyper_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
+        /*new GameObject("hyper_parent_" + graph_count.ToString());
         temphyperparent.tag = "hyper_parent";
         temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);
+        temphyperparent.transform.SetSiblingIndex(3);*/
 
         nodeMaps = new Dictionary<string, Transform>();
 
-        Graph graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+        returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
        
-        foreach (int current_node in graph.nodes)
+        foreach (int current_node in returned_graph.nodes)
         {
             foreach (GameObject current_graph in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
             {
@@ -191,7 +203,7 @@ public class FunctionElementScript : MonoBehaviour
             }
         }
 
-        foreach (Edge edge in graph.edges)
+        foreach (Edge edge in returned_graph.edges)
         {
             string[] nodes_of_edge = new string[2];
             nodes_of_edge[0] = edge.edge_start.ToString();
@@ -220,26 +232,32 @@ public class FunctionElementScript : MonoBehaviour
         tempgraph.name = "graph_" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
         tempgraph.tag = "graph";
         tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
+        tempgraph.GetComponent<GraphElementScript>().paintable = paintable_object;
+        tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
 
-        GameObject tempnodeparent = new GameObject("node_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
+        /*new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
         tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);
+        tempnodeparent.transform.SetSiblingIndex(0);*/
 
-        GameObject tempedgeparent = new GameObject("edge_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
+        /*new GameObject("edge_parent_" + graph_count.ToString());
         tempedgeparent.tag = "edge_parent";
         tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);
+        tempedgeparent.transform.SetSiblingIndex(1);*/
 
-        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
+        /*new GameObject("simplicial_parent_" + graph_count.ToString());
         tempsimplicialparent.tag = "simplicial_parent";
         tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);
+        tempsimplicialparent.transform.SetSiblingIndex(2);*/
 
-        GameObject temphyperparent = new GameObject("hyper_parent_" + paintable_object.GetComponent<Paintable>().graph_count.ToString());
+        GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
+        /*new GameObject("hyper_parent_" + graph_count.ToString());
         temphyperparent.tag = "hyper_parent";
         temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);
+        temphyperparent.transform.SetSiblingIndex(3);*/
 
         nodeMaps = new Dictionary<string, Transform>();
 
@@ -300,12 +318,12 @@ public class FunctionElementScript : MonoBehaviour
         {
             GameObject extra_objects = new GameObject("labels_overlay");
             extra_objects.transform.parent = temp_graph.transform;
-            extra_objects.transform.SetSiblingIndex(4);
+            extra_objects.transform.SetSiblingIndex(5);
 
             Transform node_parent = temp_graph.transform.GetChild(0);
             Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
 
-            Graph returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+            returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
             int index = 0;
             foreach (int current_node in returned_graph.nodes)
@@ -336,7 +354,7 @@ public class FunctionElementScript : MonoBehaviour
 
             int iter = 0;
             Vector3 position = Vector3.zero;
-            Graph returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+            returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
             foreach (int current_node in returned_graph.nodes)
             {
                 foreach (Transform child in allChildrennode)
@@ -397,7 +415,7 @@ public class FunctionElementScript : MonoBehaviour
         
         GameObject extra_objects = new GameObject("labels_overlay");
         extra_objects.transform.parent = temp_graph.transform;
-        extra_objects.transform.SetSiblingIndex(4);
+        extra_objects.transform.SetSiblingIndex(5);
         
         // remap node dictionary
         Transform[] allChildrennode = temp_graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
@@ -409,7 +427,7 @@ public class FunctionElementScript : MonoBehaviour
             }
         }
 
-        Graph returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+        returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
         int index = 0;
         foreach (int current_node in returned_graph.nodes)
@@ -440,11 +458,9 @@ public class FunctionElementScript : MonoBehaviour
     IEnumerator material_update(GameObject edgeline)
     {
         yield return null;
-        edgeline.GetComponent<LineRenderer>().startColor = Color.red;
-        edgeline.GetComponent<LineRenderer>().endColor = Color.red;
         edgeline.GetComponent<LineRenderer>().startWidth = 10;
         edgeline.GetComponent<LineRenderer>().endWidth = 10;
-        edgeline.GetComponent<LineRenderer>().material = null;
+        edgeline.GetComponent<LineRenderer>().material.SetColor("_Color", Color.red);
     }
 
     public void InstantiateCommunityGraph()
@@ -459,7 +475,7 @@ public class FunctionElementScript : MonoBehaviour
 
         GameObject extra_objects = new GameObject("labels_overlay");
         extra_objects.transform.parent = temp_graph.transform;
-        extra_objects.transform.SetSiblingIndex(4);
+        extra_objects.transform.SetSiblingIndex(5);
 
         // remap node dictionary
         Transform[] allChildrennode = temp_graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
@@ -471,7 +487,8 @@ public class FunctionElementScript : MonoBehaviour
             }
         }
 
-        Graphs returned_graphs = JsonUtility.FromJson<Graphs>(File.ReadAllText("Assets/Resources/" + "output.json"));
+        returned_graphs = JsonUtility.FromJson<Graphs>(File.ReadAllText("Assets/Resources/" + "output.json"));
+        cascaded_lasso = true;
 
         int idx = 0;
         foreach (Graph returned_graph in returned_graphs.graphs)
@@ -481,7 +498,8 @@ public class FunctionElementScript : MonoBehaviour
             // ToDo: assign different colors to different lasso
             GameObject functionline = Instantiate(transform.gameObject, 
                 transform.position, Quaternion.identity, extra_objects.transform);
-            updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
+            updatechildLassoPoints(temp_graph, returned_graph.nodes, functionline, idx);
+            //updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
 
             Destroy(functionline.transform.GetChild(0).gameObject);
             Destroy(functionline.transform.GetChild(1).gameObject);
@@ -899,6 +917,99 @@ public class FunctionElementScript : MonoBehaviour
 
 
     }
+
+    public void updateLassoPointsIconDrag()
+    {
+
+        if (transform.GetComponent<MeshRenderer>().enabled && 
+            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        {
+            List<Vector3> hull_pts = new List<Vector3>();
+            int center_count = 0;
+            joint_centroid = Vector3.zero;
+
+            foreach (GameObject function_argument in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            {
+                if (function_argument.tag == "graph")
+                {
+                    Transform[] allChildrennode = function_argument.transform.GetChild(0).GetComponentsInChildren<Transform>();
+                    foreach (Transform child in allChildrennode)
+                    {
+                        if (child.tag == "iconic")
+                        {
+                            List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
+                            hull_pts.AddRange(returned_pts);
+                            center_count++;
+                            joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
+                        }
+                    }
+
+                    // we want the edges to stay within the lasso as well 
+                    Transform[] allChildrenedge = function_argument.transform.GetChild(1).GetComponentsInChildren<Transform>();
+                    foreach (Transform child in allChildrenedge)
+                    {
+                        if (child.tag == "edge")
+                        {
+                            Vector3[] returned_pts_arr = new Vector3[child.GetComponent<LineRenderer>().positionCount];
+                            int temp = child.GetComponent<LineRenderer>().GetPositions(returned_pts_arr);
+
+                            // adding a little offset so that it does not look too tight
+                            for (int i = 0; i < returned_pts_arr.Length; i++)
+                            {
+                                hull_pts.Add(returned_pts_arr[i] - new Vector3(0, edge_offset, 0));
+                                hull_pts.Add(returned_pts_arr[i] + new Vector3(0, edge_offset, 0));
+                            }
+
+                            /*List<Vector3> returned_pts = returned_pts_arr.ToList();
+                            hull_pts.AddRange(returned_pts);*/
+                        }
+
+                    }
+                }
+                else if (function_argument.tag == "iconic")
+                {
+                    List<Vector3> returned_pts = function_argument.GetComponent<iconicElementScript>().hullPoints();
+                    hull_pts.AddRange(returned_pts);
+                    center_count++;
+                    joint_centroid += function_argument.GetComponent<iconicElementScript>().edge_position;
+                }
+            }
+
+            joint_centroid = joint_centroid / center_count;
+
+            var hullAPI = new HullAPI();
+            var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 3000 });
+
+            Vector3[] vertices = hull.vertices;
+            //Array.Sort(vertices);
+            Debug.Log("hulled: ");
+                       
+
+            transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+            transform.GetComponent<LineRenderer>().enabled = true;
+
+            points = vertices.ToList();
+
+            paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
+            transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
+        }
+
+        if (cascaded_lasso && transform.childCount > 1)
+        {
+            Debug.Log("cascaded_try");
+            GameObject graph = transform.GetChild(1).gameObject;
+            Transform extra_objects = graph.transform.GetChild(5);
+            
+            int idx = 0;
+            foreach (Graph returned_graph in returned_graphs.graphs)
+            {
+                GameObject functionline = extra_objects.GetChild(idx).gameObject;
+                updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
+                idx++;
+            }
+        }
+    }
+
 
     public void updateLassoPoints(GameObject graph)
     {

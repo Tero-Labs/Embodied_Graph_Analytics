@@ -751,7 +751,15 @@ public class Paintable : MonoBehaviour
                     Destroy(Hit.collider.gameObject);
 
                     if (temp.tag == "node_parent")
-                        temp.parent.GetComponent<GraphElementScript>().Graph_init();
+                    {
+                        if (graphlocked)
+                        {
+                            Destroy(temp.parent.gameObject);
+                        }
+                        else
+                            temp.parent.GetComponent<GraphElementScript>().Graph_init();
+                    }
+                        
                 }
                 // simplicial edge
                 else if (Hit.collider.gameObject.tag == "simplicial")
@@ -932,7 +940,7 @@ public class Paintable : MonoBehaviour
                         {
                             Debug.Log("instantiated_templine");
 
-                            Vector3 vec = Hit.point + new Vector3(0, 0, -40f);
+                            Vector3 vec = Hit.point + new Vector3(0, 0, -5f);
                             functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
 
                             functionline.name = "function_line_" + function_count.ToString();
@@ -955,7 +963,7 @@ public class Paintable : MonoBehaviour
                             (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
                         {
 
-                            Vector3 vec = Hit.point + new Vector3(0, 0, -40f); // Vector3.up * 0.1f;
+                            Vector3 vec = Hit.point + new Vector3(0, 0, -5f); // Vector3.up * 0.1f;
 
                             functionline.GetComponent<TrailRenderer>().transform.position = vec;
                             functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
@@ -1140,6 +1148,14 @@ public class Paintable : MonoBehaviour
         {            
             if (pen_dragged_obj.tag == "iconic")
             {
+                if (canvas_radial.transform.childCount > 0)
+                {
+                    for (int i = 0; i < canvas_radial.transform.childCount; i++)
+                    {
+                        Destroy(canvas_radial.transform.GetChild(i).gameObject);
+                    }
+                }
+
                 pen_dragged_obj.transform.localScale = pen_dragged_obj.transform.localScale / 1.05f;
                 pen_dragged_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
 
@@ -1587,6 +1603,7 @@ public class Paintable : MonoBehaviour
 
     void menucreation(Vector2 menu_position)
     {
+        bool edge_menu_create = false;
 
         if (canvas_radial.transform.childCount > 0)
         {
@@ -1597,6 +1614,22 @@ public class Paintable : MonoBehaviour
 
         RaycastHit Hit;
         RaycastHit2D hit2d;
+
+        hit2d = Physics2D.GetRayIntersection(ray);
+        if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
+        {
+            Debug.Log("hit:" + hit2d.collider.gameObject.tag);
+            Vector3 vec_radius_offset = new Vector3(0f, 10f, 0f);
+            GameObject radmenu = Instantiate(edge_radial_menu,
+                        canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center - vec_radius_offset)
+                        /*hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center*/,
+                        Quaternion.identity,
+                        canvas_radial.transform);
+            radmenu.GetComponent<EdgeMenuScript>().menu_parent = hit2d.collider.gameObject;
+            edge_menu_create = true;
+        }
+
+        if (edge_menu_create) return;
 
         if (Physics.Raycast(ray, out Hit))
         {
@@ -1611,6 +1644,7 @@ public class Paintable : MonoBehaviour
                     if (node_parent.tag == "node_parent")
                     {
                         node_parent.parent.GetComponent<GraphElementScript>().createMenu(canvas_radial);
+                        edge_menu_create = false;
                     }                    
                 }
                 else
@@ -1625,26 +1659,16 @@ public class Paintable : MonoBehaviour
                             Quaternion.identity,
                             canvas_radial.transform);
                     radmenu.GetComponent<NodeMenuScript>().menu_parent = Hit.collider.gameObject;
+                    Hit.collider.gameObject.GetComponent<iconicElementScript>().menu_open = true;
+                    edge_menu_create = false;
                 }
             }
 
-
         }
 
-        hit2d = Physics2D.GetRayIntersection(ray);
-        if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
-        {
-            Debug.Log("hit:" + hit2d.collider.gameObject.tag);
-            Vector3 vec_radius_offset = new Vector3(0f, 10f, 0f);
-            GameObject radmenu = Instantiate(edge_radial_menu,
-                        canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center - vec_radius_offset)
-                        /*hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center*/,
-                        Quaternion.identity,
-                        canvas_radial.transform);
-            radmenu.GetComponent<EdgeMenuScript>().menu_parent = hit2d.collider.gameObject;
-        }
+        
 
-       
+               
     }
 
     // normal simple graph
@@ -1671,25 +1695,29 @@ public class Paintable : MonoBehaviour
         tempgraph.transform.parent = Objects_parent.transform;
         tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + graph_count.ToString();
 
-        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
+        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
+        /*new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
         tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);
+        tempnodeparent.transform.SetSiblingIndex(0);*/
 
-        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
+        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
+        /*new GameObject("edge_parent_" + graph_count.ToString());
         tempedgeparent.tag = "edge_parent";
         tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);
+        tempedgeparent.transform.SetSiblingIndex(1);*/
 
-        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
+        GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
+        /*new GameObject("simplicial_parent_" + graph_count.ToString());
         tempsimplicialparent.tag = "simplicial_parent";
         tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);
+        tempsimplicialparent.transform.SetSiblingIndex(2);*/
 
-        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
+        GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
+        /*new GameObject("hyper_parent_" + graph_count.ToString());
         temphyperparent.tag = "hyper_parent";
         temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);
+        temphyperparent.transform.SetSiblingIndex(3);*/
 
         //assign_the_newly_created_Edge_to_temp_edge_parent_object
         edgeline.transform.parent = tempedgeparent.transform;
@@ -1715,27 +1743,37 @@ public class Paintable : MonoBehaviour
                 Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
                 Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
 
+
                 foreach (Transform child in allChildrennode)
                 {
                     child.parent = tempnodeparent.transform;
                 }
 
-                foreach (Transform child in allChildrenedge)
+                if (Prev_edge_parent.gameObject.activeSelf)
                 {
-                    if (child.tag == "edge")
-                        child.parent = tempedgeparent.transform;
+                    foreach (Transform child in allChildrenedge)
+                    {
+                        if (child.tag == "edge")
+                            child.parent = tempedgeparent.transform;
+                    }
                 }
 
-                foreach (Transform child in allChildrensimpli)
+                if (Prev_simplicial_parent.gameObject.activeSelf)
                 {
-                    if (child.tag == "simplicial")
-                        child.parent = tempsimplicialparent.transform;
+                    foreach (Transform child in allChildrensimpli)
+                    {
+                        if (child.tag == "simplicial")
+                            child.parent = tempsimplicialparent.transform;
+                    }
                 }
 
-                foreach (Transform child in allChildrenhyper)
+                if (Prev_hyper_parent.gameObject.activeSelf)
                 {
-                    if (child.tag == "hyper")
-                        child.parent = temphyperparent.transform;
+                    foreach (Transform child in allChildrenhyper)
+                    {
+                        if (child.tag == "hyper")
+                            child.parent = temphyperparent.transform;
+                    }
                 }
 
                 Destroy(Prev_graph_parent.gameObject);
@@ -1787,25 +1825,29 @@ public class Paintable : MonoBehaviour
         tempgraph.transform.parent = Objects_parent.transform;
         tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + graph_count.ToString();
 
-        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
+        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
+        /*new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
         tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);
+        tempnodeparent.transform.SetSiblingIndex(0);*/
 
-        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
+        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
+        /*new GameObject("edge_parent_" + graph_count.ToString());
         tempedgeparent.tag = "edge_parent";
         tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);
+        tempedgeparent.transform.SetSiblingIndex(1);*/
 
-        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
+        GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
+        /*new GameObject("simplicial_parent_" + graph_count.ToString());
         tempsimplicialparent.tag = "simplicial_parent";
         tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);
+        tempsimplicialparent.transform.SetSiblingIndex(2);*/
 
-        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
+        GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
+        /*new GameObject("hyper_parent_" + graph_count.ToString());
         temphyperparent.tag = "hyper_parent";
         temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);
+        temphyperparent.transform.SetSiblingIndex(3);*/
 
         //assign_the_newly_created_simplicial_edge_to_temp_siplicial_parent_object
         simplicialline.transform.parent = tempsimplicialparent.transform;
@@ -1898,25 +1940,29 @@ public class Paintable : MonoBehaviour
         tempgraph.transform.parent = Objects_parent.transform;
         tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + graph_count.ToString();
 
-        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
+        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
+        /*new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
         tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);
+        tempnodeparent.transform.SetSiblingIndex(0);*/
 
-        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
+        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
+        /*new GameObject("edge_parent_" + graph_count.ToString());
         tempedgeparent.tag = "edge_parent";
         tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);
+        tempedgeparent.transform.SetSiblingIndex(1);*/
 
-        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
+        GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
+        /*new GameObject("simplicial_parent_" + graph_count.ToString());
         tempsimplicialparent.tag = "simplicial_parent";
         tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);
+        tempsimplicialparent.transform.SetSiblingIndex(2);*/
 
-        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
+        GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
+        /*new GameObject("hyper_parent_" + graph_count.ToString());
         temphyperparent.tag = "hyper_parent";
         temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);
+        temphyperparent.transform.SetSiblingIndex(3);*/
 
         //assign_the_newly_created_simplicial_edge_to_temp_siplicial_parent_object
         hyperline.transform.parent = temphyperparent.transform;

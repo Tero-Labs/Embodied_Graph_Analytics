@@ -31,10 +31,13 @@ public class SimplicialElementScript : MonoBehaviour
     {
         for (int i = 0; i < thenodes.Count; i++)
         {
-            int j = (i + 1) % thenodes.Count;
-            theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().getclosestpoint(thenodes[j].GetComponent<iconicElementScript>().edge_position);
+            //int j = (i + 1) % thenodes.Count;
+            //theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().getclosestpoint(thenodes[j].GetComponent<iconicElementScript>().edge_position);
+            theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().edge_position;
 
         }
+
+        addDot();
     }
 
     public void addDot()
@@ -131,9 +134,15 @@ public class SimplicialElementScript : MonoBehaviour
         //Vertices
         Vector3[] vertex = new Vector3[theVertices.Count];
 
+        //[SOLVED]Mesh vertex position in world space - Unity Forum
+        //https://forum.unity.com/threads/solved-mesh-vertex-position-in-world-space.30108/
+        // we need local points with respect to the graph parent, because the current points are in global space
         for (x = 0; x < theVertices.Count; x++)
         {
+            if (transform.parent.tag == "objects_parent")
             vertex[x] = theVertices[x];
+            else
+            vertex[x] = transform.parent.parent.InverseTransformPoint(theVertices[x]);
         }
 
         //UVs

@@ -27,6 +27,7 @@ public class iconicElementScript : MonoBehaviour
 
     public float maxx = -100000f, maxy = -100000f, minx = 100000f, miny = 100000f;
     public bool draggable_now = false;
+    public bool menu_open = false;
 
     public Material icon_elem_material;
     public GameObject paintable_object;
@@ -1438,8 +1439,7 @@ public class iconicElementScript : MonoBehaviour
 
         return desired_point;
     }
-
-
+    
     void OnDestroy()
     {
         Transform node_parent = transform.parent;
@@ -1463,10 +1463,17 @@ public class iconicElementScript : MonoBehaviour
         Transform[] simplicials = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
         Transform[] hyper_edges = Prev_hyper_parent.GetComponentsInChildren<Transform>();
 
+        bool splined_edge_flag = Prev_graph_parent.GetComponent<GraphElementScript>().splined_edge_flag;
+
         foreach (Transform child in allChildrenedge)
-        {
+        {            
             if (child.tag == "edge")
-                child.GetComponent<EdgeElementScript>().updateEndPoint(transform.gameObject);
+            {
+                if (splined_edge_flag)
+                    child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
+                else
+                    child.GetComponent<EdgeElementScript>().updateEndPoint();
+            }
         }
 
         foreach (Transform each_simplicial in simplicials)
@@ -1482,7 +1489,8 @@ public class iconicElementScript : MonoBehaviour
                 {
                     if (each_node == transform.gameObject)
                     {
-                        each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
+                        //each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
+                        each_simplicial.GetComponent<SimplicialElementScript>().UpdateVertices();
                         each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
                         break;
                     }
@@ -1494,8 +1502,7 @@ public class iconicElementScript : MonoBehaviour
                 each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint(transform.gameObject);
             }
         }
-
-
+        
         foreach (Transform each_child_edge in hyper_edges)
         {
             if (each_child_edge.tag != "hyper_child_edge")
@@ -1516,8 +1523,20 @@ public class iconicElementScript : MonoBehaviour
 
         foreach (GameObject cur_function in all_functions)
         {
-            if (!cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+            //if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+            if ((cur_function.transform.childCount > 0) /*&& cur_function.transform.GetChild(0).gameObject.activeSelf*/)
             {
+                // if current icon is under the result graph
+                
+                if (transform.parent.tag == "node_parent" &&
+                        transform.parent.parent.gameObject == cur_function.transform.GetChild(1).gameObject)
+                {
+                    cur_function.GetComponent<FunctionElementScript>().updateLassoPointsIconDrag();
+                    continue;
+                }
+
+                if (cur_function.GetComponent<MeshRenderer>().enabled == false) continue;
+
                 foreach (GameObject function_argument in cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
                 {
                     // if the argument is a graph which contains this object, then call update lasso
@@ -1525,13 +1544,13 @@ public class iconicElementScript : MonoBehaviour
                         transform.parent.tag == "node_parent" &&
                         transform.parent.parent.gameObject == function_argument)
                     {
-                        cur_function.GetComponent<FunctionElementScript>().updateLassoPoints();
+                        cur_function.GetComponent<FunctionElementScript>().updateLassoPointsIconDrag();
                         break;
                     }
                     // else if the argument is an icon and matches with this object, call update lasso
                     else if (function_argument.tag == "iconic" && function_argument == transform.gameObject)
                     {
-                        cur_function.GetComponent<FunctionElementScript>().updateLassoPoints();
+                        cur_function.GetComponent<FunctionElementScript>().updateLassoPointsIconDrag();
                         break;
                     }
                 }

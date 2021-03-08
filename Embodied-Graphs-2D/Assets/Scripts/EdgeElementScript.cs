@@ -1340,7 +1340,7 @@ public class EdgeElementScript : MonoBehaviour
     }
 
     public void updateEndPoint(GameObject node_name)
-    {
+    {        
         var l = transform.GetComponent<LineRenderer>();
 
         GameObject source = transform.GetComponent<EdgeElementScript>().edge_start;
