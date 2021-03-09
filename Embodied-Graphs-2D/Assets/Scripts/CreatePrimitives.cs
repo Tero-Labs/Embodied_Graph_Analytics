@@ -200,36 +200,32 @@ public class CreatePrimitives : MonoBehaviour
             Color color = colors[rank % (colors.Length)];
             //color = new Color(UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f)); 
             
-            lineRenderer.startColor = color; // UnityEngine.Random.ColorHSV();
-            lineRenderer.endColor = color;
-
+            
             /*How to change color of material -Unity Forum
             https://forum.unity.com/threads/how-to-change-color-of-material.874921/ */
             Material new_material = new Material(solid_mat);
             new_material.SetColor("_Color", color);
-            templine.GetComponent<MeshRenderer>().sharedMaterial = new_material;
+            templine.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().sharedMaterial = new_material;
+        }
+        else
+        {
+            templine.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().sharedMaterial =
+                templine.GetComponent<FunctionElementScript>().icon_elem_material;
         }
 
-        var meshFilter = templine.GetComponent<MeshFilter>();
+        var meshFilter = templine.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>();
                 
 
         // If a combined mesh is not passed, use the line renderer mesh (default case)        
         Mesh mesh = new Mesh();
         lineRenderer.BakeMesh(mesh, true);
-        meshFilter.sharedMesh = mesh;
-        templine.GetComponent<FunctionElementScript>()._mesh = mesh;
-
-
-        if (!lassocolor)       
-        {
-            templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<FunctionElementScript>().icon_elem_material;
-        }                      
+        meshFilter.sharedMesh = mesh; 
 
         // disable trail renderer, no longer needed
         templine.GetComponent<TrailRenderer>().enabled = false;
         templine.GetComponent<LineRenderer>().enabled = false;
         
-        templine.GetComponent<FunctionElementScript>().edge_position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+        templine.GetComponent<FunctionElementScript>().edge_position = meshFilter.sharedMesh.bounds.center;
                 
         // set transform position
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
@@ -239,8 +235,8 @@ public class CreatePrimitives : MonoBehaviour
 
         // Save the area of the bounding box 
         templine.GetComponent<FunctionElementScript>().attribute.Area =
-            templine.GetComponent<MeshFilter>().sharedMesh.bounds.size.x *
-            templine.GetComponent<MeshFilter>().sharedMesh.bounds.size.y * unitScale * unitScale;
+            meshFilter.sharedMesh.bounds.size.x *
+            meshFilter.sharedMesh.bounds.size.y * unitScale * unitScale;
 
         // set current_attribute of penLine
         templine.GetComponent<FunctionElementScript>().current_attribute = templine.GetComponent<FunctionElementScript>().attribute.Length;

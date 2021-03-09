@@ -50,6 +50,7 @@ public class FunctionMenuScript : MonoBehaviour
 
     private GameObject argument_text;
     public GameObject drag_text_ui;
+    public Camera main_camera;
 
     public GameObject[] argument_objects;
 
@@ -85,6 +86,8 @@ public class FunctionMenuScript : MonoBehaviour
         textbox_open = false;
         eval_finished = false;
         draggable_now = false;
+
+        main_camera = Camera.main;
 
         # region function arguments and types dictionary
         addition_dict = new Dictionary<int, string>()
@@ -135,7 +138,8 @@ public class FunctionMenuScript : MonoBehaviour
             if (PenTouchInfo.PressedThisFrame)
             {
                 if (!eval_finished) message_box.GetComponent<TextMeshProUGUI>().text = "";
-                if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+                if (TMP_TextUtilities.IsIntersectingRectTransform
+                    (tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
                 {
                     paintable.GetComponent<Paintable>().dragged_arg_textbox = transform.gameObject;
 
@@ -147,7 +151,8 @@ public class FunctionMenuScript : MonoBehaviour
 
                     if (match_found && !eval_finished)
                     {
-                        var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera, false);
+                        //var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
+                        var index = TMP_TextUtilities.FindNearestCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
                         //Debug.Log("Found character at " + index.ToString());
 
                         if (!textbox_open && index != -1)
@@ -176,17 +181,22 @@ public class FunctionMenuScript : MonoBehaviour
                                 Vector3 TouchStart = Vector3.zero;
 
                                 RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition, 
-                                    paintable.GetComponent<Paintable>().main_camera, out TouchStart);
+                                    main_camera, out TouchStart);
                                                                 
-                                TouchStart = paintable.GetComponent<Paintable>().main_camera.transform.InverseTransformPoint(TouchStart);
+                                //TouchStart = main_camera.transform.InverseTransformPoint(TouchStart);
 
                                 //Debug.Log(TouchStart.ToString());
-                                //todo:not_being__correctly_mapped
+
                                 argument_text = Instantiate(argument_text_box,
+                                    TouchStart,
+                                    Quaternion.identity,
+                                    tmptextlabel.rectTransform);
+
+                                /*argument_text = Instantiate(argument_text_box,
                                     //TouchStart,
                                     paintable.GetComponent<Paintable>().canvas_radial.transform.TransformPoint(TouchStart),
                                     Quaternion.identity,
-                                    paintable.GetComponent<Paintable>().canvas_radial.transform/*transform*/);
+                                    paintable.GetComponent<Paintable>().canvas_radial.transform);*/
 
                                 argument_text.GetComponent<FunctionTextInputMenu>().setArgument(transform.gameObject, /*index*/cur_iter);
                                 textbox_open = true;
@@ -227,10 +237,15 @@ public class FunctionMenuScript : MonoBehaviour
                         dragged_arg_object = Hit.collider.gameObject;
 
                         // label instantiate
-                        drag_text_ui = Instantiate(topo_label,
+                        /*drag_text_ui = Instantiate(topo_label,
                             paintable.GetComponent<Paintable>().canvas_radial.transform.TransformPoint(Hit.point),
                             Quaternion.identity,
-                            paintable.GetComponent<Paintable>().canvas_radial.transform);
+                            paintable.GetComponent<Paintable>().canvas_radial.transform);*/
+
+                        drag_text_ui = Instantiate(topo_label,
+                            Hit.point,
+                            Quaternion.identity,
+                            paintable.GetComponent<Paintable>().Objects_parent.transform);
 
                         drag_text_ui.GetComponent<TMP_Text>().text = "icon: " +
                             dragged_arg_object.GetComponent<iconicElementScript>().icon_number.ToString();
@@ -262,9 +277,10 @@ public class FunctionMenuScript : MonoBehaviour
                     drag_text_ui = null;
                 }
 
-                if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+                if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
                 {                    
-                    var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera, false);
+                    var index = TMP_TextUtilities.FindNearestCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
+                    //var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
 
                     if (dragged_arg_object == null && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
                     {
@@ -367,7 +383,8 @@ public class FunctionMenuScript : MonoBehaviour
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit))
                 {
-                    drag_text_ui.transform.position = paintable.GetComponent<Paintable>().canvas_radial.transform.TransformPoint(Hit.point);
+                    //drag_text_ui.transform.position = paintable.GetComponent<Paintable>().canvas_radial.transform.TransformPoint(Hit.point);
+                    drag_text_ui.transform.position = Hit.point;
                 }                
             }
 
@@ -381,7 +398,7 @@ public class FunctionMenuScript : MonoBehaviour
 
         else if (PenTouchInfo.PressedNow && paintable.GetComponent<Paintable>().eraser_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+            if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
             {
                 Destroy(transform.parent.gameObject);
             }
@@ -399,14 +416,14 @@ public class FunctionMenuScript : MonoBehaviour
        
         if (PenTouchInfo.PressedThisFrame)
         {
-            if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+            if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
             {
                 paintable.GetComponent<Paintable>().current_dragged_function = transform.gameObject;
                 Debug.Log("started drag");
 
                 draggable_now = true;
                 Vector3 vec = Vector3.zero;
-                RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera, out vec);
+                RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera, out vec);
 
                 // enforce the same z coordinate as the rest of the points in the parent set object
                 vec.z = -5f;
@@ -425,13 +442,13 @@ public class FunctionMenuScript : MonoBehaviour
         else if (PenTouchInfo.PressedNow)
         {
             
-            if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera))
+            if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
             {
                 //Debug.Log(transform.name);
 
                 draggable_now = true;
                 Vector3 vec = Vector3.zero;
-                RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition, paintable.GetComponent<Paintable>().main_camera, out vec);
+                RectTransformUtility.ScreenPointToWorldPointInRectangle(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera, out vec);
 
                 // enforce the same z coordinate as the rest of the points in the parent set object
                 vec.z = -5f;
@@ -442,9 +459,10 @@ public class FunctionMenuScript : MonoBehaviour
                 // 5 seems to work well in higher zoom levels and for my finger
                 //if (Vector3.Distance(transform.position, vec) > 5)
                 // update the function position. 
-                // transform.parent.position += diff;
+                transform.parent.GetComponent<FunctionElementScript>().mesh_holder.transform.position += diff;
+                transform.position += diff;
 
-                if (transform.parent.childCount > 1)
+                if (transform.parent.GetChild(1).tag == "graph")
                 {
                     transform.parent.GetChild(1).position += diff;
                     transform.parent.GetChild(1).GetComponent<GraphElementScript>().checkHitAndMove(diff);
@@ -636,7 +654,7 @@ public class FunctionMenuScript : MonoBehaviour
                 text_label.GetComponent<TextMeshProUGUI>().text = input.text.Substring(0,1).ToUpper() +
                                                     input.text.Substring(1).ToLower() + argument_str;
 
-                paintable.GetComponent<Paintable>().no_func_menu_open = false;
+                //paintable.GetComponent<Paintable>().no_func_menu_open = false;
             }
 
         }
@@ -703,7 +721,7 @@ public class FunctionMenuScript : MonoBehaviour
         if (instant_eval)
         {
             // show results instantly
-            transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();            
+            //transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();   
             settings.transform.gameObject.SetActive(false);
             transform.gameObject.SetActive(false);
         }
@@ -744,6 +762,8 @@ public class FunctionMenuScript : MonoBehaviour
         perform_action.transform.gameObject.SetActive(false);
         input_option.SetActive(false);
         eval_finished = true;
+        
+        transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;
     }
 
     void ChildToggle(Toggle toggle)
@@ -760,7 +780,10 @@ public class FunctionMenuScript : MonoBehaviour
 
     void OnSettingsButton(Button settings)
     {
-        input_option.SetActive(!(input_option.activeSelf));
+        bool flag = input_option.activeSelf;
+        input_option.SetActive(!(flag));
+        paintable.GetComponent<Paintable>().no_func_menu_open = flag;
+
         if (eval_finished)
         {
             evaluation_type.gameObject.SetActive(false);
@@ -779,14 +802,16 @@ public class FunctionMenuScript : MonoBehaviour
             if (output_type == "graph")
             {
                 transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
-
-                transform.parent.GetComponent<MeshRenderer>().enabled = false;// !toggle.isOn;
+                //transform.parent.GetComponent<MeshRenderer>().enabled = false;
             }
         }
     }
 
     private void OnDestroy()
     {
+        if (input_option.activeSelf && paintable != null)
+            paintable.GetComponent<Paintable>().no_func_menu_open = true;
+
         if (textbox_open)
         {
             Destroy(argument_text);

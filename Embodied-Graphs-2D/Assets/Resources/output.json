@@ -1,1 +1,1 @@
-{"edges": [{"edge_start": 1, "edge_end": 3, "weight": 1}, {"edge_start": 1, "edge_end": 2, "weight": 1}, {"edge_start": 2, "edge_end": 3, "weight": 1}], "simplicials": [], "hyperedges": [], "nodes": [1, 2, 3]}
+{"edges": [{"edge_start": 10, "edge_end": 11, "weight": 1}, {"edge_start": 8, "edge_end": 9, "weight": 1}], "simplicials": [], "hyperedges": [], "nodes": [10, 11, 8, 9]}

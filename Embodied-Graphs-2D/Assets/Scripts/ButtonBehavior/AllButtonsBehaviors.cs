@@ -107,6 +107,13 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
+        else if (this.name == "Fused")
+        {
+            enableAllPenObjectColliders();
+            disablesimplicialColliders();
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
+        }
+
         else if (this.name == "function_brush")
         {
             enableAllPenObjectColliders();

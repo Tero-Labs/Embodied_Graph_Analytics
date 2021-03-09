@@ -1524,21 +1524,26 @@ public class iconicElementScript : MonoBehaviour
         foreach (GameObject cur_function in all_functions)
         {
             //if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
-            if ((cur_function.transform.childCount > 0) /*&& cur_function.transform.GetChild(0).gameObject.activeSelf*/)
+            if ((cur_function.transform.childCount > 2) /*&& cur_function.transform.GetChild(0).gameObject.activeSelf*/)
             {
                 // if current icon is under the result graph
                 
-                if (transform.parent.tag == "node_parent" &&
+                if (transform.parent.tag == "node_parent" && cur_function.transform.GetChild(1).tag == "graph" &&
                         transform.parent.parent.gameObject == cur_function.transform.GetChild(1).gameObject)
                 {
                     cur_function.GetComponent<FunctionElementScript>().updateLassoPointsIconDrag();
                     continue;
                 }
 
-                if (cur_function.GetComponent<MeshRenderer>().enabled == false) continue;
+                if (cur_function.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled == false) continue;
+
+                // check if any function argument has been assigned
+                if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects == null) continue;
 
                 foreach (GameObject function_argument in cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
                 {
+                    if (function_argument == null) continue;
+
                     // if the argument is a graph which contains this object, then call update lasso
                     if (function_argument.tag == "graph" &&
                         transform.parent.tag == "node_parent" &&

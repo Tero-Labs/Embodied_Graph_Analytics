@@ -56,6 +56,7 @@ public class Paintable : MonoBehaviour
     public GameObject eraser_button;
     public static GameObject copy_button;
     public static GameObject stroke_combine_button;
+    public static GameObject fused_rep_button;
     public GameObject function_brush_button;
     public GameObject video_op_button;
     public GameObject canvas_radial;
@@ -124,6 +125,9 @@ public class Paintable : MonoBehaviour
     // needed for video
     public GameObject videoplayer;
 
+    // needed for fusion
+    public GameObject fused_obj;
+
     // objects history
     public List<GameObject> history = new List<GameObject>();
 
@@ -141,6 +145,7 @@ public class Paintable : MonoBehaviour
         eraser_button = GameObject.Find("Eraser");
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
+        fused_rep_button = GameObject.Find("Fused");
         function_brush_button = GameObject.Find("function_brush");
         video_op_button = GameObject.Find("video_op");
 
@@ -153,9 +158,9 @@ public class Paintable : MonoBehaviour
         potential_tapped_graph = null;
     }
 
-	// Update is called once per frame
-	void Update()
-	{
+    // Update is called once per frame
+    void Update()
+    {
         //var activeTouches = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches;
 
         /*
@@ -174,35 +179,35 @@ public class Paintable : MonoBehaviour
         #region iconic element brush
 
         if (iconicElementButton.GetComponent<AllButtonsBehaviors>().selected)
-			//!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
-		{
-			//Debug.Log("entered");
-			if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
-			{
-				// start drawing a new line
-				var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-				RaycastHit Hit;
-				if (Physics.Raycast(ray, out Hit) && 
-                   ( Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
-				{
-					//Debug.Log("instantiated_templine");
+        //!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
+        {
+            //Debug.Log("entered");
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) &&
+                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                {
+                    //Debug.Log("instantiated_templine");
 
-					Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
-																	  //Debug.Log(vec);
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
+                                                                      //Debug.Log(vec);
 
-					totalLines++;
-					templine = Instantiate(IconicElement, vec, Quaternion.identity, Objects_parent.transform);
-					//templine.GetComponent<TrailRenderer>().material.color = Color.black;
+                    totalLines++;
+                    templine = Instantiate(IconicElement, vec, Quaternion.identity, Objects_parent.transform);
+                    //templine.GetComponent<TrailRenderer>().material.color = Color.black;
 
-					templine.name = "iconic_" + totalLines.ToString();
-					templine.tag = "iconic";
+                    templine.name = "iconic_" + totalLines.ToString();
+                    templine.tag = "iconic";
 
-					templine.GetComponent<iconicElementScript>().points.Add(vec);
+                    templine.GetComponent<iconicElementScript>().points.Add(vec);
                     templine.GetComponent<iconicElementScript>().icon_number = totalLines;
 
                     templine.transform.GetComponent<LineRenderer>().material.SetColor("_Color", color_picker_script.color);
                     templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
-                    Debug.Log("colorpicker_color:"+ color_picker_script.color.ToString());
+                    Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
 
                     /*
 					// Initiate the length display (use an existing text box used for translation parameterization)
@@ -224,83 +229,83 @@ public class Paintable : MonoBehaviour
                     //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
 
                     templine.GetComponent<LineRenderer>().widthMultiplier = 2;
-						//pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+                    //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
 
-					// add to history
-					history.Add(templine);
+                    // add to history
+                    history.Add(templine);
 
-					
+
                 }
-			}
+            }
 
-			else if (templine != null &&
-				PenTouchInfo.PressedNow //currentPen.tip.isPressed
-				&& (PenTouchInfo.penPosition -
-				(Vector2)templine.GetComponent<iconicElementScript>().points[templine.GetComponent<iconicElementScript>().points.Count - 1]).magnitude > 0f)
-			{
-				// add points to the last line
-				var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-				RaycastHit Hit;
-				if (Physics.Raycast(ray, out Hit) &&
+            else if (templine != null &&
+                PenTouchInfo.PressedNow //currentPen.tip.isPressed
+                && (PenTouchInfo.penPosition -
+                (Vector2)templine.GetComponent<iconicElementScript>().points[templine.GetComponent<iconicElementScript>().points.Count - 1]).magnitude > 0f)
+            {
+                // add points to the last line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) &&
                     (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
-				{
+                {
 
-					Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
 
-					templine.GetComponent<TrailRenderer>().transform.position = vec;
-					templine.GetComponent<iconicElementScript>().points.Add(vec);
+                    templine.GetComponent<TrailRenderer>().transform.position = vec;
+                    templine.GetComponent<iconicElementScript>().points.Add(vec);
 
-					
-					// Show the distance, format to a fixed decimal place.
-					templine.GetComponent<iconicElementScript>().calculateLengthAttributeFromPoints();
-					/*templine.transform.GetChild(1).GetComponent<TextMeshPro>().text =
+
+                    // Show the distance, format to a fixed decimal place.
+                    templine.GetComponent<iconicElementScript>().calculateLengthAttributeFromPoints();
+                    /*templine.transform.GetChild(1).GetComponent<TextMeshPro>().text =
 						templine.GetComponent<penLine_script>().attribute.Length.ToString("F1");*/
 
-					// pressure based pen width
-					templine.GetComponent<iconicElementScript>().updateLengthFromPoints();
+                    // pressure based pen width
+                    templine.GetComponent<iconicElementScript>().updateLengthFromPoints();
                     templine.GetComponent<iconicElementScript>().addPressureValue(PenTouchInfo.pressureValue);
                     templine.GetComponent<iconicElementScript>().reNormalizeCurveWidth();
-					templine.GetComponent<TrailRenderer>().widthCurve = templine.GetComponent<iconicElementScript>().widthcurve;
-					
-				}
-			}
+                    templine.GetComponent<TrailRenderer>().widthCurve = templine.GetComponent<iconicElementScript>().widthcurve;
 
-			else if (templine != null && PenTouchInfo.ReleasedThisFrame)
-			{
-				var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); //currentPen.position.ReadValue());// Input.GetTouch(0).position);
-				RaycastHit Hit;
+                }
+            }
 
-				if (Physics.Raycast(ray, out Hit) &&
+            else if (templine != null && PenTouchInfo.ReleasedThisFrame)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); //currentPen.position.ReadValue());// Input.GetTouch(0).position);
+                RaycastHit Hit;
+
+                if (Physics.Raycast(ray, out Hit) &&
                     (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
-				{
-					if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
-					{
+                {
+                    if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
+                    {
                         // Debug.Log("here_in_save_mode " + templine.GetComponent<iconicElementScript>().points.Count.ToString());
                         // TODO: FINISH THE ICONIC ELEMENT
                         templine = transform.GetComponent<CreatePrimitives>().FinishPenLine(templine);
                         templine.GetComponent<iconicElementScript>().paintable_object = transform.gameObject;
-						// set templine to null, otherwise, if an existing touch from color picker makes it to the canvas,
-						// then the object jumps to the color picker (as a new templine hasn't been initialized from touch.begin).
-						templine = null;
-					}
-					else
-					{
+                        // set templine to null, otherwise, if an existing touch from color picker makes it to the canvas,
+                        // then the object jumps to the color picker (as a new templine hasn't been initialized from touch.begin).
+                        templine = null;
+                    }
+                    else
+                    {
                         // delete the templine, not enough points
                         // Debug.Log("here_in_destroy");
                         Destroy(templine);
-					}
-				}
-				else
-				{
+                    }
+                }
+                else
+                {
                     // the touch didn't end on a line, destroy the line
                     // Debug.Log("here_in_destroy_different_Hit");
                     Destroy(templine);
-				}
+                }
 
-			}
+            }
 
-		}
-        
+        }
+
 
         #endregion
 
@@ -309,18 +314,18 @@ public class Paintable : MonoBehaviour
         // Handle screen touches.                     
         //https://docs.unity3d.com/ScriptReference/TouchPhase.Moved.html
 
-        if(pan_button.GetComponent<AllButtonsBehaviors>().selected)
+        if (pan_button.GetComponent<AllButtonsBehaviors>().selected)
         {
             DragorMenuCreateOnClick();
         }
-        
+
         if (Input.touchCount == 2 && !panZoomLocked) // && pan_button.GetComponent<PanButtonBehavior>().selected)
         {
             //Debug.Log("double_finger_tap");
             // NO ANCHOR TAPPED, JUST ZOOM IN/PAN
             //main_camera.GetComponent<MobileTouchCamera>().enabled = true;
 
-            UnityEngine.Touch touchzero = Input.GetTouch(0); 
+            UnityEngine.Touch touchzero = Input.GetTouch(0);
             UnityEngine.Touch touchone = Input.GetTouch(1);
 
             Vector2 touchzeroprevpos = touchzero.position - touchzero.deltaPosition;
@@ -345,7 +350,7 @@ public class Paintable : MonoBehaviour
 
         }
         else if (Input.touchCount == 1 && !panZoomLocked)
-        {            
+        {
             UnityEngine.Touch activeTouches = Input.GetTouch(0);
 
             // Only pan when the touch is on top of the canvas. Otherwise,
@@ -354,9 +359,9 @@ public class Paintable : MonoBehaviour
 
             if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "simplicial")
             {
-                
+
                 GameObject temp = Hit.collider.gameObject;
-                Debug.Log("collided_with"+temp.tag);
+                Debug.Log("collided_with" + temp.tag);
 
                 if (activeTouches.phase == UnityEngine.TouchPhase.Ended && okayToPan)
                 {
@@ -367,25 +372,25 @@ public class Paintable : MonoBehaviour
                         //curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
                         curtouched_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
                     }
-                        
+
                 }
 
                 else if (activeTouches.phase == UnityEngine.TouchPhase.Began && okayToPan)
                 {
-                    curtouched_obj = temp;                   
+                    curtouched_obj = temp;
 
                     if (curtouched_obj.tag == "iconic")
                     {
-                        curtouched_obj.transform.localScale = curtouched_obj.transform.localScale*1.05f; //new Vector3(1.25f, 1.25f, 1.25f);
+                        curtouched_obj.transform.localScale = curtouched_obj.transform.localScale * 1.05f; //new Vector3(1.25f, 1.25f, 1.25f);
                     }
 
-                    Vector3 vec = Hit.point; 
+                    Vector3 vec = Hit.point;
                     // enforce the same z coordinate as the rest of the points in the parent set object
                     vec.z = -5f;
                     touchDelta = curtouched_obj.transform.position - vec;
                 }
 
-                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan )//&& (curtouched_obj == temp))
+                else if (activeTouches.phase == UnityEngine.TouchPhase.Moved && previousTouchEnded && okayToPan)//&& (curtouched_obj == temp))
                 {
                     panTouchStart = Camera.main.ScreenToWorldPoint(activeTouches.position);
                     //Debug.Log("touch start: " + panTouchStart.ToString());
@@ -432,11 +437,11 @@ public class Paintable : MonoBehaviour
                                 //curtouched_obj.GetComponent<iconicElementScript>().edge_position -= (Vector3)panDirection;
                                 curtouched_obj.GetComponent<iconicElementScript>().searchNodeAndUpdateEdge();
                             }
-                            
+
                         }
                         else if (curtouched_obj.tag == "video_player")
                         {
-                            curtouched_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().checkHitAndMove(diff); 
+                            curtouched_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().checkHitAndMove(diff);
                         }
                         else if (curtouched_obj.tag == "hyper")
                         {
@@ -447,7 +452,7 @@ public class Paintable : MonoBehaviour
 
                         prev_move_pos = (Vector2)Camera.main.ScreenToWorldPoint(activeTouches.position);
                     }
-                    
+
                 }
 
             }
@@ -474,7 +479,7 @@ public class Paintable : MonoBehaviour
         #region Graph Pen
         if (graph_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            
+
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
                 // start drawing a new line
@@ -505,7 +510,7 @@ public class Paintable : MonoBehaviour
                     l.positionCount = 2;
                     l.SetPosition(0, cur.GetComponent<iconicElementScript>().edge_position);// + new Vector3(0, 0, -2f));
                     l.SetPosition(1, cur.GetComponent<iconicElementScript>().edge_position + new Vector3(1f, 0, -2f));
-                                          
+
                 }
 
             }
@@ -574,7 +579,7 @@ public class Paintable : MonoBehaviour
                     }
                 }
 
-                
+
                 // in case a touch was rendered on the canvas (or not on the blue cylinders) and a line didn't finish drawing from source
                 else if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "temp_edge_primitive"
                     && edge_start != null)
@@ -640,7 +645,7 @@ public class Paintable : MonoBehaviour
                     else if (SimplicialVertices.Count == 1)
                     {
                         CreateEmptyEdgeObjects();
-                    }                                         
+                    }
 
                 }
                 else
@@ -654,7 +659,7 @@ public class Paintable : MonoBehaviour
                     }
                 }
             }
-                        
+
         }
         #endregion
 
@@ -679,7 +684,7 @@ public class Paintable : MonoBehaviour
                         selected_obj_count++;
 
                         //instantiate the hyper node in the middle of the selected nodes
-                        Vector3 vec = new Vector3(0, 0, 0); 
+                        Vector3 vec = new Vector3(0, 0, 0);
                         foreach (Vector3 child in hyperVertices)
                         {
                             vec.x += child.x;
@@ -731,7 +736,7 @@ public class Paintable : MonoBehaviour
         #region eraser
         if (PenTouchInfo.PressedNow && eraser_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            
+
             var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
 
             RaycastHit Hit;
@@ -743,12 +748,8 @@ public class Paintable : MonoBehaviour
                 // delete edges which has ties to erased nodes (sets, penlines, functions etc.)
 
                 if (Hit.collider.gameObject.tag == "iconic")
-                {
-                    string possible_edge_node_name = Hit.collider.gameObject.name;
-                    searchNodeAndDeleteEdge(possible_edge_node_name);
-
-                    Transform temp = Hit.collider.gameObject.transform.parent;
-                    Destroy(Hit.collider.gameObject);
+                {                    
+                    Transform temp = Hit.collider.gameObject.transform.parent;                    
 
                     if (temp.tag == "node_parent")
                     {
@@ -757,9 +758,17 @@ public class Paintable : MonoBehaviour
                             Destroy(temp.parent.gameObject);
                         }
                         else
+                        {                            
+                            searchNodeAndDeleteEdge(Hit.collider.gameObject);
+                            Destroy(Hit.collider.gameObject);
                             temp.parent.GetComponent<GraphElementScript>().Graph_init();
+                        } 
                     }
-                        
+                    else
+                    {
+                        Destroy(Hit.collider.gameObject);
+                    }
+
                 }
                 // simplicial edge
                 else if (Hit.collider.gameObject.tag == "simplicial")
@@ -772,7 +781,7 @@ public class Paintable : MonoBehaviour
                         temp.parent.GetComponent<GraphElementScript>().simplicial_init();
                 }
                 // set anchor
-                else if(Hit.collider.gameObject.tag == "hyper")
+                else if (Hit.collider.gameObject.tag == "hyper")
                 {
                     //searchNodeAndDeleteEdge(possible_edge_node_name);
                     Transform temp = Hit.collider.gameObject.transform.parent;
@@ -780,17 +789,17 @@ public class Paintable : MonoBehaviour
 
                     if (temp.tag == "hyper_parent")
                         temp.parent.GetComponent<GraphElementScript>().hyperedges_init();
-                }             
+                }
             }
 
             hit2d = Physics2D.GetRayIntersection(ray);
             if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
-            {                
+            {
                 Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
                 if (temp.tag == "edge_parent")
                     temp.parent.GetComponent<GraphElementScript>().edges_init();
-                    //temp.parent.GetComponent<GraphElementScript>().edges_as_Str();
+                //temp.parent.GetComponent<GraphElementScript>().edges_as_Str();
 
             }
             else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "simplicial")
@@ -799,7 +808,7 @@ public class Paintable : MonoBehaviour
                 Destroy(hit2d.collider.gameObject);
                 if (temp.tag == "simplicial_parent")
                     temp.parent.GetComponent<GraphElementScript>().simplicial_init();
-                    //temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+                //temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
             }
         }
         #endregion
@@ -862,24 +871,24 @@ public class Paintable : MonoBehaviour
                 {
                     if (setline.GetComponent<iconicElementScript>().points.Count > min_point_count)
                     {
-                        
+
                         List<GameObject> icon_meshobjs = new List<GameObject>();
                         GameObject[] iconarray = GameObject.FindGameObjectsWithTag("iconic");
-                                                
+
                         for (int i = 0; i < iconarray.Length; i++)
                         {
-                            
+
                             // check if the lines are inside the drawn set polygon -- in respective local coordinates
                             if (setline.GetComponent<iconicElementScript>().isInsidePolygon(
                                 //setline.GetComponent<iconicElementScript>().transform.InverseTransformPoint(
                                 iconarray[i].GetComponent<iconicElementScript>().edge_position)
                                 )//)
-                                {
-                                    icon_meshobjs.Add(iconarray[i].transform.gameObject);
-                                    //penLines[i].transform.SetParent(templine.transform);
-                                    //Debug.Log("iconic found");
+                            {
+                                icon_meshobjs.Add(iconarray[i].transform.gameObject);
+                                //penLines[i].transform.SetParent(templine.transform);
+                                //Debug.Log("iconic found");
 
-                                }
+                            }
                         }
 
                         GameObject[] selected_icons = new GameObject[icon_meshobjs.Count];
@@ -916,12 +925,50 @@ public class Paintable : MonoBehaviour
 
         #endregion
 
+        #region fused representation
+
+        if (fused_rep_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            if (PenTouchInfo.PressedThisFrame)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                {
+                    fused_obj = Hit.collider.gameObject;
+                    StartTouchTime = Time.realtimeSinceStartup;
+                    fused_obj.transform.localScale = fused_obj.transform.localScale * 1.05f;
+                }
+            }            
+
+            else if (fused_obj != null && PenTouchInfo.ReleasedThisFrame)
+            {
+                fused_obj.transform.localScale = fused_obj.transform.localScale / 1.05f;
+
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); 
+                RaycastHit Hit;
+
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == fused_obj)
+                {
+                    EndTouchTime = Time.realtimeSinceStartup;
+                    TouchTime = EndTouchTime - StartTouchTime;
+
+                    if (TouchTime > 0.5f)
+                        ConvertToFunction(fused_obj);
+                }
+
+                fused_obj = null;
+            }
+
+        }
+        #endregion
+
         #region function brush
 
         if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
         {
             //Debug.Log("entered");
-            //if (no_func_menu_open)
+            if (no_func_menu_open == false) return;
             if (dragged_arg_textbox == null)
             {
                 OnGraphTap();
@@ -1057,6 +1104,35 @@ public class Paintable : MonoBehaviour
 
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
+    }
+
+    public void ConvertToFunction(GameObject fused_obj)
+    {
+        GameObject fused_function_lasso = Instantiate(FunctionLineElement, fused_obj.transform.position, Quaternion.identity, Objects_parent.transform);
+        var meshFilter = fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>();
+
+        fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().sharedMaterial = fused_obj.transform.GetComponent<MeshRenderer>().sharedMaterial;
+
+        Mesh mesh = fused_obj.GetComponent<MeshFilter>().sharedMesh;
+        meshFilter.sharedMesh = mesh;
+        fused_function_lasso.GetComponent<FunctionElementScript>()._mesh = mesh;
+
+        fused_function_lasso.GetComponent<TrailRenderer>().enabled = false;
+        fused_function_lasso.GetComponent<LineRenderer>().enabled = false;
+
+        fused_function_lasso.GetComponent<FunctionElementScript>().edge_position = fused_obj.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+
+        fused_function_lasso.GetComponent<FunctionElementScript>().points = fused_obj.GetComponent<iconicElementScript>().points;
+
+        fused_function_lasso.GetComponent<FunctionElementScript>().maxx = fused_obj.GetComponent<iconicElementScript>().maxx;
+        fused_function_lasso.GetComponent<FunctionElementScript>().maxy = fused_obj.GetComponent<iconicElementScript>().maxy;
+        fused_function_lasso.GetComponent<FunctionElementScript>().minx = fused_obj.GetComponent<iconicElementScript>().minx;
+        fused_function_lasso.GetComponent<FunctionElementScript>().miny = fused_obj.GetComponent<iconicElementScript>().miny;
+
+        fused_function_lasso.GetComponent<FunctionElementScript>().InstantiateNameBox();
+        fused_function_lasso.GetComponent<FunctionElementScript>().fused_function = true;
+
+        Destroy(fused_obj);
     }
 
     public void DragorMenuCreateOnClick()
@@ -1357,8 +1433,7 @@ public class Paintable : MonoBehaviour
                             Debug.Log("checkfor_vertex_del:"+child.name);
                             if (functionline.GetComponent<FunctionElementScript>().isInsidePolygon(child.GetComponent<iconicElementScript>().edge_position))
                             {
-                                string possible_edge_node_name = child.gameObject.name;
-                                searchNodeAndDeleteEdge(possible_edge_node_name);
+                                searchNodeAndDeleteEdge(child.gameObject);
                                 Destroy(child.gameObject);
                             }
                         }
@@ -1629,7 +1704,7 @@ public class Paintable : MonoBehaviour
             edge_menu_create = true;
         }
 
-        if (edge_menu_create) return;
+        //if (edge_menu_create) return;
 
         if (Physics.Raycast(ray, out Hit))
         {
@@ -2058,60 +2133,78 @@ public class Paintable : MonoBehaviour
         }
     }
 
-    void searchNodeAndDeleteEdge(string node_name)
+    void searchNodeAndDeleteEdge(GameObject node_name)
     {
-        GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
-        List<GameObject> edgeList = new List<GameObject>(edges);
-        for (int i = 0; i < edgeList.Count; i++)
+        Transform Prev_node_parent = node_name.transform.parent;
+
+        if (Prev_node_parent.tag != "node_parent") return;
+        
+        Transform Prev_graph_parent = Prev_node_parent.transform.parent;
+        Transform Prev_edge_parent = Prev_graph_parent.GetChild(1);
+        Transform Prev_simplicial_parent = Prev_graph_parent.GetChild(2);
+        Transform Prev_hyper_parent = Prev_graph_parent.GetChild(3);
+
+        Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+        Transform[] allChildrensimpli = Prev_simplicial_parent.GetComponentsInChildren<Transform>();
+        Transform[] allChildrenhyper = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+                        
+        foreach (Transform child in allChildrenedge)
         {
-            GameObject source = edgeList[i].GetComponent<EdgeElementScript>().edge_start;
-            GameObject target = edgeList[i].GetComponent<EdgeElementScript>().edge_end;
-
-            if (source.name == node_name || target.name == node_name)
+            if (child.tag == "edge")
             {
-                Destroy(edgeList[i].gameObject);
-                //break;
-            }
-        }
+                GameObject source = child.GetComponent<EdgeElementScript>().edge_start;
+                GameObject target = child.GetComponent<EdgeElementScript>().edge_end;
 
-        GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
-        foreach (GameObject each_simplicial in simplicials)
-        {
-            if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
-            {
-                List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
-
-                foreach (GameObject each_node in thenodes)
+                if (source == node_name || target == node_name)
                 {
-                    if (each_node.name == node_name)
-                    {
-                        Destroy(each_simplicial.gameObject);
-                        break;
-                    }
-                }
-            }
-            else if (each_simplicial.GetComponent<EdgeElementScript>() != null)
-            {
-                GameObject source = each_simplicial.GetComponent<EdgeElementScript>().edge_start;
-                GameObject target = each_simplicial.GetComponent<EdgeElementScript>().edge_end;
-
-                if (source.name == node_name || target.name == node_name)
-                {
-                    Destroy(each_simplicial.gameObject);
+                    Destroy(child.gameObject);
                     //break;
                 }
             }
-
         }
-
-        GameObject[] hyper_edges = GameObject.FindGameObjectsWithTag("hyper_child_edge");
-        foreach (GameObject each_child_edge in hyper_edges)
+                
+        foreach (Transform each_simplicial in allChildrensimpli)
         {
-            if (each_child_edge.GetComponent<HyperEdgeElement>().parent_node.name == node_name)
+            if (each_simplicial.tag == "simplicial")
             {
-                Destroy(each_child_edge);
+                if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
+                {
+                    List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
+
+                    foreach (GameObject each_node in thenodes)
+                    {
+                        if (each_node == node_name)
+                        {
+                            Destroy(each_simplicial.gameObject);
+                            break;
+                        }
+                    }
+                }
+                else if (each_simplicial.GetComponent<EdgeElementScript>() != null)
+                {
+                    GameObject source = each_simplicial.GetComponent<EdgeElementScript>().edge_start;
+                    GameObject target = each_simplicial.GetComponent<EdgeElementScript>().edge_end;
+
+                    if (source == node_name || target == node_name)
+                    {
+                        Destroy(each_simplicial.gameObject);
+                        //break;
+                    }
+                }
+            }                
+        }
+                
+        foreach (Transform child in allChildrenhyper)
+        {
+            if (child.tag == "hyper_child_edge")
+            {
+                if (child.GetComponent<HyperEdgeElement>().parent_node == node_name)
+                {
+                    Destroy(child.parent.gameObject);
+                }
             }
         }
+                
     }
 
     /*void searchNodeAndUpdateEdge(GameObject node_name, Vector3 panDirection)

@@ -457,6 +457,7 @@ MonoBehaviour:
     type: 3}
   dragged_arg_object: {fileID: 0}
   drag_text_ui: {fileID: 0}
+  main_camera: {fileID: 0}
   argument_objects: []
   cur_iter: 0
   output_type: 

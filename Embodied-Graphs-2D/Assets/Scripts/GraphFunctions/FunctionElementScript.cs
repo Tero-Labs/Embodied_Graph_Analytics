@@ -29,11 +29,13 @@ public class FunctionElementScript : MonoBehaviour
     public bool draggable_now = false;
 
     public Material icon_elem_material;
-    public GameObject paintable_object;
+    public GameObject paintable_object;    
     public string icon_name;
     // needed for abstraction conversion
     public int icon_number;
     public int edge_offset;
+
+    public GameObject mesh_holder;
 
     // get-able attributes
     public struct Attributes
@@ -100,6 +102,7 @@ public class FunctionElementScript : MonoBehaviour
     // global stroke details
     //public GameObject details_dropdown;
     public bool global_details_on_path = true;
+    public bool fused_function;
 
     public GameObject function_menu;
 
@@ -333,7 +336,8 @@ public class FunctionElementScript : MonoBehaviour
                     if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == current_node)
                     {
                         GameObject temp_label = Instantiate(topo_label);
-                        temp_label.transform.SetParent(extra_objects.transform);
+                        //temp_label.transform.SetParent(extra_objects.transform);
+                        temp_label.transform.SetParent(child.transform);
 
                         temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
                             new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
@@ -901,7 +905,7 @@ public class FunctionElementScript : MonoBehaviour
             // Sort angles into ascending order, use to put vertices in clockwise order
             Array.Sort(angles, vertices);*/
 
-            transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+            mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
             transform.GetComponent<LineRenderer>().enabled = true;
 
             points = vertices.ToList();
@@ -921,7 +925,7 @@ public class FunctionElementScript : MonoBehaviour
     public void updateLassoPointsIconDrag()
     {
 
-        if (transform.GetComponent<MeshRenderer>().enabled && 
+        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled && 
             !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
         {
             List<Vector3> hull_pts = new List<Vector3>();
@@ -930,6 +934,8 @@ public class FunctionElementScript : MonoBehaviour
 
             foreach (GameObject function_argument in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
             {
+                if (function_argument == null) continue;
+
                 if (function_argument.tag == "graph")
                 {
                     Transform[] allChildrennode = function_argument.transform.GetChild(0).GetComponentsInChildren<Transform>();
@@ -985,7 +991,7 @@ public class FunctionElementScript : MonoBehaviour
             Debug.Log("hulled: ");
                        
 
-            transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+            mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
             transform.GetComponent<LineRenderer>().enabled = true;
 
             points = vertices.ToList();
@@ -1013,6 +1019,7 @@ public class FunctionElementScript : MonoBehaviour
 
     public void updateLassoPoints(GameObject graph)
     {
+        if (fused_function) return;
 
         if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
         {
@@ -1079,15 +1086,14 @@ public class FunctionElementScript : MonoBehaviour
             // Sort angles into ascending order, use to put vertices in clockwise order
             Array.Sort(angles, vertices);*/
 
-            transform.GetComponent<MeshFilter>().sharedMesh.Clear();
+            mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
             transform.GetComponent<LineRenderer>().enabled = true;
 
             points = vertices.ToList();
             paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
             transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
         }
-
-
+        
     }
 
     public void updatechildLassoPoints(GameObject graph, List<int> nodes, GameObject gameObject, int idx)

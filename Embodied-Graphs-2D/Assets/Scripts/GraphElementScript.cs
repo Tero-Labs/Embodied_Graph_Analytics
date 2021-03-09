@@ -700,7 +700,7 @@ public class GraphElementScript : MonoBehaviour
 
         // set line renderer texture scale
         var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1));
-        edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+        //edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
         edgeline.GetComponent<EdgeElementScript>().addDot();
     }
 
