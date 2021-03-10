@@ -120,19 +120,14 @@ public class CreatePrimitives : MonoBehaviour
             Mesh mesh = new Mesh();
             lineRenderer.BakeMesh(mesh, true);
             meshFilter.sharedMesh = mesh;
-            //meshObj.GetComponent<MeshFilter>().sharedMesh = mesh;
-            templine.GetComponent<iconicElementScript>()._mesh = mesh;
         }
         else
         {
             meshFilter.sharedMesh = combinedMesh;
-            //meshObj.GetComponent<MeshFilter>().sharedMesh = combinedMesh;
-            templine.GetComponent<iconicElementScript>()._mesh = combinedMesh;
         }        
 
         //meshObj.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
         templine.GetComponent<MeshRenderer>().sharedMaterial = lineRenderer.material;
-
 
         // get rid of the line renderer?
         Destroy(templine.GetComponent<LineRenderer>());
@@ -140,16 +135,14 @@ public class CreatePrimitives : MonoBehaviour
         // disable trail renderer, no longer needed
         templine.GetComponent<TrailRenderer>().enabled = false;
 
-        // add a collider
-        
+        // add a collider        
         templine.AddComponent<BoxCollider>();
-
-        //Debug.Log("box collider before: " + templine.GetComponent<BoxCollider>().center.ToString());
         templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
-        //templine.GetComponent<BoxCollider>().center = new Vector3(0, 0, 0);
         templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+
+        // for proper positioning
         templine.GetComponent<iconicElementScript>().edge_position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
-        //Debug.Log("box collider after: " + templine.GetComponent<BoxCollider>().center.ToString());
+        templine.GetComponent<iconicElementScript>().bounds_center = templine.GetComponent<iconicElementScript>().edge_position;
 
         // set collider trigger
         templine.GetComponent<BoxCollider>().isTrigger = true;
@@ -158,9 +151,7 @@ public class CreatePrimitives : MonoBehaviour
         templine.GetComponent<BoxCollider>().enabled = false;
 
         // set transform position
-        //templine.transform.position = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
-        templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
-        //templine.transform.position = meshObj.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+        templine.transform.position = new Vector3(0, 0, 0);
 
         // update the previous_position variable for templine for checkMove()
         templine.GetComponent<iconicElementScript>().previous_position = templine.transform.position;   
@@ -246,7 +237,7 @@ public class CreatePrimitives : MonoBehaviour
 
 
     // Assumes templine has been initialized in pointer.start and pointer.moved
-    public GameObject FinishEdgeLine(GameObject templine, Mesh combinedMesh = null)
+    /*public GameObject FinishEdgeLine(GameObject templine, Mesh combinedMesh = null)
     {
         var lineRenderer = templine.GetComponent<LineRenderer>();
         var meshFilter = templine.GetComponent<MeshFilter>();
@@ -263,9 +254,7 @@ public class CreatePrimitives : MonoBehaviour
         {
             meshFilter.sharedMesh = combinedMesh;
         }
-
-        templine.GetComponent<iconicElementScript>()._mesh = mesh;
-
+        
         templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
 
         // get rid of the line renderer?
@@ -301,7 +290,7 @@ public class CreatePrimitives : MonoBehaviour
 
         return templine;
     }
-
+    */
     
     // LOAD A SPRITE AS A PENLINE OBJECT
     /*public GameObject CreatePenLine(string sprite_filename)

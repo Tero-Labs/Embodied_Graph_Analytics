@@ -51,7 +51,7 @@ public class HyperElementScript : MonoBehaviour
         for (int i = 0; i < theVertices.Count; i++)
         {
             GameObject temp = transform.GetChild(i).gameObject;
-            temp.transform.position = thenodes[i].GetComponent<iconicElementScript>().edge_position;
+            //temp.transform.position = thenodes[i].GetComponent<iconicElementScript>().edge_position;
             temp.GetComponent<HyperEdgeElement>().UpdateEndpoints(thenodes[i].GetComponent<iconicElementScript>().edge_position, transform.position);
         }
     }

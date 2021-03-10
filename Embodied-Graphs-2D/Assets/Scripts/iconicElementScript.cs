@@ -12,9 +12,10 @@ public class iconicElementScript : MonoBehaviour
 {
 
     public bool video_icon;
+    public bool image_icon;
 
     // previous first child, instead of creating a separate child, we now want to keep it in the script
-    public Mesh _mesh;
+    //public Mesh _mesh;
 
     // visual representation
     // public List<Vector2> points;
@@ -22,7 +23,9 @@ public class iconicElementScript : MonoBehaviour
     // object drawing properties
     public List<Vector3> points = new List<Vector3>();
     public Vector3 centroid;
+    // actual radius
     public float radius;
+    // offset from radius
     public float radius_margin;
 
     public float maxx = -100000f, maxy = -100000f, minx = 100000f, miny = 100000f;
@@ -54,6 +57,7 @@ public class iconicElementScript : MonoBehaviour
     public bool record_path_enable = false;
     public Vector3 position_before_record;
     public Vector3 edge_position;
+    public Vector3 bounds_center;
 
     // path translate
     public Vector3 position_before_translation;
@@ -762,47 +766,7 @@ public class iconicElementScript : MonoBehaviour
     }
     */
 
-    /*public void menuButtonClick(GameObject radmenu, Button btn, int buttonNumber)
-    {
-        if (buttonNumber == 0)
-        {
-            btn.onClick.AddListener(() => setPropertyAsTranslation(radmenu));
-        }
-        else if (buttonNumber == 1)
-        {
-            btn.onClick.AddListener(() => setPropertyAsRotation(radmenu));
-        }
-        else if (buttonNumber == 2)
-        {
-            btn.onClick.AddListener(() => setPropertyAsScale(radmenu));
-        }
-        else if (buttonNumber == 3)
-        {
-            // clicking attribute shouldn't do anything, except maybe submenu opens and closes
-            btn.onClick.AddListener(() => interactWithAttributeMenu(radmenu));
-        }
-        else if (buttonNumber == 4)
-        {
-            btn.onClick.AddListener(() => deleteObject(radmenu));
-        }
-        else if (buttonNumber == 5)
-        {
-            btn.onClick.AddListener(() => createRotationMenu(radmenu));
-        }
-        else if (buttonNumber == 6)
-        {
-            btn.onClick.AddListener(() => copyObject(radmenu));
-        }
-        else if (buttonNumber == 7)
-        {
-            btn.onClick.AddListener(() => setAreaAsAttribute(radmenu));
-        }
-        else if (buttonNumber == 8)
-        {
-            btn.onClick.AddListener(() => setLengthAsAttribute(radmenu));
-        }
-    }*/
-
+    
     public void deleteObject(GameObject radmenu)
     {
         // Destroy the radial menu
@@ -1250,13 +1214,20 @@ public class iconicElementScript : MonoBehaviour
 
         //Debug.Log("box collider before: " + templine.GetComponent<BoxCollider>().center.ToString());
         transform.GetComponent<BoxCollider>().size = transform.GetComponent<SpriteRenderer>().sprite.bounds.size;
-        transform.GetComponent<BoxCollider>().center = transform.GetComponent<SpriteRenderer>().sprite.bounds.center;
-        transform.GetComponent<iconicElementScript>().edge_position = new Vector3(transform.GetComponent<SpriteRenderer>().sprite.bounds.center.x,
-                                                        transform.GetComponent<SpriteRenderer>().sprite.bounds.center.y, -5.5f);
+        transform.GetComponent<BoxCollider>().center = new Vector3(transform.GetComponent<SpriteRenderer>().sprite.bounds.center.x,
+                            transform.GetComponent<SpriteRenderer>().sprite.bounds.center.y,
+                            -5f);        
 
+        radius = transform.GetComponent<SpriteRenderer>().bounds.extents.magnitude;
+        
         // set collider trigger
         transform.GetComponent<BoxCollider>().isTrigger = true;
         transform.GetComponent<BoxCollider>().enabled = true;
+
+        edge_position = transform.GetComponent<SpriteRenderer>().bounds.extents;
+        edge_position.z = -5f;
+
+        bounds_center = edge_position;
 
     }
 
@@ -1315,23 +1286,7 @@ public class iconicElementScript : MonoBehaviour
     }
 
     // keep checking every frame if it came out from a double function lasso or if it's still a child of it.
-    /*public void checkIfThisIsPartOfDoubleFunction()
-    {
-        if (is_this_double_function_operand)
-        {
-            if (transform.parent.tag == "function" && transform.parent.GetComponent<functionLine_script>().is_this_a_double_function)
-            {
-                // keep it true
-                is_this_double_function_operand = true;
-            }
-            else
-            {
-                // turn off the operand argument_label
-                is_this_double_function_operand = false;
-                transform.GetChild(3).gameObject.SetActive(false);
-            }
-        }
-    }*/
+    
 
     /*public void applyGlobalStrokeDetails()
     {
@@ -1415,29 +1370,36 @@ public class iconicElementScript : MonoBehaviour
     public Vector3 getclosestpoint(Vector3 target)
     {
         if (video_icon) return edge_position;
-        Vector3 desired_point = points[0];
-        float distance = Vector3.Distance(desired_point, target);
-
-        int interval = (int)Math.Floor((float)(points.Count / 10));        
-
-        Vector3 bounds_center = transform.GetComponent<MeshFilter>().sharedMesh.bounds.center;
-        // TODO: for image nodes, this would be sprite bounds center
-
-        for (int i = 0; i < points.Count; i = i + interval)
+        
+        if (image_icon)
         {
-            // recalculate repositioned points
-            Vector3 calibrated_pt = points[i] + (edge_position - bounds_center);
-            float temp_dist = Vector3.Distance(calibrated_pt, target);
+            points.Clear();
+            points.Add(edge_position + new Vector3(-bounds_center.x, 0, 0));
+            points.Add(edge_position + new Vector3(0, bounds_center.y, 0));
+            points.Add(edge_position + new Vector3(bounds_center.x, 0, 0));
+            points.Add(edge_position + new Vector3(0, -bounds_center.y, 0));
 
-            if (temp_dist < distance)
+            Vector3 desired_point = points[0];
+            float distance = Vector3.Distance(desired_point, target);
+
+            for (int i = 1; i < points.Count; i = i + 1)
             {
-                desired_point = points[i];
-                distance = temp_dist;
+                // recalculate repositioned points
+                Vector3 calibrated_pt = points[i];
+                float temp_dist = Vector3.Distance(calibrated_pt, target);
+
+                if (temp_dist < distance)
+                {
+                    desired_point = points[i];
+                    distance = temp_dist;
+                }
+
             }
 
+            return desired_point;
         }
 
-        return desired_point;
+        return edge_position;
     }
     
     void OnDestroy()
@@ -1452,6 +1414,24 @@ public class iconicElementScript : MonoBehaviour
 
     public void searchNodeAndUpdateEdge()
     {
+        /*if (image_icon)
+        {
+            points.Add(edge_position + new Vector3(-radius, 0, 0));
+            points.Add(edge_position + new Vector3(-radius, radius, 0));
+            points.Add(edge_position + new Vector3(0, radius, 0));
+            points.Add(edge_position + new Vector3(radius, radius, 0));
+            points.Add(edge_position + new Vector3(radius, 0, 0));
+            points.Add(edge_position + new Vector3(radius, -radius, 0));
+            points.Add(edge_position + new Vector3(0, -radius, 0));
+            points.Add(edge_position + new Vector3(-radius, -radius, 0));
+
+            points.Clear();
+            points.Add(edge_position + new Vector3(-bounds_center.x, 0, 0));
+            points.Add(edge_position + new Vector3(0, bounds_center.y, 0));
+            points.Add(edge_position + new Vector3(bounds_center.x, 0, 0));
+            points.Add(edge_position + new Vector3(0, -bounds_center.y, 0));
+        }*/
+
         if (transform.parent.tag != "node_parent") return;
 
         Transform Prev_node_parent = transform.parent;

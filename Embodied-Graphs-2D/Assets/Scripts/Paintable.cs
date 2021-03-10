@@ -553,19 +553,30 @@ public class Paintable : MonoBehaviour
                         // now create the edge in edge script
                         if (edge_end != null && edge_start != null)
                         {
+                            if (edge_end == edge_start)
+                            {
+                                Destroy(edgeline);
+                                edge_end = null;
+                                edge_start = null;
+                                edgeline = null;
+                            }
+
                             // TODO: IF AN EDGELINE ALREADY EXISTS CONNECTING THESE TWO NODES, THEN DON'T CREATE ANOTHER ONE, DESTROY THE CURRENT.
-                            edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
-                            edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
+                            else
+                            {
+                                edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
+                                edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
 
-                            // set line renderer end point
-                            edgeline.GetComponent<EdgeElementScript>().addEndPoint();
+                                // set line renderer end point
+                                edgeline.GetComponent<EdgeElementScript>().addEndPoint();
 
-                            GraphCreation();
+                                GraphCreation();
 
-                            // set edge_end and edge_start back to null
-                            edge_end = null;
-                            edge_start = null;
-                            edgeline = null;
+                                // set edge_end and edge_start back to null
+                                edge_end = null;
+                                edge_start = null;
+                                edgeline = null;
+                            }
                         }
 
                     }
@@ -1109,6 +1120,9 @@ public class Paintable : MonoBehaviour
     public void ConvertToFunction(GameObject fused_obj)
     {
         GameObject fused_function_lasso = Instantiate(FunctionLineElement, fused_obj.transform.position, Quaternion.identity, Objects_parent.transform);
+        fused_function_lasso.name = "function_line_" + function_count.ToString();
+        function_count++;
+
         var meshFilter = fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>();
 
         fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().sharedMaterial = fused_obj.transform.GetComponent<MeshRenderer>().sharedMaterial;
@@ -1269,8 +1283,8 @@ public class Paintable : MonoBehaviour
         temp.name = "iconic_" + totalLines.ToString();
         temp.tag = "iconic";
         temp.GetComponent<iconicElementScript>().icon_number = totalLines;
-        temp.GetComponent<iconicElementScript>().LoadNewSprite(FilePath);
-
+        temp.GetComponent<iconicElementScript>().image_icon = true;
+        temp.GetComponent<iconicElementScript>().LoadNewSprite(FilePath);        
     }
 
     void OnGraphAdditionInteraction()

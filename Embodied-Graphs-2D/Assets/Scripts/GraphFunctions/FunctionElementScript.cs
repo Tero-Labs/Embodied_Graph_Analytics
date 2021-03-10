@@ -377,8 +377,10 @@ public class FunctionElementScript : MonoBehaviour
                             position += new Vector3(child.GetComponent<iconicElementScript>().radius * 2, 0, 0);
                             Vector3 old_pos = child.position;
                             // we want the edge_position to project
-                            child.position = child.InverseTransformDirection(position) -
-                                child.InverseTransformDirection(child.GetComponent<MeshFilter>().sharedMesh.bounds.center);
+                            Vector3 new_pos = child.InverseTransformDirection(position) -
+                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().bounds_center);
+
+                            child.position = new Vector3(new_pos.x, new_pos.y, -40f); 
 
                             child.GetComponent<iconicElementScript>().edge_position = position;
                             Debug.Log(child.name);
@@ -829,7 +831,7 @@ public class FunctionElementScript : MonoBehaviour
     public void updateLassoPoints()
     {
         
-        if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        if (!fused_function && !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;

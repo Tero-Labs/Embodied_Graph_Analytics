@@ -365,16 +365,16 @@ public class FunctionMenuScript : MonoBehaviour
                             message_box.GetComponent<TextMeshProUGUI>().text = "Invalid argument!";
                         }
 
-                        
-                        // clearing the clicked gameobject insided if block for ensuring the previous information is not lost
-                        // in other FunctionMenuScripts that are not clicked on
-                        paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
                     }
-                    //paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+                    
                 }
 
+                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
                 dragged_arg_object = null;
             }
+
+            else if (PenTouchInfo.ReleasedThisFrame && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
+                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
 
             else if (PenTouchInfo.PressedNow
                 && drag_text_ui != null)
@@ -439,7 +439,8 @@ public class FunctionMenuScript : MonoBehaviour
             }
         }
 
-        else if (PenTouchInfo.PressedNow)
+        else if (PenTouchInfo.PressedNow && paintable.GetComponent<Paintable>().current_dragged_function != null
+            && paintable.GetComponent<Paintable>().current_dragged_function == transform.gameObject)
         {
             
             if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
@@ -492,12 +493,16 @@ public class FunctionMenuScript : MonoBehaviour
                         
         }
 
-        else if (PenTouchInfo.ReleasedThisFrame && draggable_now)//(Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended && draggable_now)
+        else if (PenTouchInfo.ReleasedThisFrame && draggable_now
+              && paintable.GetComponent<Paintable>().current_dragged_function != null 
+              && paintable.GetComponent<Paintable>().current_dragged_function == transform.gameObject)
         {
             draggable_now = false;
 
             touchDelta = new Vector3(); // reset touchDelta
             img.color = new Color32(125, 255, 165, 255);
+
+            paintable.GetComponent<Paintable>().current_dragged_function = null;
 
             // change anchor color
 
@@ -724,6 +729,8 @@ public class FunctionMenuScript : MonoBehaviour
             //transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();   
             settings.transform.gameObject.SetActive(false);
             transform.gameObject.SetActive(false);
+            if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
+                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
         }
         else
         {
@@ -810,7 +817,11 @@ public class FunctionMenuScript : MonoBehaviour
     private void OnDestroy()
     {
         if (input_option.activeSelf && paintable != null)
+        {
             paintable.GetComponent<Paintable>().no_func_menu_open = true;
+            if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
+                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+        } 
 
         if (textbox_open)
         {

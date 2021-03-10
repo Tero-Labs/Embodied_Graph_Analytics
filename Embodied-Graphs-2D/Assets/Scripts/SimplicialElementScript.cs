@@ -31,9 +31,11 @@ public class SimplicialElementScript : MonoBehaviour
     {
         for (int i = 0; i < thenodes.Count; i++)
         {
-            //int j = (i + 1) % thenodes.Count;
-            //theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().getclosestpoint(thenodes[j].GetComponent<iconicElementScript>().edge_position);
-            theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().edge_position;
+            int j = (i + 1) % thenodes.Count;
+            theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().getclosestpoint
+                (thenodes[j].GetComponent<iconicElementScript>().edge_position);
+
+            //theVertices[i] = thenodes[i].GetComponent<iconicElementScript>().edge_position;
 
         }
 
@@ -107,8 +109,6 @@ public class SimplicialElementScript : MonoBehaviour
 
         //Create mesh
         var mesh = CreateMesh();
-        //Assign materials
-        //MR.material = new_material;
         //Assign mesh to game object
         MF.mesh = mesh;
 

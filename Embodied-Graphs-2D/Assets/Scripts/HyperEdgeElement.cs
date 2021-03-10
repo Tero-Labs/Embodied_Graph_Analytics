@@ -51,7 +51,8 @@ public class HyperEdgeElement : MonoBehaviour
     // start: node. end: hypernode
     public void UpdateEndpoints(Vector3 start, Vector3 end)
     {
-        start = parent_node.GetComponent<iconicElementScript>().edge_position;//.getclosestpoint(end);
+        //start = parent_node.GetComponent<iconicElementScript>().edge_position;
+        start = parent_node.GetComponent<iconicElementScript>().getclosestpoint(end);
         transform.position = start;
 
         Vector3 dir_vec = start - end;

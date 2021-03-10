@@ -1348,10 +1348,12 @@ public class EdgeElementScript : MonoBehaviour
 
         if (source == node_name || target == node_name)
         {
-            // l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
-            // l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
-            l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
-            l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
+            // set line renderer end point
+            //l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+            //l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
+
+            l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+            l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(l.GetPosition(0)));
 
             // assuming edge_start is always an anchor
             var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
@@ -1362,13 +1364,7 @@ public class EdgeElementScript : MonoBehaviour
                 return new Vector2(pos.x, pos.y);
             }).ToArray();
 
-            transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
-
-            // set line renderer texture scale
-            /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
-                transform.GetComponent<LineRenderer>().GetPosition(1));
-            transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);*/
-
+            transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;            
             updateDot();
         }
     }
@@ -1384,9 +1380,12 @@ public class EdgeElementScript : MonoBehaviour
         l.material.SetColor("_Color", Color.blue);
 
         // set line renderer end point
-        l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
-        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
+        //l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+        //l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
 
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(l.GetPosition(0)));
+        
         // assuming edge_start is always an anchor
         var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
 
@@ -1398,10 +1397,7 @@ public class EdgeElementScript : MonoBehaviour
 
         transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
 
-        // set line renderer texture scale
-        //var linedist = Vector3.Distance(l.GetPosition(0), l.GetPosition(1));
-        //l.materials[0].mainTextureScale = new Vector2(linedist, 1);
-
+        
         for (int x = 0; x < 2; x++)
         {
             GameObject temp = Instantiate(dot_prefab, l.GetPosition(x), Quaternion.identity, transform);
@@ -1429,11 +1425,13 @@ public class EdgeElementScript : MonoBehaviour
         GameObject target = edge_end;
 
         LineRenderer l = transform.GetComponent<LineRenderer>();
+
         // set line renderer end point
-        //l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
-        //l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(source.GetComponent<iconicElementScript>().edge_position));
-        l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
-        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);
+        l.SetPosition(0, source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position));
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().getclosestpoint(l.GetPosition(0)));
+
+        /*l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);
+        l.SetPosition(1, target.GetComponent<iconicElementScript>().edge_position);*/
 
         // assuming edge_start is always an anchor
         var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(1) };
@@ -1549,10 +1547,12 @@ public class EdgeElementScript : MonoBehaviour
     public void updateSplineEndPoint()
     {
         //recorded_path = myEllipseSpline();
-        //Vector3 start = edge_start.GetComponent<iconicElementScript>().getclosestpoint(edge_end.GetComponent<iconicElementScript>().edge_position);
-        //Vector3 end = edge_end.GetComponent<iconicElementScript>().getclosestpoint(edge_start.GetComponent<iconicElementScript>().edge_position);
-        Vector3 start = edge_start.GetComponent<iconicElementScript>().edge_position;
-        Vector3 end = edge_end.GetComponent<iconicElementScript>().edge_position;
+
+        Vector3 start = edge_start.GetComponent<iconicElementScript>().getclosestpoint(edge_end.GetComponent<iconicElementScript>().edge_position);
+        Vector3 end = edge_end.GetComponent<iconicElementScript>().getclosestpoint(start);
+
+        /*Vector3 start = edge_start.GetComponent<iconicElementScript>().edge_position;
+        Vector3 end = edge_end.GetComponent<iconicElementScript>().edge_position;*/
 
         Vector3 dir_vec = start - end;
         Vector2 unit_vec = new Vector2(-dir_vec.y, dir_vec.x);
@@ -1605,11 +1605,6 @@ public class EdgeElementScript : MonoBehaviour
         }).ToArray();
 
         transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
-
-        // set line renderer texture scale
-        /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
-            transform.GetComponent<LineRenderer>().GetPosition(1));
-        transform.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);*/
 
         transform.GetChild(0).position = start;
         transform.GetChild(1).position = end;
