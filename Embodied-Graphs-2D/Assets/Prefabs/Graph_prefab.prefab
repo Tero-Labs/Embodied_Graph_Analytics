@@ -44,7 +44,7 @@ GameObject:
   - component: {fileID: -7085557454396407068}
   m_Layer: 0
   m_Name: Graph_prefab
-  m_TagString: Untagged
+  m_TagString: graph
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

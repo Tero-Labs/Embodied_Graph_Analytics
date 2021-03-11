@@ -42,6 +42,8 @@ public class GraphElementScript : MonoBehaviour
 
     public Dictionary<string, Transform> nodeMaps;
 
+    public List<Vector3> points = new List<Vector3>();
+
     TMP_Text tmptextlabel;
 
     // Start is called before the first frame update

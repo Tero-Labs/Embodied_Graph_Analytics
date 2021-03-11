@@ -231,6 +231,7 @@ public class FunctionMenuScript : MonoBehaviour
 
                     var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                     RaycastHit Hit;
+                    RaycastHit2D hit2d = Physics2D.GetRayIntersection(ray);
 
                     if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
                     {
@@ -257,12 +258,18 @@ public class FunctionMenuScript : MonoBehaviour
                             dragged_arg_object.transform.parent.parent.GetComponent<GraphElementScript>().graph_name;
                         }                            
                     }
-
-                    RaycastHit2D hit2d = Physics2D.GetRayIntersection(ray);
-                    if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
+                    else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
                     {
-                        dragged_arg_object = hit2d.collider.gameObject.transform.parent.parent.gameObject;
+                        dragged_arg_object = hit2d.collider.gameObject;
                         Debug.Log("graph picked from edge cllick");
+
+                        drag_text_ui = Instantiate(topo_label,
+                            hit2d.point,
+                            Quaternion.identity,
+                            paintable.GetComponent<Paintable>().Objects_parent.transform);
+
+                        drag_text_ui.GetComponent<TMP_Text>().text = "graph: " +
+                            dragged_arg_object.transform.parent.parent.GetComponent<GraphElementScript>().graph_name;
                     }
                 }
             }
@@ -322,6 +329,14 @@ public class FunctionMenuScript : MonoBehaviour
                                 //argument_objects[cur_order_dict[index]] = temp.gameObject;
                                 argument_objects[index] = temp.gameObject;
                             }
+                            else if (dragged_arg_object.transform.parent.tag == "edge_parent")
+                            {
+                                temp = dragged_arg_object.transform.parent.parent;
+                                cur_arg_Str[index] = temp.GetComponent<GraphElementScript>().graph_name;
+                                // argument obj referece update for calculation
+                                //argument_objects[cur_order_dict[index]] = temp.gameObject;
+                                argument_objects[index] = temp.gameObject;
+                            }
                             else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null && paintable.GetComponent<Paintable>().dragged_arg_textbox != transform.gameObject)
                             {
                                 temp = paintable.GetComponent<Paintable>().dragged_arg_textbox.transform;
@@ -332,6 +347,14 @@ public class FunctionMenuScript : MonoBehaviour
                         else if (cur_dict[index] == "iconic" && dragged_arg_object.tag == "iconic")
                         {
                             temp = dragged_arg_object.transform;
+                            cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
+                            // argument obj referece update for calculation
+                            //argument_objects[cur_order_dict[index]] = temp.gameObject;
+                            argument_objects[index] = temp.gameObject;
+                        }
+                        else if (cur_dict[index] == "iconic" && dragged_arg_object.tag == "edge")
+                        {
+                            temp = dragged_arg_object.GetComponent<EdgeElementScript>().edge_start.transform;
                             cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
                             // argument obj referece update for calculation
                             //argument_objects[cur_order_dict[index]] = temp.gameObject;
@@ -670,8 +693,8 @@ public class FunctionMenuScript : MonoBehaviour
         Debug.Log("evaluation_began");
         if (match_found)
         {
-            transform.parent.GetComponent<FunctionElementScript>().updateLassoPoints();
-            // ToDo: update string parsing, pass current func name too
+            //transform.parent.GetComponent<FunctionElementScript>().updateLassoPoints();
+                        
             if (output_type != "scalar")
             {                
                 transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());                
@@ -723,10 +746,9 @@ public class FunctionMenuScript : MonoBehaviour
             if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(); //(output);
         }
 
-        if (instant_eval)
+        /*if (instant_eval)
         {
-            // show results instantly
-            //transform.parent.GetComponent<MeshFilter>().sharedMesh.Clear();   
+            // show results instantly             
             settings.transform.gameObject.SetActive(false);
             transform.gameObject.SetActive(false);
             if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
@@ -738,7 +760,7 @@ public class FunctionMenuScript : MonoBehaviour
             {
                 transform.parent.GetChild(1).gameObject.SetActive(false);
             }
-        }
+        }*/
 
         if (!keep_child_object)
         {
@@ -762,15 +784,25 @@ public class FunctionMenuScript : MonoBehaviour
         }
                 
         text_label.GetComponent<TextMeshProUGUI>().text = text_label.GetComponent<TextMeshProUGUI>().text.Replace(" ", "");
-
         message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text ;
+
+        settings.transform.gameObject.SetActive(false);
+        if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
+            paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+
         if (output_type == "scalar")   text_label.GetComponent<TextMeshProUGUI>().text = output;
-        //else text_label.transform.parent.gameObject.SetActive(false);
+        else
+        {
+            transform.gameObject.SetActive(false);
+            transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
+            transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;
+        }
+
+
         perform_action.transform.gameObject.SetActive(false);
         input_option.SetActive(false);
-        eval_finished = true;
-        
-        transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;
+        eval_finished = true;        
+                
     }
 
     void ChildToggle(Toggle toggle)

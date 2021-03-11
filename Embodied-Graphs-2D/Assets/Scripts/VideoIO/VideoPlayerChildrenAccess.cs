@@ -67,9 +67,9 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 
     void Delete()
     {
-        if (slider.GetComponent<VideoController>().temp_parent != null)
+        if (slider.GetComponent<VideoController>().graph_holder != null)
         {
-            Destroy(slider.GetComponent<VideoController>().temp_parent);
+            Destroy(slider.GetComponent<VideoController>().graph_holder);
         }
 
         Destroy(transform.gameObject);
@@ -86,7 +86,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         transform.position += diff;
         control_menu.transform.position += diff;
         settings_menu.transform.position += diff;
-        slider.GetComponent<VideoController>().temp_parent.transform.position += diff;
+        slider.GetComponent<VideoController>().graph_holder.transform.position += diff;
     }
 
 }

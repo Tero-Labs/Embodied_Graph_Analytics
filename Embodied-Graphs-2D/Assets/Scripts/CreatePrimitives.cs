@@ -173,7 +173,7 @@ public class CreatePrimitives : MonoBehaviour
     {
         
         // compute centroid and bounds
-        templine.GetComponent<FunctionElementScript>().computeCentroid();
+        //templine.GetComponent<FunctionElementScript>().computeCentroid();
         templine.GetComponent<FunctionElementScript>().computeBounds();
 
         // set line renderer, width
@@ -220,18 +220,8 @@ public class CreatePrimitives : MonoBehaviour
                 
         // set transform position
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
-
-        // update the previous_position variable for templine for checkMove()
-        templine.GetComponent<FunctionElementScript>().previous_position = templine.transform.position;
-
-        // Save the area of the bounding box 
-        templine.GetComponent<FunctionElementScript>().attribute.Area =
-            meshFilter.sharedMesh.bounds.size.x *
-            meshFilter.sharedMesh.bounds.size.y * unitScale * unitScale;
-
-        // set current_attribute of penLine
-        templine.GetComponent<FunctionElementScript>().current_attribute = templine.GetComponent<FunctionElementScript>().attribute.Length;
-
+        templine.GetComponent<FunctionElementScript>().mesh_holder.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
+        templine.GetComponent<FunctionElementScript>().points.Clear();
         return templine;
     }
 

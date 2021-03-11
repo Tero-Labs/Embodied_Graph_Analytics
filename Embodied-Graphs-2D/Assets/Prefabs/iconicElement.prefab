@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: -8537103720117986283}
   m_Layer: 0
   m_Name: iconicElement
-  m_TagString: Untagged
+  m_TagString: iconic
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -260,7 +260,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   video_icon: 0
-  _mesh: {fileID: 0}
+  image_icon: 0
   points: []
   centroid: {x: 0, y: 0, z: 0}
   radius: 0
@@ -270,6 +270,7 @@ MonoBehaviour:
   minx: 100000
   miny: 100000
   draggable_now: 0
+  menu_open: 0
   icon_elem_material: {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   paintable_object: {fileID: 0}
   icon_name: 
@@ -281,6 +282,7 @@ MonoBehaviour:
   record_path_enable: 0
   position_before_record: {x: 0, y: 0, z: 0}
   edge_position: {x: 0, y: 0, z: 0}
+  bounds_center: {x: 0, y: 0, z: 0}
   position_before_translation: {x: 0, y: 0, z: 0}
   translation_path: []
   path_index: 0

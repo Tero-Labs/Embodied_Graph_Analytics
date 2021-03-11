@@ -405,7 +405,7 @@ public class FunctionElementScript : MonoBehaviour
                 
             }
 
-            updateLassoPoints(temp_graph);
+            //updateLassoPoints(temp_graph);
         }
     }
 
@@ -504,12 +504,14 @@ public class FunctionElementScript : MonoBehaviour
             // ToDo: assign different colors to different lasso
             GameObject functionline = Instantiate(transform.gameObject, 
                 transform.position, Quaternion.identity, extra_objects.transform);
-            updatechildLassoPoints(temp_graph, returned_graph.nodes, functionline, idx);
-            //updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
 
             Destroy(functionline.transform.GetChild(0).gameObject);
             Destroy(functionline.transform.GetChild(1).gameObject);
 
+            continue;
+            updatechildLassoPoints(temp_graph, returned_graph.nodes, functionline, idx);
+            //updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
+                        
             idx++;
         }                
     }
@@ -594,14 +596,15 @@ public class FunctionElementScript : MonoBehaviour
         menu_center.y = maxy;
 
         maxx = -100000f; maxy = -100000f; minx = 100000f; miny = 100000f;
+        int interval = Mathf.Max(1, (int)Math.Floor((float)(points.Count / 10)));
 
-        for (int i = 0; i < points.Count; i++)
+        for (int i = 0; i < points.Count; i = i + interval)
         {
             if (maxx < points[i].x) maxx = points[i].x;
             if (maxy < points[i].y) maxy = points[i].y;
             if (minx > points[i].x) minx = points[i].x;
             if (miny > points[i].y) miny = points[i].y;
-        }
+        }        
     }
 
     public void fromGlobalToLocalPoints()
@@ -830,8 +833,8 @@ public class FunctionElementScript : MonoBehaviour
 
     public void updateLassoPoints()
     {
-        
-        if (!fused_function && !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+         
+        if (!fused_function /*&& !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval*/)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
@@ -839,19 +842,33 @@ public class FunctionElementScript : MonoBehaviour
 
             foreach (GameObject function_argument in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
             {
+                if (function_argument == null) continue;
+
                 if (function_argument.tag == "graph")
                 {
+                    bool video_flag = false;
+
                     Transform[] allChildrennode = function_argument.transform.GetChild(0).GetComponentsInChildren<Transform>();
                     foreach (Transform child in allChildrennode)
                     {
                         if (child.tag == "iconic")
                         {
+                            // to optimize we take special measure for videos
+                            if (child.GetComponent<iconicElementScript>().video_icon)
+                            {
+                                hull_pts.AddRange(function_argument.GetComponent<GraphElementScript>().points);
+                                video_flag = true;
+                                break;
+                            }
+
                             List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
                             hull_pts.AddRange(returned_pts);
                             center_count++;
                             joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
                         }
                     }
+
+                    if (video_flag) continue;
 
                     // we want the edges to stay within the lasso as well 
                     Transform[] allChildrenedge = function_argument.transform.GetChild(1).GetComponentsInChildren<Transform>();
@@ -883,6 +900,7 @@ public class FunctionElementScript : MonoBehaviour
                     joint_centroid += function_argument.GetComponent<iconicElementScript>().edge_position;
                 }
             }
+                        
 
             joint_centroid = joint_centroid / center_count;
 
@@ -891,31 +909,12 @@ public class FunctionElementScript : MonoBehaviour
 
             Vector3[] vertices = hull.vertices;
             //Array.Sort(vertices);
-            Debug.Log("hulled: ");
-
-            // sort vertices according to angle
-            // Store angles between texture's center and vertex position vector
-            /*float[] angles = new float[vertices.Length];
-
-            // Calculate the angle between each vertex and the texture's /center
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                angles[i] = AngleBetweenVectors(vertices[i], joint_centroid);
-                //vertexArray[i] -= texCenter;   // Offset vertex about texture center
-            }
-
-            // Sort angles into ascending order, use to put vertices in clockwise order
-            Array.Sort(angles, vertices);*/
+            Debug.Log("hulled: ");            
 
             mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
             transform.GetComponent<LineRenderer>().enabled = true;
 
             points = vertices.ToList();
-            /*transform.GetComponent<LineRenderer>().positionCount = points.Count;
-            transform.GetComponent<LineRenderer>().SetPositions(points.ToArray());
-
-            computeCentroid();
-            computeBounds();*/
 
             paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
             transform.GetChild(0).position = new Vector3(maxx+15, maxy+15, -5);
@@ -927,8 +926,8 @@ public class FunctionElementScript : MonoBehaviour
     public void updateLassoPointsIconDrag()
     {
 
-        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled && 
-            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled /*&& 
+            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval*/)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
@@ -940,17 +939,29 @@ public class FunctionElementScript : MonoBehaviour
 
                 if (function_argument.tag == "graph")
                 {
+                    bool video_flag = false;
+
                     Transform[] allChildrennode = function_argument.transform.GetChild(0).GetComponentsInChildren<Transform>();
                     foreach (Transform child in allChildrennode)
                     {
                         if (child.tag == "iconic")
                         {
+                            // to optimize we take special measure for videos
+                            if (child.GetComponent<iconicElementScript>().video_icon)
+                            {
+                                hull_pts.AddRange(function_argument.GetComponent<GraphElementScript>().points);
+                                video_flag = true;
+                                break;
+                            }
+
                             List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
                             hull_pts.AddRange(returned_pts);
                             center_count++;
                             joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
                         }
                     }
+
+                    if (video_flag) continue;
 
                     // we want the edges to stay within the lasso as well 
                     Transform[] allChildrenedge = function_argument.transform.GetChild(1).GetComponentsInChildren<Transform>();
@@ -1017,25 +1028,34 @@ public class FunctionElementScript : MonoBehaviour
             }
         }
     }
-
-
+    
     public void updateLassoPoints(GameObject graph)
     {
         if (fused_function) return;
 
-        if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
-        {
+        /*if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        {*/
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
             joint_centroid = Vector3.zero;
-           
+
             if (graph.tag == "graph")
             {
+                bool video_flag = false;
                 Transform[] allChildrennode = graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
+
                 foreach (Transform child in allChildrennode)
                 {
                     if (child.tag == "iconic")
                     {
+                        // to optimize we take special measure for videos
+                        if (child.GetComponent<iconicElementScript>().video_icon)
+                        {
+                            hull_pts.AddRange(graph.GetComponent<GraphElementScript>().points);
+                            video_flag = true;
+                            break;
+                        }
+
                         List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
                         hull_pts.AddRange(returned_pts);
                         center_count++;
@@ -1043,28 +1063,31 @@ public class FunctionElementScript : MonoBehaviour
                     }
                 }
 
-                // we want the edges to stay within the lasso as well 
-                Transform[] allChildrenedge = graph.transform.GetChild(1).GetComponentsInChildren<Transform>();
-                foreach (Transform child in allChildrenedge)
+                if (!video_flag)
                 {
-                    if (child.tag == "edge")
+                    // we want the edges to stay within the lasso as well 
+                    Transform[] allChildrenedge = graph.transform.GetChild(1).GetComponentsInChildren<Transform>();
+                    foreach (Transform child in allChildrenedge)
                     {
-                        Vector3[] returned_pts_arr = new Vector3[child.GetComponent<LineRenderer>().positionCount];
-                        int temp = child.GetComponent<LineRenderer>().GetPositions(returned_pts_arr);
-
-                        for (int i = 0; i < returned_pts_arr.Length; i++)
+                        if (child.tag == "edge")
                         {
-                            hull_pts.Add(returned_pts_arr[i] - new Vector3(0, edge_offset, 0));
-                            hull_pts.Add(returned_pts_arr[i] + new Vector3(0, edge_offset, 0));
+                            Vector3[] returned_pts_arr = new Vector3[child.GetComponent<LineRenderer>().positionCount];
+                            int temp = child.GetComponent<LineRenderer>().GetPositions(returned_pts_arr);
+
+                            for (int i = 0; i < returned_pts_arr.Length; i++)
+                            {
+                                hull_pts.Add(returned_pts_arr[i] - new Vector3(0, edge_offset, 0));
+                                hull_pts.Add(returned_pts_arr[i] + new Vector3(0, edge_offset, 0));
+                            }
+
+                            /*List<Vector3> returned_pts = returned_pts_arr.ToList();
+                            hull_pts.AddRange(returned_pts);*/
                         }
 
-                        /*List<Vector3> returned_pts = returned_pts_arr.ToList();
-                        hull_pts.AddRange(returned_pts);*/
                     }
 
                 }
-            }  
-
+            }
             joint_centroid = joint_centroid / center_count;
 
             var hullAPI = new HullAPI();
@@ -1073,20 +1096,7 @@ public class FunctionElementScript : MonoBehaviour
             Vector3[] vertices = hull.vertices;
             //Array.Sort(vertices);
             Debug.Log("hulled: ");
-
-            // sort vertices according to angle
-            // Store angles between texture's center and vertex position vector
-            /*float[] angles = new float[vertices.Length];
-
-            // Calculate the angle between each vertex and the texture's /center
-            for (int i = 0; i < vertices.Length; i++)
-            {
-                angles[i] = AngleBetweenVectors(vertices[i], joint_centroid);
-                //vertexArray[i] -= texCenter;   // Offset vertex about texture center
-            }
-
-            // Sort angles into ascending order, use to put vertices in clockwise order
-            Array.Sort(angles, vertices);*/
+                       
 
             mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
             transform.GetComponent<LineRenderer>().enabled = true;
@@ -1094,7 +1104,7 @@ public class FunctionElementScript : MonoBehaviour
             points = vertices.ToList();
             paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
             transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
-        }
+        //}
         
     }
 
@@ -1105,7 +1115,7 @@ public class FunctionElementScript : MonoBehaviour
         joint_centroid = Vector3.zero;
 
         if (graph.tag == "graph")
-        {
+        {            
             Transform[] allChildrennode = graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
 
             // we need only certain nodes inside the hull, hence tracking it down   
@@ -1115,6 +1125,12 @@ public class FunctionElementScript : MonoBehaviour
                 {
                     if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == node)
                     {
+                        if (child.GetComponent<iconicElementScript>().video_icon)
+                        {
+                            hull_pts.AddRange(child.GetComponent<iconicElementScript>().points);
+                            continue;
+                        }
+
                         List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints(20f);
                         hull_pts.AddRange(returned_pts);
                         center_count++;
@@ -1138,14 +1154,6 @@ public class FunctionElementScript : MonoBehaviour
         gameObject.transform.GetComponent<LineRenderer>().enabled = true;
 
         gameObject.GetComponent<FunctionElementScript>().points = vertices.ToList();
-
-        /*gameObject.GetComponent<LineRenderer>().widthCurve = gameObject.GetComponent<FunctionElementScript>().widthcurve;
-
-        gameObject.GetComponent<LineRenderer>().numCapVertices = 15;
-        gameObject.GetComponent<LineRenderer>().numCornerVertices = 15;
-
-        gameObject.GetComponent<LineRenderer>().positionCount = gameObject.GetComponent<FunctionElementScript>().points.Count;
-        gameObject.GetComponent<LineRenderer>().SetPositions(gameObject.GetComponent<FunctionElementScript>().points.ToArray());*/
 
         paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);        
     }

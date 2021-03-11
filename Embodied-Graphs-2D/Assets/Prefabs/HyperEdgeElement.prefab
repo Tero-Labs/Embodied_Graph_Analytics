@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -4527540514129293072}
   m_Layer: 0
   m_Name: HyperEdgeElement
-  m_TagString: Untagged
+  m_TagString: hyper_child_edge
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -152,3 +152,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   parent_node: {fileID: 0}
   spline_flag: 0
+  spline_dist: 0
