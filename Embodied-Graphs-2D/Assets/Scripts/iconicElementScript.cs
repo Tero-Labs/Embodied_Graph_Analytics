@@ -443,24 +443,7 @@ public class iconicElementScript : MonoBehaviour
 
     public void searchNodeAndUpdateEdge()
     {
-        /*if (image_icon)
-        {
-            points.Add(edge_position + new Vector3(-radius, 0, 0));
-            points.Add(edge_position + new Vector3(-radius, radius, 0));
-            points.Add(edge_position + new Vector3(0, radius, 0));
-            points.Add(edge_position + new Vector3(radius, radius, 0));
-            points.Add(edge_position + new Vector3(radius, 0, 0));
-            points.Add(edge_position + new Vector3(radius, -radius, 0));
-            points.Add(edge_position + new Vector3(0, -radius, 0));
-            points.Add(edge_position + new Vector3(-radius, -radius, 0));
-
-            points.Clear();
-            points.Add(edge_position + new Vector3(-bounds_center.x, 0, 0));
-            points.Add(edge_position + new Vector3(0, bounds_center.y, 0));
-            points.Add(edge_position + new Vector3(bounds_center.x, 0, 0));
-            points.Add(edge_position + new Vector3(0, -bounds_center.y, 0));
-        }*/
-
+        if (video_icon) return;
         if (transform.parent.tag != "node_parent") return;
 
         Transform Prev_node_parent = transform.parent;
@@ -499,7 +482,6 @@ public class iconicElementScript : MonoBehaviour
                     if (each_node == transform.gameObject)
                     {
                         //each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = edge_position;
-                        each_simplicial.GetComponent<SimplicialElementScript>().UpdateVertices();
                         each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
                         break;
                     }
@@ -527,7 +509,7 @@ public class iconicElementScript : MonoBehaviour
     // called only when dragging is done, to save computation cost
     public void searchFunctionAndUpdateLasso()
     {
-
+        if (video_icon) return;
         GameObject[] all_functions = GameObject.FindGameObjectsWithTag("function");
 
         foreach (GameObject cur_function in all_functions)

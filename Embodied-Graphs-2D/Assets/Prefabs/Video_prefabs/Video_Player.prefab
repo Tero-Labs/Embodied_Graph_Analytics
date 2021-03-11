@@ -742,6 +742,7 @@ MonoBehaviour:
   mainSlider: {fileID: 2040663511566986995}
   width: 0
   height: 0
+  frequency: 0
   vec: []
   icon_prefab: {fileID: 6047713414169321321, guid: 75286930b4830af4f8d0baa900a8fd61,
     type: 3}
@@ -750,7 +751,7 @@ MonoBehaviour:
   graph_prefab: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
     type: 3}
   paintable: {fileID: 0}
-  temp_parent: {fileID: 0}
+  graph_holder: {fileID: 0}
   node_radius: 0
   graph_type: 
   auto_track: 0
@@ -868,7 +869,7 @@ VideoPlayer:
   m_RenderMode: 2
   m_AspectRatio: 5
   m_DataSource: 1
-  m_PlaybackSpeed: 1
+  m_PlaybackSpeed: 0.2
   m_AudioOutputMode: 0
   m_TargetAudioSources:
   - {fileID: 0}

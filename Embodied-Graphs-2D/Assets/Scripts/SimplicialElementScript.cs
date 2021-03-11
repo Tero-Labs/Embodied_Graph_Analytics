@@ -98,7 +98,7 @@ public class SimplicialElementScript : MonoBehaviour
 
     public void updatePolygon()
     {
-        //UpdateVertices();
+        UpdateVertices();
 
         //New mesh and game object
         GameObject myObject = this.transform.gameObject;

@@ -14,11 +14,7 @@ using System.IO;
 
 public class FunctionElementScript : MonoBehaviour
 {
-
-
-    // previous first child, instead of creating a separate child, we now want to keep it in the script
-    public Mesh _mesh;
-
+    
     // visual representation
     // public List<Vector2> points;
 
@@ -36,6 +32,7 @@ public class FunctionElementScript : MonoBehaviour
     public int edge_offset;
 
     public GameObject mesh_holder;
+    public GameObject function_prefab;
 
     // get-able attributes
     public struct Attributes
@@ -60,7 +57,7 @@ public class FunctionElementScript : MonoBehaviour
     public Dictionary<string, Transform> nodeMaps;
 
     // path translate
-    public Vector3 position_before_translation;
+    /*public Vector3 position_before_translation;
     public List<Vector3> translation_path = new List<Vector3>();
     public SortedList<float, int> translation_sections_indices = new SortedList<float, int>();
     public int path_index = 0;
@@ -77,7 +74,7 @@ public class FunctionElementScript : MonoBehaviour
     public float min_scale_val = 1f;
     public float max_scale_val = 5f;
     public bool apply_rotation = false;
-    public bool apply_scale = false;
+    public bool apply_scale = false;*/
 
     // other interaction variables
     private Vector3 touchDelta = new Vector3();
@@ -134,8 +131,7 @@ public class FunctionElementScript : MonoBehaviour
     {
         // if returned as a graph
         // destroy previous function outputs, if any
-        if (transform.childCount > 1)
-            Destroy(transform.GetChild(1).gameObject);
+        Destroy(transform.GetChild(1).gameObject);
         
         transform.GetChild(0).GetComponent<FunctionMenuScript>().PostProcess(graph_as_Str);
     }
@@ -154,34 +150,18 @@ public class FunctionElementScript : MonoBehaviour
         tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
 
         GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
-        /*new GameObject("node_parent_" + graph_count.ToString());
-        tempnodeparent.tag = "node_parent";
-        tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);*/
-
         GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
-        /*new GameObject("edge_parent_" + graph_count.ToString());
-        tempedgeparent.tag = "edge_parent";
-        tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);*/
-
         GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
-        /*new GameObject("simplicial_parent_" + graph_count.ToString());
-        tempsimplicialparent.tag = "simplicial_parent";
-        tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);*/
-
         GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
-        /*new GameObject("hyper_parent_" + graph_count.ToString());
-        temphyperparent.tag = "hyper_parent";
-        temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);*/
+
+        tempgraph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
 
         nodeMaps = new Dictionary<string, Transform>();
-
         returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
-       
+        tempgraph.GetComponent<GraphElementScript>().graph = new Graph();
+        tempgraph.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
+
         foreach (int current_node in returned_graph.nodes)
         {
             foreach (GameObject current_graph in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
@@ -192,19 +172,18 @@ public class FunctionElementScript : MonoBehaviour
                     {
                         Transform prev_Trasform = current_graph.GetComponent<GraphElementScript>().nodeMaps[current_node.ToString()];
                         GameObject tempicon = Instantiate(prev_Trasform.gameObject, prev_Trasform.position, Quaternion.identity, tempnodeparent.transform);
-                        paintable_object.GetComponent<Paintable>().totalLines++;
-                        tempicon.name = "iconic_" + paintable_object.GetComponent<Paintable>().totalLines.ToString();
-                        tempicon.GetComponent<iconicElementScript>().icon_number = paintable_object.GetComponent<Paintable>().totalLines;
-
+                        
+                        tempgraph.GetComponent<GraphElementScript>().graph.nodes.Add(current_node);
                         nodeMaps.Add(current_node.ToString(), tempicon.transform);
+                        tempgraph.GetComponent<GraphElementScript>().nodeMaps.Add(current_node.ToString(), tempicon.transform);
 
-                        //tempicon.GetComponent<MeshFilter>().sharedMesh = tempicon.GetComponent<MeshFilter>().sharedMesh;
                         break;
                     }
                 }
                 // ToDo: else if iconic, direct copy if needed later
             }
         }
+
 
         foreach (Edge edge in returned_graph.edges)
         {
@@ -218,13 +197,13 @@ public class FunctionElementScript : MonoBehaviour
 
             EdgeCreation("edge", nodes_of_edge, 1);
         }
-
-        //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
-        tempgraph.GetComponent<GraphElementScript>().Graph_init();
+                
+        tempgraph.GetComponent<GraphElementScript>().edges_init();
+        //tempgraph.GetComponent<GraphElementScript>().Graph_init();
     }
 
 
-    public void InstantiateGraph(string graph_as_Str)
+    /*public void InstantiateGraph(string graph_as_Str)
     {
         Debug.Log("graph_as_Str: " + graph_as_Str);
         GameObject tempgraph = Instantiate(graph_prefab, new Vector3(0, 0, 0), Quaternion.identity, transform);
@@ -238,29 +217,25 @@ public class FunctionElementScript : MonoBehaviour
         tempgraph.GetComponent<GraphElementScript>().paintable = paintable_object;
         tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
 
-        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
-        /*new GameObject("node_parent_" + graph_count.ToString());
+        GameObject tempnodeparent = new GameObject("node_parent_" + graph_count.ToString());
         tempnodeparent.tag = "node_parent";
         tempnodeparent.transform.parent = tempgraph.transform;
-        tempnodeparent.transform.SetSiblingIndex(0);*/
+        tempnodeparent.transform.SetSiblingIndex(0);
 
-        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
-        /*new GameObject("edge_parent_" + graph_count.ToString());
+        GameObject tempedgeparent = new GameObject("edge_parent_" + graph_count.ToString());
         tempedgeparent.tag = "edge_parent";
         tempedgeparent.transform.parent = tempgraph.transform;
-        tempedgeparent.transform.SetSiblingIndex(1);*/
+        tempedgeparent.transform.SetSiblingIndex(1);
 
-        GameObject tempsimplicialparent = tempgraph.transform.GetChild(2).gameObject;
-        /*new GameObject("simplicial_parent_" + graph_count.ToString());
+        GameObject tempsimplicialparent = new GameObject("simplicial_parent_" + graph_count.ToString());
         tempsimplicialparent.tag = "simplicial_parent";
         tempsimplicialparent.transform.parent = tempgraph.transform;
-        tempsimplicialparent.transform.SetSiblingIndex(2);*/
+        tempsimplicialparent.transform.SetSiblingIndex(2);
 
-        GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
-        /*new GameObject("hyper_parent_" + graph_count.ToString());
+        GameObject temphyperparent = new GameObject("hyper_parent_" + graph_count.ToString());
         temphyperparent.tag = "hyper_parent";
         temphyperparent.transform.parent = tempgraph.transform;
-        temphyperparent.transform.SetSiblingIndex(3);*/
+        temphyperparent.transform.SetSiblingIndex(3);
 
         nodeMaps = new Dictionary<string, Transform>();
 
@@ -308,6 +283,7 @@ public class FunctionElementScript : MonoBehaviour
         tempgraph.GetComponent<GraphElementScript>().Graph_init();
         //tempgraph.GetComponent<GraphElementScript>().Graph_as_Str();
     }
+    */
 
     public void InstantiateTopoGraph()
     {
@@ -412,26 +388,14 @@ public class FunctionElementScript : MonoBehaviour
     public void InstantiatePathGraph()
     {
         GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
-                
-        nodeMaps = new Dictionary<string, Transform>();
-        
+
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
-        
-        GameObject extra_objects = new GameObject("labels_overlay");
-        extra_objects.transform.parent = temp_graph.transform;
-        extra_objects.transform.SetSiblingIndex(5);
-        
-        // remap node dictionary
-        Transform[] allChildrennode = temp_graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
-        foreach (Transform current_node in allChildrennode)
-        {
-            if (current_node.tag == "iconic")
-            {
-                nodeMaps.Add(current_node.GetComponent<iconicElementScript>().icon_number.ToString(), current_node);
-            }
-        }
+
+        temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
+        temp_graph.GetComponent<GraphElementScript>().nodes_init();
+        nodeMaps = temp_graph.GetComponent<GraphElementScript>().nodeMaps;
 
         returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
@@ -453,10 +417,6 @@ public class FunctionElementScript : MonoBehaviour
             IEnumerator coroutine = material_update(edgeline);
             StartCoroutine(coroutine);
 
-            /*edgeline.GetComponent<LineRenderer>().startColor = Color.red;
-            edgeline.GetComponent<LineRenderer>().endColor = Color.red;
-            edgeline.GetComponent<LineRenderer>().startWidth = 10;
-            edgeline.GetComponent<LineRenderer>().endWidth = 10;*/
         }              
 
     }
@@ -473,8 +433,8 @@ public class FunctionElementScript : MonoBehaviour
     {
         GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
 
-        nodeMaps = new Dictionary<string, Transform>();
-
+        if (graph.tag != "graph") return;
+                
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
@@ -484,37 +444,36 @@ public class FunctionElementScript : MonoBehaviour
         extra_objects.transform.SetSiblingIndex(5);
 
         // remap node dictionary
-        Transform[] allChildrennode = temp_graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
-        foreach (Transform current_node in allChildrennode)
-        {
-            if (current_node.tag == "iconic")
-            {
-                nodeMaps.Add(current_node.GetComponent<iconicElementScript>().icon_number.ToString(), current_node);
-            }
-        }
+        temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
+        temp_graph.GetComponent<GraphElementScript>().nodes_init();
+        nodeMaps = temp_graph.GetComponent<GraphElementScript>().nodeMaps;
 
         returned_graphs = JsonUtility.FromJson<Graphs>(File.ReadAllText("Assets/Resources/" + "output.json"));
         cascaded_lasso = true;
 
+        StartCoroutine(community_lasso_initiate(extra_objects));
+
+    }
+
+    IEnumerator community_lasso_initiate(GameObject extra_objects)
+    {
         int idx = 0;
+
         foreach (Graph returned_graph in returned_graphs.graphs)
         {
-            // direct functionline prefab instantiation was not working for some reason, hence we copy
-            // the currect object and update its' lasso
-            // ToDo: assign different colors to different lasso
-            GameObject functionline = Instantiate(transform.gameObject, 
+            GameObject functionline = Instantiate(transform.gameObject,
                 transform.position, Quaternion.identity, extra_objects.transform);
 
-            Destroy(functionline.transform.GetChild(0).gameObject);
-            Destroy(functionline.transform.GetChild(1).gameObject);
+            for (int i = 0; i < (functionline.transform.childCount - 1); i++)
+                Destroy(functionline.transform.GetChild(i).gameObject);
 
-            continue;
-            updatechildLassoPoints(temp_graph, returned_graph.nodes, functionline, idx);
-            //updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
-                        
+            updatechildLassoPoints(returned_graph.nodes, functionline, idx);
             idx++;
-        }                
+            Debug.Log("a lasso drawn");
+            yield return null;
+        }
     }
+
 
     GameObject EdgeCreation(string tag, string[] nodes_of_edge, int idx)
     {
@@ -527,7 +486,14 @@ public class FunctionElementScript : MonoBehaviour
             }
         }
 
-        GameObject edgeline = Instantiate(paintable_object.GetComponent<Paintable>().EdgeElement, temp_nodes[0].GetComponent<iconicElementScript>().edge_position, 
+        GameObject source = temp_nodes[0];
+        GameObject target = temp_nodes[1];
+
+        Vector3 source_vec = source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position);
+        Vector3 target_vec = target.GetComponent<iconicElementScript>().getclosestpoint(source_vec);
+
+
+        GameObject edgeline = Instantiate(paintable_object.GetComponent<Paintable>().EdgeElement, source_vec, 
             Quaternion.identity, transform.GetChild(1).GetChild(idx));
 
         paintable_object.GetComponent<Paintable>().selected_obj_count++;
@@ -537,8 +503,8 @@ public class FunctionElementScript : MonoBehaviour
         edgeline.GetComponent<EdgeElementScript>().edge_start = temp_nodes[0];
         edgeline.GetComponent<EdgeElementScript>().edge_end = temp_nodes[1];
 
-        edgeline.GetComponent<LineRenderer>().SetPosition(0, temp_nodes[0].GetComponent<iconicElementScript>().edge_position);
-        edgeline.GetComponent<LineRenderer>().SetPosition(1, temp_nodes[1].GetComponent<iconicElementScript>().edge_position);
+        edgeline.GetComponent<LineRenderer>().SetPosition(0, source_vec);
+        edgeline.GetComponent<LineRenderer>().SetPosition(1, target_vec);
 
         var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1) };
 
@@ -549,10 +515,6 @@ public class FunctionElementScript : MonoBehaviour
         }).ToArray();
 
         edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;
-
-        // set line renderer texture scale
-        var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1));
-        //edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
         edgeline.GetComponent<EdgeElementScript>().addDot();
 
         return edgeline;
@@ -670,167 +632,7 @@ public class FunctionElementScript : MonoBehaviour
                 .Select(n => values.Skip(n).Take(movingWindow).Average())
                 .ToList();
     }
-
-    // Previous drag function
-    public void checkHitAndMove()
-    {
-        // TO CONSIDER: INSTEAD OF CHECKING TOUCH-MOVED, CAN WE CHECK TOUCH INIT, WAIT TILL TOUCH END, AND THEN MOVE OBJECT? WOULD THAT BE
-        // TOO CLUMSY? IT SURE WOULD BE FAST.
-        // assumes a touch has registered and pan mode is selected
-
-        if (Paintable.pan_button.GetComponent<AllButtonsBehaviors>().selected == true)
-        {
-            //currentPen = Pen.current;
-
-            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
-            {
-
-                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                RaycastHit Hit;
-
-                // check for a hit on the anchor object
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == transform.gameObject)
-                {
-                    draggable_now = true;
-                    Vector3 vec = Hit.point; //+ new Vector3(0, 0, -40); // Vector3.up * 0.1f;
-                                             //Debug.Log(vec);
-
-                    // enforce the same z coordinate as the rest of the points in the parent set object
-                    vec.z = -5f;
-
-                    touchDelta = transform.position - vec;
-
-                    GetComponent<TrailRenderer>().Clear();
-
-                }
-            }
-
-            if (PenTouchInfo.PressedNow)//currentPen.tip.isPressed)
-            {
-                //Debug.Log("penline touched");
-
-                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                RaycastHit Hit;
-
-                // check for a hit on the anchor object
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == this.gameObject)
-                {
-                    //Debug.Log(transform.name);
-
-                    draggable_now = true;
-
-                    Vector3 vec = Hit.point; //+ new Vector3(0, 0, -40); // Vector3.up * 0.1f;
-                                             //Debug.Log(vec);
-
-                    // enforce the same z coordinate as the rest of the points in the parent set object
-                    vec.z = -5f;
-
-                    Vector3 diff = vec - transform.position + touchDelta;
-                    diff.z = 0;
-
-                    // update the drawn object position.
-                    transform.position += diff;
-
-                    // update the previous_position variable: since user moved it by hand, not driven by a set or function
-                    previous_position = transform.position;
-
-                    // update the menu position if a menu is currently open/created
-                    /*GameObject menu_obj = GameObject.Find(menu_name);
-                    if (menu_obj != null)
-                    {
-                        menu_obj.transform.position = vec;
-                    }*/
-
-                    // record path UI
-                    if (record_path_enable)
-                    {
-                        recordPath();
-
-                        // enable trail renderer to show the drawn path
-                        GetComponent<TrailRenderer>().enabled = true;
-                        GetComponent<TrailRenderer>().material.color = new Color(110, 0, 0);
-                    }
-
-                    // experimental: update membership while being dragged
-                    // checkAndUpdateMembership();
-                }
-            }
-
-            else if (PenTouchInfo.ReleasedThisFrame)//currentPen.tip.wasReleasedThisFrame)
-            {
-                // important: touch can start and end when interacting with other UI elements like a set's slider.
-                // so, double check that this touch was still on top of the penline object, not, say, on a slider.
-                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                RaycastHit Hit;
-
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == this.gameObject)
-                {
-                    // if record path UI was on, then take care of the recorded path and return pen object to original position,
-                    // don't do any parent object containment checking in that case
-                    if (record_path_enable)
-                    {
-                        recordPath();
-
-                        transform.position = position_before_record;
-
-                        draggable_now = false;
-
-                        // Add a line renderer component and re-distribute the points across the line
-                        this.gameObject.AddComponent<LineRenderer>();
-
-                        // ToDo: bezier spline needs to be incorporated later again
-                        // UNIFORMLY DISTRIBUTE THE POINTS ALONG THE PATH
-                        /*GameObject spline = new GameObject("spline");
-                        spline.AddComponent<BezierSpline>();
-                        BezierSpline bs = spline.transform.GetComponent<BezierSpline>();
-                        bs.Initialize(recorded_path.Count);
-                        for (int ss = 0; ss < recorded_path.Count; ss++)
-                        {
-                            bs[ss].position = recorded_path[ss];
-                        }
-
-                        // Now sample 50 points across the spline with a [0, 1] parameter sweep
-                        recorded_path = new List<Vector3>(50);
-                        for (int i = 0; i < 50; i++)
-                        {
-                            recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, 49, i)));
-                        }
-
-                        Destroy(spline);*/
-
-                        record_path_enable = false;
-
-                        GetComponent<TrailRenderer>().enabled = false;
-
-                        // convert global recorded coordinates to local, wrt pen object
-                        for (int k = 0; k < recorded_path.Count; k++)
-                        {
-                            recorded_path[k] = transform.InverseTransformPoint(recorded_path[k]);
-                        }
-
-                        // calculate the actual (global) translation path
-                        // calculateTranslationPath();
-
-                        // (re)create param text and text box
-                        // createParamGUIText();
-
-                        // indicate what kind of path this penline has
-                        has_continuous_path = true;
-                        return;
-                    }
-
-                    draggable_now = false;
-
-                    // the object has been moved by hand. Recalculate the new translation path.
-                    // this does nothing if a translation path isn't defined yet
-                    // calculateTranslationPathIfAlreadyDefined();
-
-                    // checkAndUpdateMembership();
-                }
-            }
-        }
-    }
-
+       
     public void updateLassoPoints()
     {
          
@@ -1013,7 +815,7 @@ public class FunctionElementScript : MonoBehaviour
             transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
         }
 
-        if (cascaded_lasso && transform.childCount > 1)
+        if (cascaded_lasso /*&& transform.childCount > 1*/)
         {
             Debug.Log("cascaded_try");
             GameObject graph = transform.GetChild(1).gameObject;
@@ -1023,7 +825,7 @@ public class FunctionElementScript : MonoBehaviour
             foreach (Graph returned_graph in returned_graphs.graphs)
             {
                 GameObject functionline = extra_objects.GetChild(idx).gameObject;
-                updatechildLassoPoints(graph, returned_graph.nodes, functionline, idx);
+                updatechildLassoPoints(returned_graph.nodes, functionline, idx);
                 idx++;
             }
         }
@@ -1108,7 +910,52 @@ public class FunctionElementScript : MonoBehaviour
         
     }
 
-    public void updatechildLassoPoints(GameObject graph, List<int> nodes, GameObject gameObject, int idx)
+    public void updatechildLassoPoints(List<int> nodes, GameObject gameObject, int idx)
+    {
+        List<Vector3> hull_pts = new List<Vector3>();
+        int center_count = 0;
+        joint_centroid = Vector3.zero;
+                          
+        // we need only certain nodes inside the hull, hence tracking it down   
+        foreach (int node in nodes)
+        {                
+            if (nodeMaps.ContainsKey(node.ToString()))
+            {
+                Transform child = nodeMaps[node.ToString()];
+                                        
+                if (child.GetComponent<iconicElementScript>().video_icon)
+                {
+                    hull_pts.AddRange(child.GetComponent<iconicElementScript>().points);
+                    continue;
+                }
+
+                List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints(20f);
+                hull_pts.AddRange(returned_pts);
+                center_count++;
+                joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
+                        
+            }
+        }
+
+        joint_centroid = joint_centroid / center_count;
+
+        var hullAPI = new HullAPI();
+        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 2500 });
+
+        Vector3[] vertices = hull.vertices;
+        //Array.Sort(vertices);
+        Debug.Log("hulled: ");
+
+        //gameObject.transform.position = vertices[0];
+        gameObject.transform.GetComponent<LineRenderer>().enabled = true;
+
+        gameObject.GetComponent<FunctionElementScript>().points = vertices.ToList();
+
+        paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);
+    }
+
+
+    public void updatechildLassoPointsOld(GameObject graph, List<int> nodes, GameObject gameObject, int idx)
     {        
         List<Vector3> hull_pts = new List<Vector3>();
         int center_count = 0;
@@ -1595,7 +1442,7 @@ public class FunctionElementScript : MonoBehaviour
         Destroy(this.gameObject);
     }
 
-    public void updateFeatureAction(float val)
+   /* public void updateFeatureAction(float val)
     {
         // if the object is being dragged by pen/touch, don't update at that time
         if (draggable_now) return;
@@ -1628,7 +1475,7 @@ public class FunctionElementScript : MonoBehaviour
         // =============
         // Take care of translation parameter
 
-        /*
+        
         if (translation_path.Count > 0)
         {
             // determine which section val belongs to
@@ -1709,7 +1556,7 @@ public class FunctionElementScript : MonoBehaviour
             }
                         
         }
-        */
+        
     }
 
     public void recordPath()
@@ -1731,7 +1578,7 @@ public class FunctionElementScript : MonoBehaviour
     public void calculateTranslationPath()
     {
         // if it's a continuous path
-        /*
+        
         if (transform.GetChild(4).childCount == 1 && has_continuous_path)
         {
             // clear the current translation path
@@ -1747,7 +1594,7 @@ public class FunctionElementScript : MonoBehaviour
             translation_path.Clear();
             translation_path.AddRange(transform.GetChild(4).GetChild(0).GetComponent<param_text_Script>().translation_path);
         }
-        */
+        
 
         setupLineRendererFromTranslationPath();
 
@@ -1757,7 +1604,7 @@ public class FunctionElementScript : MonoBehaviour
 
     public void calculateTranslationPathIfAlreadyDefined()
     {
-        /*
+        
         if (translation_path.Count > 0 && path_index > -1)
         {
             // translate the translation path, according to the current path_index (where the object is along the path)
@@ -1772,7 +1619,7 @@ public class FunctionElementScript : MonoBehaviour
                     transform.GetChild(4).GetChild(i).GetComponent<param_text_Script>().translation_path[j] += delta_path;
                 }
             }
-        }*/
+        }
 
         // update the full translation path after updating the children paths
         // updateFullTranslationPathFromAllChildren();
@@ -1796,7 +1643,7 @@ public class FunctionElementScript : MonoBehaviour
             lr.startWidth = 0.5f;
             lr.endWidth = 0.4f;
         }
-    }
+    }*/
 
     /*public void showTranslationPath()
     {
@@ -1843,18 +1690,11 @@ public class FunctionElementScript : MonoBehaviour
     }
     */
 
-    public void checkMove()
+    /*public void checkMove()
     {
         // NOTE: WHAT THRESHOLD DISTANCE WOULD BE SUITABLE IF THE USER WANTS FINE-GRAINED PARENT CHANGING BEHAVIOR?
         // NOTE: CHECK IF PAINTABLE OBJECT IS ASSIGNED YET, OTHERWISE UNITY THROWS AN ERROR (WHEN TEMPLINE SETUP IS NOT COMPLETE)
 
-        /*
-		 * The object moves abruptly when it's already moving in a path controlled by an edgeline.
-		 * There are three possible cases of external movement here: 1. object is being dragged, 2. moved by edgeLine, 3. moved by parent movement.
-		 * 1 is taken care of, by detecting when draggable_now is true.
-		 * 2 can be approximately detected by: if path_index > 0.
-		 * 3. To detect 3 and stop edgeLine from reacting when 3 is happening
-		 */
         if (Vector3.Distance(transform.position, previous_position) > 10f && paintable_object != null)
         {
             //Debug.Log(">5");
@@ -1873,8 +1713,7 @@ public class FunctionElementScript : MonoBehaviour
         {
             //draggable_now = false;
         }*/
-    }
-
+    
     /*public void checkAndUpdateMembership()
     {
         // check for type of parent membership -- the pen line is moving.
@@ -1996,7 +1835,7 @@ public class FunctionElementScript : MonoBehaviour
         return mesh;
     }*/
 
-    public Mesh createQuad(float width, float height)
+    /*public Mesh createQuad(float width, float height)
     {
         var mesh = new Mesh();
 
@@ -2037,7 +1876,7 @@ public class FunctionElementScript : MonoBehaviour
         mesh.uv = uv;
 
         return mesh;
-    }
+    }*/
 
     public void calculateLengthAttributeFromPoints()
     {
@@ -2099,12 +1938,6 @@ public class FunctionElementScript : MonoBehaviour
 
     private void Awake()
     {
-        // setting these at the declaration section does not work for some reason, so declaring here
-        min_rotation_val = 0f;
-        max_rotation_val = 5f;
-        min_scale_val = 1f;
-        max_scale_val = 5f;
-
         //details_dropdown = GameObject.Find("Details_Dropdown");
         paintable_object = GameObject.Find("Paintable");
     }

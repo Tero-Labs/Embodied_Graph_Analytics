@@ -215,7 +215,8 @@ public class CreatePrimitives : MonoBehaviour
         // disable trail renderer, no longer needed
         templine.GetComponent<TrailRenderer>().enabled = false;
         templine.GetComponent<LineRenderer>().enabled = false;
-        
+        templine.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = true;
+
         templine.GetComponent<FunctionElementScript>().edge_position = meshFilter.sharedMesh.bounds.center;
                 
         // set transform position

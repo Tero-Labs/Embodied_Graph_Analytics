@@ -38,6 +38,8 @@ public class GraphElementScript : MonoBehaviour
     public bool hyper_edges_drawn;
     public bool abstract_drawn;
 
+    public bool video_graph;
+
     public Graph graph;
 
     public Dictionary<string, Transform> nodeMaps;
@@ -80,7 +82,7 @@ public class GraphElementScript : MonoBehaviour
         }
 
     }
-    
+
     /*
     public void edges_as_Str()
     {
@@ -188,6 +190,42 @@ public class GraphElementScript : MonoBehaviour
     }
     */
 
+    public int nodes_init()
+    {
+        edge_position = Vector3.zero;
+        
+        graph.nodes = new List<int>();
+
+        Transform Prev_node_parent = transform.GetChild(0);
+        Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+
+        nodeMaps = new Dictionary<string, Transform>();
+        int icon_count = 0;
+        foreach (Transform child in allChildrennode)
+        {
+            if (child.tag == "iconic")
+            {
+                icon_count++;
+                graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
+                nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
+
+                if (edge_position == Vector3.zero)
+                    edge_position = child.GetComponent<iconicElementScript>().edge_position;
+
+                if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
+                {
+                    edge_position = new Vector3(
+                        child.GetComponent<iconicElementScript>().edge_position.x + child.GetComponent<iconicElementScript>().radius,
+                        child.GetComponent<iconicElementScript>().edge_position.y,
+                        child.GetComponent<iconicElementScript>().edge_position.z
+                        );
+                }
+            }
+        }
+
+        return icon_count;
+    }
+
     public void edges_init()
     {
         graph.edges = new List<Edge>();
@@ -265,36 +303,9 @@ public class GraphElementScript : MonoBehaviour
     // express the graph as string, so that we can pass to the python server
     public void Graph_init()
     {
-        edge_position = Vector3.zero;
         graph = new Graph();
-        graph.nodes = new List<int>();
 
-        Transform Prev_node_parent = transform.GetChild(0);
-        Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
-
-        nodeMaps = new Dictionary<string, Transform>();
-        int icon_count = 0;
-        foreach (Transform child in allChildrennode)
-        {
-            if (child.tag == "iconic")
-            {
-                icon_count++;
-                graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
-                nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
-                
-                if (edge_position == Vector3.zero)
-                    edge_position = child.GetComponent<iconicElementScript>().edge_position;
-
-                if (child.GetComponent<iconicElementScript>().edge_position.x > edge_position.x)
-                {
-                    edge_position = new Vector3(
-                        child.GetComponent<iconicElementScript>().edge_position.x + child.GetComponent<iconicElementScript>().radius,
-                        child.GetComponent<iconicElementScript>().edge_position.y,
-                        child.GetComponent<iconicElementScript>().edge_position.z
-                        );
-                }
-            }
-        }
+        int icon_count = nodes_init();
 
         if (icon_count == 0)
             Destroy(transform.gameObject);
@@ -679,7 +690,13 @@ public class GraphElementScript : MonoBehaviour
             }
         }
 
-        GameObject edgeline = Instantiate(EdgeElement, temp_nodes[0].GetComponent<iconicElementScript>().edge_position, Quaternion.identity, transform.GetChild(idx));
+        GameObject source = temp_nodes[0];
+        GameObject target = temp_nodes[1];
+                       
+        Vector3 source_vec = source.GetComponent<iconicElementScript>().getclosestpoint(target.GetComponent<iconicElementScript>().edge_position);
+        Vector3 target_vec = target.GetComponent<iconicElementScript>().getclosestpoint(source_vec);
+
+        GameObject edgeline = Instantiate(EdgeElement, source_vec, Quaternion.identity, transform.GetChild(idx));
         edgeline.name = "edge_1";
         edgeline.tag = tag;
         edgeline.GetComponent<EdgeElementScript>().paintable_object = paintable;
@@ -687,8 +704,8 @@ public class GraphElementScript : MonoBehaviour
         edgeline.GetComponent<EdgeElementScript>().edge_start = temp_nodes[0];
         edgeline.GetComponent<EdgeElementScript>().edge_end = temp_nodes[1];
 
-        edgeline.GetComponent<LineRenderer>().SetPosition(0, temp_nodes[0].GetComponent<iconicElementScript>().edge_position);
-        edgeline.GetComponent<LineRenderer>().SetPosition(1, temp_nodes[1].GetComponent<iconicElementScript>().edge_position);
+        edgeline.GetComponent<LineRenderer>().SetPosition(0, source_vec);
+        edgeline.GetComponent<LineRenderer>().SetPosition(1, target_vec);
 
         var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1) };
 
@@ -698,11 +715,7 @@ public class GraphElementScript : MonoBehaviour
             return new Vector2(pos.x, pos.y);
         }).ToArray();
 
-        edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;
-
-        // set line renderer texture scale
-        var linedist = Vector3.Distance(edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1));
-        //edgeline.GetComponent<LineRenderer>().materials[0].mainTextureScale = new Vector2(linedist, 1);
+        edgeline.GetComponent<EdgeCollider2D>().edgeRadius = 10;        
         edgeline.GetComponent<EdgeElementScript>().addDot();
     }
 
@@ -722,7 +735,7 @@ public class GraphElementScript : MonoBehaviour
                 simplicialline.GetComponent<SimplicialElementScript>().thenodes.Add(nodeMaps[node].gameObject);
             }
         }
-
+                
         simplicialline.GetComponent<SimplicialElementScript>().updatePolygon();
     }
 
@@ -755,8 +768,42 @@ public class GraphElementScript : MonoBehaviour
         hyperline.GetComponent<HyperElementScript>().addChildren();
     }
 
+    public void RequestRecalculationonValueChange()
+    {
+        if (video_graph)
+        {
+            GameObject[] all_functions = GameObject.FindGameObjectsWithTag("function");
+
+            // check if the current function is part of any function, if so initiate function call again
+            foreach (GameObject cur_function in all_functions)
+            {
+                if ((cur_function.transform.childCount > 2))
+                {                    
+                    // check if any function argument has been assigned
+                    if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects == null) continue;
+
+                    foreach (GameObject function_argument in cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+                    {
+                        if (function_argument == null) continue;
+
+                        // if the argument is a graph which contains this object, then call update lasso
+                        if (function_argument.tag == "graph" &&
+                            transform.gameObject == function_argument)
+                        {
+                            cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper();
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+
+
+
     public void checkHitAndMove(Vector3 diff)
     {
+        if (video_graph) return;
         edge_position = Vector3.zero;
 
         /*if (transform.GetChild(0).gameObject.activeSelf)

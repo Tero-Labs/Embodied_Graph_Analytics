@@ -257,7 +257,7 @@ public class Paintable : MonoBehaviour
 
 
                     // Show the distance, format to a fixed decimal place.
-                    templine.GetComponent<iconicElementScript>().calculateLengthAttributeFromPoints();
+                    //templine.GetComponent<iconicElementScript>().calculateLengthAttributeFromPoints();
                     /*templine.transform.GetChild(1).GetComponent<TextMeshPro>().text =
 						templine.GetComponent<penLine_script>().attribute.Length.ToString("F1");*/
 
@@ -370,7 +370,8 @@ public class Paintable : MonoBehaviour
                     {
                         curtouched_obj.transform.localScale = curtouched_obj.transform.localScale / 1.05f;
                         //curtouched_obj.transform.localScale = new Vector3(1f, 1f, 1f);
-                        curtouched_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
+                        if (!graphlocked)
+                            curtouched_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
                     }
 
                 }
@@ -424,13 +425,14 @@ public class Paintable : MonoBehaviour
                             //curtouched_obj.transform.position -= (Vector3)panDirection;
                             if (graphlocked)
                             {
-                                if (curtouched_obj.transform.parent.tag == "node_parent")
+                                if (curtouched_obj.transform.parent.tag == "node_parent"
+                                    && curtouched_obj.transform.parent.parent.GetComponent<GraphElementScript>().video_graph == false)
                                 {
                                     curtouched_obj.transform.parent.parent.position += diff;
                                     curtouched_obj.transform.parent.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
                                 }
                             }
-                            else
+                            else if(curtouched_obj.GetComponent<iconicElementScript>().video_icon == false)
                             {
                                 curtouched_obj.transform.position += diff;
                                 curtouched_obj.GetComponent<iconicElementScript>().edge_position += diff;
@@ -1025,7 +1027,7 @@ public class Paintable : MonoBehaviour
 
                             functionline.GetComponent<TrailRenderer>().transform.position = vec;
                             functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
-                            functionline.GetComponent<FunctionElementScript>().calculateLengthAttributeFromPoints();
+                            //functionline.GetComponent<FunctionElementScript>().calculateLengthAttributeFromPoints();
 
                             // pressure based pen width
                             functionline.GetComponent<FunctionElementScript>().updateLengthFromPoints();
@@ -1129,7 +1131,6 @@ public class Paintable : MonoBehaviour
 
         Mesh mesh = fused_obj.GetComponent<MeshFilter>().sharedMesh;
         meshFilter.sharedMesh = mesh;
-        fused_function_lasso.GetComponent<FunctionElementScript>()._mesh = mesh;
 
         fused_function_lasso.GetComponent<TrailRenderer>().enabled = false;
         fused_function_lasso.GetComponent<LineRenderer>().enabled = false;
@@ -1165,7 +1166,18 @@ public class Paintable : MonoBehaviour
                 {
                     pen_dragged_obj.transform.localScale = pen_dragged_obj.transform.localScale * 1.05f;
 
-                    if (graphlocked) drag_prev_pos = pen_dragged_obj.transform.parent.parent.position;
+                    if (graphlocked)
+                    {
+                        if (pen_dragged_obj.transform.parent.tag == "node_parent")
+                            drag_prev_pos = pen_dragged_obj.transform.parent.parent.position;
+                        else
+                        {
+                            pen_dragged_obj = null;
+                            return;
+                        }
+                            
+                    }
+                        
                     else drag_prev_pos = pen_dragged_obj.transform.position;
                 }
 
@@ -1206,13 +1218,14 @@ public class Paintable : MonoBehaviour
                     
                     if (graphlocked)
                     {
-                        if (pen_dragged_obj.transform.parent.tag == "node_parent")
+                        if (pen_dragged_obj.transform.parent.tag == "node_parent"
+                            && pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().video_graph==false)
                         {
                             pen_dragged_obj.transform.parent.parent.position += diff;
                             pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
                         }
                     }
-                    else
+                    else if(pen_dragged_obj.GetComponent<iconicElementScript>().video_icon == false)
                     {
                         pen_dragged_obj.transform.position += diff;
                         pen_dragged_obj.GetComponent<iconicElementScript>().edge_position += diff;
@@ -1247,7 +1260,8 @@ public class Paintable : MonoBehaviour
                 }
 
                 pen_dragged_obj.transform.localScale = pen_dragged_obj.transform.localScale / 1.05f;
-                pen_dragged_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
+                if (!graphlocked)
+                    pen_dragged_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
 
                 if (graphlocked)
                 {
@@ -2221,50 +2235,7 @@ public class Paintable : MonoBehaviour
                 
     }
 
-    /*void searchNodeAndUpdateEdge(GameObject node_name, Vector3 panDirection)
-    {
-        GameObject[] edges = GameObject.FindGameObjectsWithTag("edge");
-        List<GameObject> edgeList = new List<GameObject>(edges);
-        for (int i = 0; i < edgeList.Count; i++)
-        {
-            edgeList[i].GetComponent<EdgeElementScript>().updateEndPoint(node_name);            
-        }
-
-        GameObject[] simplicials = GameObject.FindGameObjectsWithTag("simplicial");
-        foreach (GameObject each_simplicial in simplicials)
-        {
-            if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
-            {
-                List<GameObject> thenodes = each_simplicial.GetComponent<SimplicialElementScript>().thenodes;
-                int x = 0;
-                foreach (GameObject each_node in thenodes)
-                {
-                    if (each_node == node_name)
-                    {
-                        each_simplicial.GetComponent<SimplicialElementScript>().theVertices[x] = node_name.GetComponent<iconicElementScript>().edge_position;
-                        each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
-                        break;
-                    }
-                    x++;
-                }
-            }
-            else
-            {
-                each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint(node_name);
-            }            
-        }
-
-
-        GameObject[] hyper_edges = GameObject.FindGameObjectsWithTag("hyper_child_edge");
-        foreach (GameObject each_child_edge in hyper_edges)
-        {                        
-            if (each_child_edge.GetComponent<HyperEdgeElement>().parent_node == node_name)
-            {
-                each_child_edge.GetComponent<HyperEdgeElement>().UpdateSingleEndpoint(node_name.GetComponent<iconicElementScript>().edge_position);
-            }
-        }
-    }*/
-
+    
     void handleKeyInteractions()
     {
         //we don't want any redundant operation when a function name is being typed

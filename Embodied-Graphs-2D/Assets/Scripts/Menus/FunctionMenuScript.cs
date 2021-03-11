@@ -704,12 +704,17 @@ public class FunctionMenuScript : MonoBehaviour
             paintable.GetComponent<Paintable>().no_func_menu_open = true;            
         }
     }
+
+    public void InitiateFunctionCallHelper()
+    {
+        transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
+    }
     
     public void Hide()
     {
         foreach (GameObject child_graph in argument_objects)
         {
-            if (child_graph.tag == "graph")
+            if (child_graph != null && child_graph.tag == "graph")
             {
                 // if it is under a function, hide that as well 
                 if (child_graph.transform.parent.name.Contains("function_line_"))

@@ -14,6 +14,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
     frames frames_annotation;
     public float width, height;    
+    public int frequency;    
     public Vector3[] vec;
     long prev_frame;
 
@@ -32,14 +33,14 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     {
         graph_holder = null;
         node_radius = 20f;
+        frequency = 15;
     }
 
     public void loadAnnotation(string filename)
     {
         Debug.Log("filename:" + filename);
         frames_annotation = JsonUtility.FromJson<frames>(File.ReadAllText(filename));
-        Debug.Log(JsonUtility.ToJson(frames_annotation.all_frame[0].objects[0]));
-
+        
         width = videoplayer.transform.localScale.x;
         height = videoplayer.transform.localScale.y;
 
@@ -54,7 +55,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             mainSlider.value = (float)videoplayer.frame / (float)videoplayer.frameCount;
         }
 
-        if (videoplayer.frame %5 == 0 && prev_frame!= videoplayer.frame)
+        if ((videoplayer.frame % frequency == 0 || videoplayer.frame == 5) && prev_frame!= videoplayer.frame)
         {
             prev_frame = videoplayer.frame;
             Debug.Log("current_frame: " + videoplayer.frame.ToString());
@@ -92,10 +93,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 temphyperparent.tag = "hyper_parent";
                 temphyperparent.transform.parent = graph_holder.transform;
                 temphyperparent.transform.SetSiblingIndex(3);
+
+
             }
             else
             {
                 graph_holder = Instantiate(graph_prefab);
+                graph_holder.GetComponent<GraphElementScript>().video_graph = true;
                 graph_holder.GetComponent<GraphElementScript>().abstraction_layer = "graph";
                 graph_holder.GetComponent<GraphElementScript>().paintable = paintable;
                 paintable.GetComponent<Paintable>().graph_count++;
@@ -111,6 +115,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             int num = paintable.GetComponent<Paintable>().totalLines;
             List<Vector3> graph_points = new List<Vector3>();
 
+            graph_holder.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
+            graph_holder.GetComponent<GraphElementScript>().graph = new Graph();
+            graph_holder.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
+
             foreach (tracked_object cur_obj in all_objects)
             {
                 Vector3 edge_pos = Vector3.zero;                
@@ -122,6 +130,9 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 temp.GetComponent<iconicElementScript>().icon_number = num;
                 temp.GetComponent<iconicElementScript>().video_icon = true;
                 all_icons.Add(temp);
+
+                graph_holder.GetComponent<GraphElementScript>().graph.nodes.Add(num);
+                graph_holder.GetComponent<GraphElementScript>().nodeMaps.Add(num.ToString(), temp.transform);
 
                 temp.GetComponent<TrailRenderer>().enabled = false;
                 temp.GetComponent<MeshRenderer>().enabled = false;
@@ -175,6 +186,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
             graph_holder.GetComponent<GraphElementScript>().points = graph_points;
 
+            graph_holder.GetComponent<GraphElementScript>().graph.edges = new List<Edge>();
+
             // create graph based on node radius
             // tODo: try updated algorithm
             for (int i = 0; i < all_icons.Count; i++ )
@@ -193,11 +206,18 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         //temp.GetComponent<EdgeElementScript>().addDot();
                         //temp.GetComponent<EdgeElementScript>().updateEndPoint();
                         temp.GetComponent<EdgeElementScript>().addEndPoint(true);
+
+                        Edge edge = new Edge();
+                        edge.edge_start = all_icons[i].GetComponent<iconicElementScript>().icon_number;
+                        edge.edge_end = all_icons[j].GetComponent<iconicElementScript>().icon_number;
+                        edge.weight = 1;
+
+                        graph_holder.GetComponent<GraphElementScript>().graph.edges.Add(edge);
                     }
                 }
             }
 
-            graph_holder.GetComponent<GraphElementScript>().Graph_init();
+            graph_holder.GetComponent<GraphElementScript>().RequestRecalculationonValueChange();
         }
     }
        
