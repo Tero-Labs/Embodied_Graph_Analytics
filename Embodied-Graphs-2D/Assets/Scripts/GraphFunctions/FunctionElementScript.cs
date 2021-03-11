@@ -201,8 +201,7 @@ public class FunctionElementScript : MonoBehaviour
         tempgraph.GetComponent<GraphElementScript>().edges_init();
         //tempgraph.GetComponent<GraphElementScript>().Graph_init();
     }
-
-
+    
     /*public void InstantiateGraph(string graph_as_Str)
     {
         Debug.Log("graph_as_Str: " + graph_as_Str);
@@ -293,35 +292,35 @@ public class FunctionElementScript : MonoBehaviour
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
 
+        // remap node dictionary
+        temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
+        temp_graph.GetComponent<GraphElementScript>().nodes_init();
+        nodeMaps = temp_graph.GetComponent<GraphElementScript>().nodeMaps;
+
         if (transform.GetChild(0).GetComponent<FunctionMenuScript>().cur_arg_Str[1] == "in-place")
         {
             GameObject extra_objects = new GameObject("labels_overlay");
             extra_objects.transform.parent = temp_graph.transform;
             extra_objects.transform.SetSiblingIndex(5);
-
-            Transform node_parent = temp_graph.transform.GetChild(0);
-            Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
-
+                        
             returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
-
             int index = 0;
+
             foreach (int current_node in returned_graph.nodes)
             {
-                foreach (Transform child in allChildrennode)
+                if (nodeMaps.ContainsKey(current_node.ToString()))
                 {
-                    if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == current_node)
-                    {
-                        GameObject temp_label = Instantiate(topo_label);
-                        //temp_label.transform.SetParent(extra_objects.transform);
-                        temp_label.transform.SetParent(child.transform);
+                    Transform child = nodeMaps[current_node.ToString()];
 
-                        temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
-                            new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
+                    GameObject temp_label = Instantiate(topo_label);
+                    //temp_label.transform.SetParent(extra_objects.transform);
+                    temp_label.transform.SetParent(child.transform);
 
-                        index++;
-                        temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
-                        break;
-                    }
+                    temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
+                        new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
+
+                    index++;
+                    temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
                 }
             }                                 
             
@@ -329,59 +328,49 @@ public class FunctionElementScript : MonoBehaviour
         else
         {
             temp_graph.GetComponent<GraphElementScript>().splined_edge_flag = true;
-            Transform node_parent = temp_graph.transform.GetChild(0);
-            Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
-
             int iter = 0;
             Vector3 position = Vector3.zero;
             returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+
             foreach (int current_node in returned_graph.nodes)
             {
-                foreach (Transform child in allChildrennode)
+                if (nodeMaps.ContainsKey(current_node.ToString()))
                 {
-                    if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == current_node)
+                    Transform child = nodeMaps[current_node.ToString()];
+                    iter++;
+
+                    if (iter == 1)
                     {
-                        iter++;
-
-                        if (iter == 1)
-                        {
-                            position = /*child.position - */child.GetComponent<iconicElementScript>().edge_position +
-                                new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
-                        }
-                        else
-                        {
-                            position += new Vector3(child.GetComponent<iconicElementScript>().radius * 2, 0, 0);
-                            Vector3 old_pos = child.position;
-                            // we want the edge_position to project
-                            Vector3 new_pos = child.InverseTransformDirection(position) -
-                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().bounds_center);
-
-                            child.position = new Vector3(new_pos.x, new_pos.y, -40f); 
-
-                            child.GetComponent<iconicElementScript>().edge_position = position;
-                            Debug.Log(child.name);
-                                                        
-                            position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
-
-                        }
-
-                        break;
+                        position = /*child.position - */child.GetComponent<iconicElementScript>().edge_position +
+                            new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
                     }
-                }
+                    else
+                    {
+                        position += new Vector3(child.GetComponent<iconicElementScript>().radius * 2, 0, 0);
+                        Vector3 old_pos = child.position;
+                        // we want the edge_position to project
+                        Vector3 new_pos = child.InverseTransformDirection(position) -
+                            child.InverseTransformDirection(child.GetComponent<iconicElementScript>().bounds_center);
 
+                        child.position = new Vector3(new_pos.x, new_pos.y, -40f);
+
+                        child.GetComponent<iconicElementScript>().edge_position = position;
+                        Debug.Log(child.name);
+
+                        position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+
+                    }
+
+                }                
             }
 
-            Transform[] allChildrenedge = temp_graph.transform.GetChild(1).GetComponentsInChildren<Transform>();
-            foreach (Transform child in allChildrenedge)
+            Transform edge_parent = temp_graph.transform.GetChild(1);            
+            for (int i = 0; i < edge_parent.childCount; i++)
             {
-                if (child.tag == "edge")
-                {
-                    child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
-                }                   
-                
+                if (edge_parent.GetChild(i).tag == "edge")
+                    edge_parent.GetChild(i).GetComponent<EdgeElementScript>().updateSplineEndPoint();
             }
-
-            //updateLassoPoints(temp_graph);
+            
         }
     }
 
@@ -474,7 +463,6 @@ public class FunctionElementScript : MonoBehaviour
         }
     }
 
-
     GameObject EdgeCreation(string tag, string[] nodes_of_edge, int idx)
     {
         List<GameObject> temp_nodes = new List<GameObject>();
@@ -519,7 +507,6 @@ public class FunctionElementScript : MonoBehaviour
 
         return edgeline;
     }
-
 
     public void AddPoint(Vector3 vec)
     {
@@ -953,58 +940,6 @@ public class FunctionElementScript : MonoBehaviour
 
         paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);
     }
-
-
-    public void updatechildLassoPointsOld(GameObject graph, List<int> nodes, GameObject gameObject, int idx)
-    {        
-        List<Vector3> hull_pts = new List<Vector3>();
-        int center_count = 0;
-        joint_centroid = Vector3.zero;
-
-        if (graph.tag == "graph")
-        {            
-            Transform[] allChildrennode = graph.transform.GetChild(0).GetComponentsInChildren<Transform>();
-
-            // we need only certain nodes inside the hull, hence tracking it down   
-            foreach (int node in nodes)
-            {
-                foreach (Transform child in allChildrennode)
-                {
-                    if (child.tag == "iconic" && child.GetComponent<iconicElementScript>().icon_number == node)
-                    {
-                        if (child.GetComponent<iconicElementScript>().video_icon)
-                        {
-                            hull_pts.AddRange(child.GetComponent<iconicElementScript>().points);
-                            continue;
-                        }
-
-                        List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints(20f);
-                        hull_pts.AddRange(returned_pts);
-                        center_count++;
-                        joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
-                        break;
-                    }
-                }
-            }            
-        }
-
-        joint_centroid = joint_centroid / center_count;
-
-        var hullAPI = new HullAPI();
-        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 2500 });
-
-        Vector3[] vertices = hull.vertices;
-        //Array.Sort(vertices);
-        Debug.Log("hulled: ");              
-
-        //gameObject.transform.position = vertices[0];
-        gameObject.transform.GetComponent<LineRenderer>().enabled = true;
-
-        gameObject.GetComponent<FunctionElementScript>().points = vertices.ToList();
-
-        paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);        
-    }
-
 
     public static float AngleBetweenVectors(Vector2 a, Vector2 b)
     {

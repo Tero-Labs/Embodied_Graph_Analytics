@@ -568,6 +568,7 @@ public class Paintable : MonoBehaviour
                             {
                                 edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
                                 edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
+                                edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
 
                                 // set line renderer end point
                                 edgeline.GetComponent<EdgeElementScript>().addEndPoint();

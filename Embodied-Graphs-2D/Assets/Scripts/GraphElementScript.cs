@@ -196,13 +196,17 @@ public class GraphElementScript : MonoBehaviour
         
         graph.nodes = new List<int>();
 
-        Transform Prev_node_parent = transform.GetChild(0);
-        Transform[] allChildrennode = Prev_node_parent.GetComponentsInChildren<Transform>();
+        Transform node_parent = transform.GetChild(0);        
 
         nodeMaps = new Dictionary<string, Transform>();
         int icon_count = 0;
-        foreach (Transform child in allChildrennode)
+
+        //Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
+        //foreach (Transform child in allChildrennode)
+
+        for (int i = 0; i < node_parent.childCount; i++)
         {
+            Transform child = node_parent.GetChild(i);
             if (child.tag == "iconic")
             {
                 icon_count++;
@@ -230,11 +234,14 @@ public class GraphElementScript : MonoBehaviour
     {
         graph.edges = new List<Edge>();
 
-        Transform Prev_edge_parent = transform.GetChild(1);
-        Transform[] allChildrenedge = Prev_edge_parent.GetComponentsInChildren<Transform>();
+        Transform edge_parent = transform.GetChild(1);
 
-        foreach (Transform child in allChildrenedge)
+        /*Transform[] allChildrenedge = edge_parent.GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildrenedge)*/
+
+        for (int i = 0; i < edge_parent.childCount; i++)
         {
+            Transform child = edge_parent.GetChild(i);
             if (child.tag == "edge")
             {
                 Edge edge = new Edge();
@@ -252,11 +259,14 @@ public class GraphElementScript : MonoBehaviour
     {
         graph.simplicials = new List<HyperOrSimplicialEdge>();
 
-        Transform Prev_simp_parent = transform.GetChild(2);
-        Transform[] allChildrensimpedge = Prev_simp_parent.GetComponentsInChildren<Transform>();
+        Transform simp_parent = transform.GetChild(2);
 
-        foreach (Transform child in allChildrensimpedge)
+        /*Transform[] allChildrensimpedge = simp_parent.GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildrensimpedge)*/
+
+        for (int i = 0; i < simp_parent.childCount; i++)
         {
+            Transform child = simp_parent.GetChild(i);
             if (child.tag == "simplicial")
             {
                 HyperOrSimplicialEdge simplicial = new HyperOrSimplicialEdge();
@@ -282,11 +292,14 @@ public class GraphElementScript : MonoBehaviour
     {
         graph.hyperedges = new List<HyperOrSimplicialEdge>();
 
-        Transform Prev_hyper_parent = transform.GetChild(3);
-        Transform[] allChildrenhyperedge = Prev_hyper_parent.GetComponentsInChildren<Transform>();
+        Transform hyper_parent = transform.GetChild(3);
 
-        foreach (Transform child in allChildrenhyperedge)
+        /*Transform[] allChildrenhyperedge = hyper_parent.GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildrenhyperedge)*/
+
+        for (int i = 0; i < hyper_parent.childCount; i++)
         {
+            Transform child = hyper_parent.GetChild(i);
             if (child.tag == "hyper")
             {
                 HyperOrSimplicialEdge hyperedge = new HyperOrSimplicialEdge();
@@ -771,35 +784,39 @@ public class GraphElementScript : MonoBehaviour
     public void RequestRecalculationonValueChange()
     {
         if (video_graph)
-        {
-            GameObject[] all_functions = GameObject.FindGameObjectsWithTag("function");
-
-            // check if the current function is part of any function, if so initiate function call again
-            foreach (GameObject cur_function in all_functions)
-            {
-                if ((cur_function.transform.childCount > 2))
-                {                    
-                    // check if any function argument has been assigned
-                    if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects == null) continue;
-
-                    foreach (GameObject function_argument in cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
-                    {
-                        if (function_argument == null) continue;
-
-                        // if the argument is a graph which contains this object, then call update lasso
-                        if (function_argument.tag == "graph" &&
-                            transform.gameObject == function_argument)
-                        {
-                            cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper();
-                        }
-                    }
-                }
-            }
-
+        {            
+            StartCoroutine(RequestFunctionCall());
         }
     }
 
+    IEnumerator RequestFunctionCall()
+    {
+        GameObject[] all_functions = GameObject.FindGameObjectsWithTag("function");
 
+        // check if the current function is part of any function, if so initiate function call again
+        foreach (GameObject cur_function in all_functions)
+        {
+            if ((cur_function.transform.childCount > 2))
+            {
+                // check if any function argument has been assigned
+                if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects == null) continue;
+
+                foreach (GameObject function_argument in cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+                {
+                    if (function_argument == null) continue;
+
+                    // if the argument is a graph which contains this object, then call again
+                    if (function_argument.tag == "graph" &&
+                        transform.gameObject == function_argument)
+                    {
+                        cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper();
+                        yield return null;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 
     public void checkHitAndMove(Vector3 diff)
     {
@@ -895,8 +912,7 @@ public class GraphElementScript : MonoBehaviour
         }*/
 
     }
-
-   
+       
     public void createMenu(GameObject arg_canvas_radial = null)
     {
         if (arg_canvas_radial != null)
