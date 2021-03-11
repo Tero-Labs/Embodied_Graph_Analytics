@@ -834,7 +834,7 @@ public class FunctionElementScript : MonoBehaviour
     public void updateLassoPoints()
     {
          
-        if (!fused_function /*&& !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval*/)
+        if (!fused_function && !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
@@ -926,8 +926,8 @@ public class FunctionElementScript : MonoBehaviour
     public void updateLassoPointsIconDrag()
     {
 
-        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled /*&& 
-            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval*/)
+        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled && 
+            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
@@ -1033,8 +1033,8 @@ public class FunctionElementScript : MonoBehaviour
     {
         if (fused_function) return;
 
-        /*if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
-        {*/
+        if (!transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
             joint_centroid = Vector3.zero;
@@ -1104,7 +1104,7 @@ public class FunctionElementScript : MonoBehaviour
             points = vertices.ToList();
             paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
             transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
-        //}
+        }
         
     }
 

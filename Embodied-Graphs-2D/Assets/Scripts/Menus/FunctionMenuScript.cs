@@ -802,7 +802,7 @@ public class FunctionMenuScript : MonoBehaviour
         perform_action.transform.gameObject.SetActive(false);
         input_option.SetActive(false);
         eval_finished = true;        
-                
+        instant_eval = true;                       
     }
 
     void ChildToggle(Toggle toggle)
