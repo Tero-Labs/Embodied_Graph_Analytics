@@ -1326,16 +1326,32 @@ public class EdgeElementScript : MonoBehaviour
             temp.transform.SetSiblingIndex(x);
 
             if (directed_edge && x == 1)
+            {
                 temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
+                Vector3 direction = transform.GetComponent<LineRenderer>().GetPosition(1) - transform.GetComponent<LineRenderer>().GetPosition(0);
+                temp.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI);
+            }
+            else if (directed_edge && x == 0)
+            {
+                temp.GetComponent<SpriteRenderer>().sprite = null;
+            }
         }
     }
 
     public void updateDot()
-    {        
+    {
+        LineRenderer l = transform.GetComponent<LineRenderer>();
+
         for (int x = 0; x < 2; x++)
         {
             Transform temp = transform.GetChild(x);
-            temp.position = transform.GetComponent<LineRenderer>().GetPosition(x);
+            temp.position = l.GetPosition(x);
+
+            if (directed_edge && x == 1)
+            {
+                Vector3 direction = l.GetPosition(1) - l.GetPosition(0);
+                temp.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI);
+            }
         }
     }
 
@@ -1364,7 +1380,7 @@ public class EdgeElementScript : MonoBehaviour
                 return new Vector2(pos.x, pos.y);
             }).ToArray();
 
-            transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;            
+            //transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;            
             updateDot();
         }
     }
@@ -1414,7 +1430,16 @@ public class EdgeElementScript : MonoBehaviour
             }
 
             if (directed_edge && x == 1)
+            {
                 temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
+                Vector3 direction = l.GetPosition(1) - l.GetPosition(0);
+                temp.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI);
+            }
+            else if (directed_edge && x == 0)
+            {
+                temp.GetComponent<SpriteRenderer>().sprite = null;
+            }
+
         }
     }
         
@@ -1442,7 +1467,7 @@ public class EdgeElementScript : MonoBehaviour
             return new Vector2(pos.x, pos.y);
         }).ToArray();
 
-        transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+        //transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
 
         // set line renderer texture scale
         /*var linedist = Vector3.Distance(transform.GetComponent<LineRenderer>().GetPosition(0),
@@ -1604,10 +1629,16 @@ public class EdgeElementScript : MonoBehaviour
             return new Vector2(pos.x, pos.y);
         }).ToArray();
 
-        transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+        //transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
 
         transform.GetChild(0).position = start;
         transform.GetChild(1).position = end;
+
+        if (directed_edge)
+        {
+            Vector3 direction = end - recorded_path[recorded_path.Count - 2];
+            transform.GetChild(1).localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI);
+        }
     }
 
     void OnDestroy()
