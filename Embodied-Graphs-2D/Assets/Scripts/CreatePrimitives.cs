@@ -226,6 +226,49 @@ public class CreatePrimitives : MonoBehaviour
         return templine;
     }
 
+    // Assumes templine has been initialized in pointer.start and pointer.moved
+    public GameObject FinishVideoFunctionLine(GameObject templine, bool lassocolor = false, int rank = 0)
+    {
+        var lineRenderer = templine.GetComponent<LineRenderer>();
+        // set line renderer, width
+        lineRenderer.widthCurve = templine.GetComponent<FunctionElementScript>().widthcurve;
+
+        lineRenderer.numCapVertices = 15;
+        lineRenderer.numCornerVertices = 15;
+
+        lineRenderer.positionCount = templine.GetComponent<FunctionElementScript>().points.Count;
+        lineRenderer.SetPositions(templine.GetComponent<FunctionElementScript>().points.ToArray());
+                
+        if (lassocolor)
+        {
+            Color color = colors[rank % (colors.Length)];
+            //color = new Color(UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f)); 
+
+
+            /*How to change color of material -Unity Forum
+            https://forum.unity.com/threads/how-to-change-color-of-material.874921/ */
+            Material new_material = new Material(solid_mat);
+            new_material.SetColor("_Color", color);
+            lineRenderer.material = new_material;
+        }
+        else
+        {
+            lineRenderer.material = templine.GetComponent<FunctionElementScript>().icon_elem_material;
+        }
+        
+        // disable trail renderer, no longer needed
+        templine.GetComponent<TrailRenderer>().enabled = false;
+
+        templine.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;
+
+        // set transform position
+        templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
+        templine.GetComponent<FunctionElementScript>().points.Clear();
+
+        Debug.Log("inside_videolasso");
+        return templine;
+    }
+
 
     // Assumes templine has been initialized in pointer.start and pointer.moved
     /*public GameObject FinishEdgeLine(GameObject templine, Mesh combinedMesh = null)
@@ -282,7 +325,7 @@ public class CreatePrimitives : MonoBehaviour
         return templine;
     }
     */
-    
+
     // LOAD A SPRITE AS A PENLINE OBJECT
     /*public GameObject CreatePenLine(string sprite_filename)
     {

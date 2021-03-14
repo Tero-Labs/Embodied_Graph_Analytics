@@ -263,7 +263,7 @@ public class iconicElementScript : MonoBehaviour
     {
         
         // rescaling, otherwise the projected mesh is too small
-        transform.localScale = new Vector3(50f, 50f, 1f);
+        transform.localScale = new Vector3(30f, 30f, 1f);
 
         transform.gameObject.AddComponent<BoxCollider>();
         transform.gameObject.AddComponent<SpriteRenderer>();

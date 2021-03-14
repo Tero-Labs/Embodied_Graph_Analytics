@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System;
 using System.Linq;
 using UnityEngine;
-
+using UnityEngine.Video;
 using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -102,6 +102,7 @@ public class FunctionElementScript : MonoBehaviour
     public bool fused_function;
 
     public GameObject function_menu;
+    public GameObject video_player;
 
     public InputField mainInputField;
     public GameObject[] grapharray;
@@ -115,6 +116,12 @@ public class FunctionElementScript : MonoBehaviour
     Graph returned_graph;
     bool cascaded_lasso = false;
 
+    IEnumerator clear_files()
+    {
+        File.Delete("Assets/Resources/" + "output.json");
+        File.Delete("Assets/Resources/" + "data.json");
+        yield return null;
+    }
 
     public void InstantiateNameBox()
     {
@@ -200,6 +207,11 @@ public class FunctionElementScript : MonoBehaviour
                 
         tempgraph.GetComponent<GraphElementScript>().edges_init();
         //tempgraph.GetComponent<GraphElementScript>().Graph_init();
+
+        if (video_player != null)
+            video_player.transform.GetComponent<VideoPlayer>().Play();
+
+        StartCoroutine(clear_files());
     }
     
     /*public void InstantiateGraph(string graph_as_Str)
@@ -346,7 +358,7 @@ public class FunctionElementScript : MonoBehaviour
                     }
                     else
                     {
-                        position += new Vector3(child.GetComponent<iconicElementScript>().radius * 2, 0, 0);
+                        position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
                         Vector3 old_pos = child.position;
                         // we want the edge_position to project
                         Vector3 new_pos = child.InverseTransformDirection(position) -
@@ -372,6 +384,11 @@ public class FunctionElementScript : MonoBehaviour
             }
             
         }
+
+        if (video_player != null)
+            video_player.transform.GetComponent<VideoPlayer>().Play();
+
+        StartCoroutine(clear_files());
     }
 
     public void InstantiatePathGraph()
@@ -406,8 +423,11 @@ public class FunctionElementScript : MonoBehaviour
             IEnumerator coroutine = material_update(edgeline);
             StartCoroutine(coroutine);
 
-        }              
+        }
+        if (video_player != null)
+            video_player.transform.GetComponent<VideoPlayer>().Play();
 
+        StartCoroutine(clear_files());
     }
 
     IEnumerator material_update(GameObject edgeline)
@@ -456,11 +476,17 @@ public class FunctionElementScript : MonoBehaviour
             for (int i = 0; i < (functionline.transform.childCount - 1); i++)
                 Destroy(functionline.transform.GetChild(i).gameObject);
 
-            updatechildLassoPoints(returned_graph.nodes, functionline, idx);
+            updatechildLassoPoints(returned_graph.nodes, functionline, idx);            
+
             idx++;
             Debug.Log("a lasso drawn");
             yield return null;
         }
+
+        if (video_player != null)
+            video_player.transform.GetComponent<VideoPlayer>().Play();
+
+        StartCoroutine(clear_files());
     }
 
     GameObject EdgeCreation(string tag, string[] nodes_of_edge, int idx)
@@ -901,7 +927,7 @@ public class FunctionElementScript : MonoBehaviour
     {
         List<Vector3> hull_pts = new List<Vector3>();
         int center_count = 0;
-        joint_centroid = Vector3.zero;
+        joint_centroid = Vector3.zero;              
                           
         // we need only certain nodes inside the hull, hence tracking it down   
         foreach (int node in nodes)
@@ -927,7 +953,7 @@ public class FunctionElementScript : MonoBehaviour
         joint_centroid = joint_centroid / center_count;
 
         var hullAPI = new HullAPI();
-        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 2500 });
+        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 15000 });
 
         Vector3[] vertices = hull.vertices;
         //Array.Sort(vertices);
@@ -938,7 +964,13 @@ public class FunctionElementScript : MonoBehaviour
 
         gameObject.GetComponent<FunctionElementScript>().points = vertices.ToList();
 
-        paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);
+        if (gameObject.transform.parent.parent.GetComponent<GraphElementScript>().video_graph)
+        {
+            paintable_object.GetComponent<CreatePrimitives>().FinishVideoFunctionLine(gameObject, true, idx);
+        }
+        else
+            paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(gameObject, true, idx);
+            
     }
 
     public static float AngleBetweenVectors(Vector2 a, Vector2 b)

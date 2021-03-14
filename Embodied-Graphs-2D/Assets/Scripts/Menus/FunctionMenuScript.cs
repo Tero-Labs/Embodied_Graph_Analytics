@@ -705,8 +705,9 @@ public class FunctionMenuScript : MonoBehaviour
         }
     }
 
-    public void InitiateFunctionCallHelper()
+    public void InitiateFunctionCallHelper(GameObject video_player)
     {
+        transform.parent.GetComponent<FunctionElementScript>().video_player = video_player;
         transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
     }
     

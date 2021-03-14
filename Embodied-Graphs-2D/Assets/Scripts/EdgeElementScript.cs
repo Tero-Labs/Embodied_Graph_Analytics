@@ -12,8 +12,6 @@ public class EdgeElementScript : MonoBehaviour
     public static float unitScale = 0.025f;
     public int edge_weight = 1;
 
-    // previous first child, instead of creating a separate child, we now want to keep it in the script
-    public Mesh _mesh;
     public GameObject dot_prefab;
 
     public List<GameObject> node_obj = new List<GameObject>();
@@ -94,6 +92,7 @@ public class EdgeElementScript : MonoBehaviour
     // global stroke details
     public GameObject details_dropdown;
     public bool global_details_on_path = true;
+    public bool video;
 
     // spline variables
     public int spline_dist;
@@ -1298,8 +1297,11 @@ public class EdgeElementScript : MonoBehaviour
 
         if (paintable_object.GetComponent<Paintable>().color_picker.activeSelf)
             transform.GetComponent<LineRenderer>().material.SetColor("_Color", paintable_object.GetComponent<Paintable>().color_picker_script.color);
+        else if (video)
+            transform.GetComponent<LineRenderer>().material.SetColor("_Color", Color.red);
         else
             transform.GetComponent<LineRenderer>().material.SetColor("_Color", Color.gray);
+
     }
 
     // Update is called once per frame
@@ -1393,7 +1395,7 @@ public class EdgeElementScript : MonoBehaviour
 
         LineRenderer l = transform.GetComponent<LineRenderer>();
         if(video)
-        l.material.SetColor("_Color", Color.blue);
+        l.material.SetColor("_Color", Color.red);
 
         // set line renderer end point
         //l.SetPosition(0, source.GetComponent<iconicElementScript>().edge_position);

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using System.IO;
 using System.Linq;
 using TMPro;
+using UnityEngine.Video;
 
 
 public class GraphElementScript : MonoBehaviour
@@ -406,7 +407,13 @@ public class GraphElementScript : MonoBehaviour
         }
     }
 
-
+    IEnumerator clear_files()
+    {
+        File.Delete("Assets/Resources/" + "output.json");
+        File.Delete("Assets/Resources/" + "data.json");
+        yield return null;
+    }
+    
     public void ShowNodes(Toggle toggle)
     {
         transform.GetChild(0).gameObject.SetActive(toggle.isOn);
@@ -690,6 +697,8 @@ public class GraphElementScript : MonoBehaviour
             conversion_done = true;
             Graph_init();
         }
+
+        StartCoroutine(clear_files());
     }
 
     public void EdgeCreation(string tag, string[] nodes_of_edge, int idx)
@@ -781,15 +790,15 @@ public class GraphElementScript : MonoBehaviour
         hyperline.GetComponent<HyperElementScript>().addChildren();
     }
 
-    public void RequestRecalculationonValueChange()
+    public void RequestRecalculationonValueChange(GameObject video_player)
     {
         if (video_graph)
         {            
-            StartCoroutine(RequestFunctionCall());
+            StartCoroutine(RequestFunctionCall(video_player));
         }
     }
 
-    IEnumerator RequestFunctionCall()
+    IEnumerator RequestFunctionCall(GameObject video_player)
     {
         GameObject[] all_functions = GameObject.FindGameObjectsWithTag("function");
 
@@ -809,7 +818,8 @@ public class GraphElementScript : MonoBehaviour
                     if (function_argument.tag == "graph" &&
                         transform.gameObject == function_argument)
                     {
-                        cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper();
+                        video_player.transform.GetComponent<VideoPlayer>().Pause();
+                        cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper(video_player);
                         yield return null;
                         break;
                     }

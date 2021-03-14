@@ -103,7 +103,7 @@ public class GraphLabelScript : MonoBehaviour
                     }
                 }
 
-                transform.parent.GetComponent<GraphElementScript>().createMenu(menupos);
+                transform.parent.GetComponent<GraphElementScript>().createMenu(transform.position);
             }
 
             draggable_now = false;
