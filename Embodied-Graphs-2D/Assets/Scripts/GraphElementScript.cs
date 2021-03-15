@@ -866,7 +866,12 @@ public class GraphElementScript : MonoBehaviour
             {
                 if (child.tag == "edge")
                 {
-                    if (splined_edge_flag)
+                    if (child.GetComponent<EdgeElementScript>().free_hand)
+                    {
+                        continue;
+                        //child.transform.position += diff;
+                    }
+                    else if (splined_edge_flag)
                         child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
                     else
                         child.GetComponent<EdgeElementScript>().updateEndPoint();

@@ -214,14 +214,14 @@ def topological_sort(all_graphs):
         json.dump(graph, json_file)
     
     
-def graph_addition(all_graphs):
-    
-    if (len(all_graphs) < 2):
-        return None
-    
+def graph_addition(all_graphs):    
+        
     G = nx.Graph()
     G.add_nodes_from(all_graphs[0]["node"])
     G.add_edges_from(all_graphs[0]["edges"])
+    
+    if (len(all_graphs) < 2):
+        return G
     
     for iter in range(1, len(all_graphs)):
     
@@ -505,7 +505,7 @@ if __name__ == '__main__':
                 packJson(G)
                 socket.send(("addition").encode('ascii'))  
             else:            
-                socket.send("impossible") 
+                socket.send((impossible).encode('ascii'))
                 
         elif message.decode('utf8') == "topological":
             all_graphs = unpackJson()

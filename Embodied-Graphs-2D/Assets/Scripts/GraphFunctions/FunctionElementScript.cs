@@ -190,8 +190,7 @@ public class FunctionElementScript : MonoBehaviour
                 // ToDo: else if iconic, direct copy if needed later
             }
         }
-
-
+        
         foreach (Edge edge in returned_graph.edges)
         {
             string[] nodes_of_edge = new string[2];

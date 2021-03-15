@@ -33,6 +33,7 @@ public class Paintable : MonoBehaviour
     public bool vertex_del = false;
     public bool edge_add = false;
     public bool edge_del = false;
+    public bool free_hand_edge = false;
 
     private Vector2 prev_move_pos;
     public Vector3 touchDelta;
@@ -209,22 +210,7 @@ public class Paintable : MonoBehaviour
                     templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
                     Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
 
-                    /*
-					// Initiate the length display (use an existing text box used for translation parameterization)
-					templine.transform.GetChild(1).localScale = new Vector3(4, 4, 1);
-					// fix the position of the text
-					templine.transform.GetChild(1).transform.position = vec;
-
-					templine.transform.GetChild(1).GetComponent<MeshRenderer>().enabled = true;
-					templine.transform.GetChild(1).GetComponent<BoxCollider2D>().enabled = false;
-
-					// color and width
-					templine.GetComponent<TrailRenderer>().material.color =
-						pencil_button.GetComponent<AllButtonsBehavior>().pickerInstance.transform.GetChild(0).GetChild(0).GetComponent<ColorPicker>().Result;
-
-					templine.GetComponent<penLine_script>().pen_line_material.color =
-						pencil_button.GetComponent<AllButtonsBehavior>().pickerInstance.transform.GetChild(0).GetChild(0).GetComponent<ColorPicker>().Result;
-                        */
+                    
                     templine.GetComponent<TrailRenderer>().widthMultiplier = 2;
                     //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
 
@@ -509,23 +495,57 @@ public class Paintable : MonoBehaviour
                     l.endWidth = 2f;*/
 
                     // set up the line renderer
-                    l.positionCount = 2;
-                    l.SetPosition(0, cur.GetComponent<iconicElementScript>().edge_position);// + new Vector3(0, 0, -2f));
-                    l.SetPosition(1, cur.GetComponent<iconicElementScript>().edge_position + new Vector3(1f, 0, -2f));
+                    if (!free_hand_edge)
+                    {
+                        l.positionCount = 2;
+                        l.SetPosition(0, cur.GetComponent<iconicElementScript>().edge_position);// + new Vector3(0, 0, -2f));
+                        l.SetPosition(1, cur.GetComponent<iconicElementScript>().edge_position + new Vector3(1f, 0, -2f));
+                    }
+                    else
+                    {
+                        edgeline.GetComponent<EdgeElementScript>().free_hand = free_hand_edge;
+                        edgeline.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
+                        Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
+
+                        edgeline.GetComponent<TrailRenderer>().widthMultiplier = 1f;
+                        //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+
+                        edgeline.GetComponent<LineRenderer>().widthMultiplier = 1f;
+                        //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+
+                    }
 
                 }
 
             }
+
             else if (PenTouchInfo.PressedNow)
             {
                 // add points to the last line, but check that if an edge line has been created already
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "paintable_canvas_object" && edge_start != null)
+                if (Physics.Raycast(ray, out Hit) && 
+                    (Hit.collider.gameObject.tag == "paintable_canvas_object" || Hit.collider.gameObject.tag == "iconic")
+                    && edge_start != null)
                 {
-                    Vector3 vec = Hit.point + new Vector3(0, 0, -5f); // Vector3.up * 0.1f;                    
-                    edgeline.GetComponent<LineRenderer>().SetPosition(1, vec);// + new Vector3(0, 0, -2f));
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -5f); // Vector3.up * 0.1f;   
                     edgeline.GetComponent<EdgeElementScript>().points.Add(vec);
+
+                    if (!free_hand_edge)
+                    {
+                                    
+                        edgeline.GetComponent<LineRenderer>().SetPosition(1, vec);// + new Vector3(0, 0, -2f));
+                    }
+                    else
+                    {
+                        edgeline.GetComponent<TrailRenderer>().transform.position = vec;
+
+                        edgeline.GetComponent<EdgeElementScript>().updateLengthFromPoints();
+                        edgeline.GetComponent<EdgeElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                        edgeline.GetComponent<EdgeElementScript>().reNormalizeCurveWidth();
+                        edgeline.GetComponent<TrailRenderer>().widthCurve = edgeline.GetComponent<EdgeElementScript>().widthcurve;
+                    }
+                    
                 }
             }
 
@@ -533,66 +553,99 @@ public class Paintable : MonoBehaviour
             {
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
 
-
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) && (Hit.collider.gameObject.tag == "temp_edge_primitive" || Hit.collider.gameObject.tag == "iconic")
                     && edge_start != null)
                 {
+                    // assign the end of edge object
+                    if (Hit.collider.gameObject.tag == "temp_edge_primitive")
+                        edge_end = Hit.collider.transform.parent.gameObject;
+                    else
+                        edge_end = Hit.collider.gameObject;
 
-                    if (edgeline.GetComponent<EdgeElementScript>().points.Count > 2)
+                    if (!free_hand_edge)
                     {
-                        // assign the end of edge object
-                        if (Hit.collider.gameObject.tag == "temp_edge_primitive")
-                            edge_end = Hit.collider.transform.parent.gameObject;
-                        else
-                            edge_end = Hit.collider.gameObject;
 
-                        // compute centroid and bounds
-                        /*edgeline.GetComponent<EdgeElementScript>().computeCentroid();
-                        edgeline.GetComponent<EdgeElementScript>().computeBounds();
-                        */
+                        if (edgeline.GetComponent<EdgeElementScript>().points.Count > 2)
+                        {                            
+                            // compute centroid and bounds
+                            /*edgeline.GetComponent<EdgeElementScript>().computeCentroid();
+                            edgeline.GetComponent<EdgeElementScript>().computeBounds();
+                            */
 
-                        // now create the edge in edge script
-                        if (edge_end != null && edge_start != null)
-                        {
-                            if (edge_end == edge_start)
+                            // now create the edge in edge script
+                            if (edge_end != null && edge_start != null)
                             {
-                                Destroy(edgeline);
-                                edge_end = null;
-                                edge_start = null;
-                                edgeline = null;
+                                if (edge_end == edge_start)
+                                {
+                                    Destroy(edgeline);
+                                    edge_end = null;
+                                    edge_start = null;
+                                    edgeline = null;
+                                }
+
+                                // TODO: IF AN EDGELINE ALREADY EXISTS CONNECTING THESE TWO NODES, THEN DON'T CREATE ANOTHER ONE, DESTROY THE CURRENT.
+                                else
+                                {
+                                    edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
+                                    edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
+                                    edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
+
+                                    // set line renderer end point
+                                    edgeline.GetComponent<EdgeElementScript>().addEndPoint();
+
+                                    GraphCreation();
+
+                                    // set edge_end and edge_start back to null
+                                    edge_end = null;
+                                    edge_start = null;
+                                    edgeline = null;
+                                }
                             }
 
-                            // TODO: IF AN EDGELINE ALREADY EXISTS CONNECTING THESE TWO NODES, THEN DON'T CREATE ANOTHER ONE, DESTROY THE CURRENT.
-                            else
-                            {
-                                edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
-                                edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
-                                edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
-
-                                // set line renderer end point
-                                edgeline.GetComponent<EdgeElementScript>().addEndPoint();
-
-                                GraphCreation();
-
-                                // set edge_end and edge_start back to null
-                                edge_end = null;
-                                edge_start = null;
-                                edgeline = null;
-                            }
                         }
-
+                        else
+                        {
+                            // delete the templine, not enough points
+                            Destroy(edgeline);
+                            edge_start = null;
+                            edge_end = null;
+                            edgeline = null;
+                        }
                     }
                     else
                     {
-                        // delete the templine, not enough points
-                        Destroy(edgeline);
-                        edge_start = null;
-                        edge_end = null;
-                        edgeline = null;
-                    }
-                }
+                        if (edgeline.GetComponent<EdgeElementScript>().points.Count > min_point_count)
+                        {                            
+                            edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
+                            edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
+                            edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
+                                                        
+                            LineRenderer l = edgeline.transform.GetComponent<LineRenderer>();
+                            l.positionCount = edgeline.GetComponent<EdgeElementScript>().points.Count;
+                            l.SetPositions(edgeline.GetComponent<EdgeElementScript>().points.ToArray());
+                            Destroy(edgeline.GetComponent<TrailRenderer>());
+                            edgeline = transform.GetComponent<CreatePrimitives>().FinishEdgeLine(edgeline);
+                            
 
+                            // set line renderer end point
+                            edgeline.GetComponent<EdgeElementScript>().addFreeHandPoint();
+
+                            GraphCreation();
+
+                            edge_end = null;
+                            edge_start = null;
+                            edgeline = null;
+                        }
+                        else
+                        {
+                            // delete the templine, not enough points
+                            // Debug.Log("here_in_destroy");
+                            Destroy(templine);
+                        }
+                    }
+                    
+                }
 
                 // in case a touch was rendered on the canvas (or not on the blue cylinders) and a line didn't finish drawing from source
                 else if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag != "temp_edge_primitive"
@@ -611,6 +664,15 @@ public class Paintable : MonoBehaviour
                     Destroy(edgeline);
                     edge_start = null;
                     edge_end = null;
+                    edgeline = null;
+                }
+
+
+                else
+                {
+                    // the touch didn't end on a line, destroy the line
+                    // Debug.Log("here_in_destroy_different_Hit");
+                    Destroy(edgeline);
                     edgeline = null;
                 }
 
@@ -2251,6 +2313,12 @@ public class Paintable : MonoBehaviour
             panZoomLocked = !panZoomLocked;
             Debug.Log("panning_value_change"+ panZoomLocked.ToString());
         }
+
+        if (Input.GetKeyUp(KeyCode.F))
+        {
+            free_hand_edge = !free_hand_edge;
+        }
+
 
         if (Input.GetKeyUp(KeyCode.Escape))
         {

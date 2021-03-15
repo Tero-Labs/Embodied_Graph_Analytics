@@ -461,6 +461,16 @@ public class iconicElementScript : MonoBehaviour
         {            
             if (child.tag == "edge")
             {
+                if (child.GetComponent<EdgeElementScript>().free_hand)
+                {
+                    Destroy(child.GetComponent<MeshRenderer>());
+                    Destroy(child.GetComponent<MeshFilter>());
+                    var lineRenderer = child.GetComponent<LineRenderer>();
+                    lineRenderer.enabled = true;
+                    lineRenderer.positionCount = 2;
+                    child.GetComponent<EdgeElementScript>().free_hand = false;
+                }
+
                 if (splined_edge_flag)
                     child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
                 else

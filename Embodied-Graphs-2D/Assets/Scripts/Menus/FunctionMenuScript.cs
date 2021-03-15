@@ -13,6 +13,7 @@ public class FunctionMenuScript : MonoBehaviour
     public Toggle show_result;
     public bool keep_child_object;
     public bool eval_finished;
+    public bool passive_func_call = false;
 
     public InputField mainInputField;
     public Button perform_action;
@@ -285,12 +286,13 @@ public class FunctionMenuScript : MonoBehaviour
                 }
 
                 if (TMP_TextUtilities.IsIntersectingRectTransform(tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
-                {                    
+                {
+                    Debug.Log("here_dragged_func");
                     var index = TMP_TextUtilities.FindNearestCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
                     //var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
 
                     if (dragged_arg_object == null && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
-                    {
+                    {                        
                         dragged_arg_object = paintable.GetComponent<Paintable>().dragged_arg_textbox;
                     }
 
@@ -337,10 +339,12 @@ public class FunctionMenuScript : MonoBehaviour
                                 //argument_objects[cur_order_dict[index]] = temp.gameObject;
                                 argument_objects[index] = temp.gameObject;
                             }
-                            else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null && paintable.GetComponent<Paintable>().dragged_arg_textbox != transform.gameObject)
+                            else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null &&
+                                paintable.GetComponent<Paintable>().dragged_arg_textbox.transform.GetComponent<FunctionMenuScript>().output_type != "scalar")
                             {
+                                Debug.Log("here_in_arg_drag");
                                 temp = paintable.GetComponent<Paintable>().dragged_arg_textbox.transform;
-                                cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().message_box/*text_label*/.GetComponent<TextMeshProUGUI>().text;
+                                cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text;
                                 argument_objects[index] = temp.parent.GetChild(1).gameObject;
                             }
                         }
@@ -396,9 +400,7 @@ public class FunctionMenuScript : MonoBehaviour
                 dragged_arg_object = null;
             }
 
-            else if (PenTouchInfo.ReleasedThisFrame && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
-                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
-
+             
             else if (PenTouchInfo.PressedNow
                 && drag_text_ui != null)
             {
@@ -581,8 +583,7 @@ public class FunctionMenuScript : MonoBehaviour
         }
         
     }
-
-
+    
     string get_arguments_string()
     {
         string argument_str = "( ";
@@ -696,8 +697,9 @@ public class FunctionMenuScript : MonoBehaviour
             //transform.parent.GetComponent<FunctionElementScript>().updateLassoPoints();
                         
             if (output_type != "scalar")
-            {                
-                transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());                
+            {
+                StartCoroutine(CheckUnevaluatedFunctionArguments());
+                //transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());                
             }
             
             input_option.SetActive(false);
@@ -707,8 +709,9 @@ public class FunctionMenuScript : MonoBehaviour
 
     public void InitiateFunctionCallHelper(GameObject video_player)
     {
+        passive_func_call = true;
         transform.parent.GetComponent<FunctionElementScript>().video_player = video_player;
-        transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
+        StartCoroutine(CheckUnevaluatedFunctionArguments());
     }
     
     public void Hide()
@@ -768,7 +771,7 @@ public class FunctionMenuScript : MonoBehaviour
             }
         }*/
 
-        if (!keep_child_object)
+        if (!keep_child_object || passive_func_call)
         {
             foreach (GameObject child_graph in argument_objects)
             {
@@ -790,25 +793,29 @@ public class FunctionMenuScript : MonoBehaviour
         }
                 
         text_label.GetComponent<TextMeshProUGUI>().text = text_label.GetComponent<TextMeshProUGUI>().text.Replace(" ", "");
-        message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text ;
+        
 
-        settings.transform.gameObject.SetActive(false);
+        if (passive_func_call == false)
+        {
+            message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text;
+            settings.transform.gameObject.SetActive(false);
+            perform_action.transform.gameObject.SetActive(false);
+            eval_finished = true;
+            instant_eval = true;
+            input_option.SetActive(false);
+        }            
+
         if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
             paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
 
         if (output_type == "scalar")   text_label.GetComponent<TextMeshProUGUI>().text = output;
-        else
+        else if (passive_func_call == false)
         {
             transform.gameObject.SetActive(false);
             transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
             transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;
-        }
-
-
-        perform_action.transform.gameObject.SetActive(false);
-        input_option.SetActive(false);
-        eval_finished = true;        
-        instant_eval = true;                       
+        }        
+                       
     }
 
     void ChildToggle(Toggle toggle)
@@ -867,5 +874,30 @@ public class FunctionMenuScript : MonoBehaviour
             argument_text = null;
             textbox_open = false;
         }
+    }
+
+    IEnumerator CheckUnevaluatedFunctionArguments()
+    {
+        if (eval_finished) yield break;
+
+        int idx = 0;
+        foreach (GameObject child_graph in argument_objects)
+        {
+            // if it is under a function, hide that as well 
+            if (child_graph.transform.parent.name.Contains("function_line_")
+                && !child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
+            {
+                Debug.Log("child_called");
+                yield return StartCoroutine
+                    (child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().CheckUnevaluatedFunctionArguments());
+
+                argument_objects[idx]= child_graph.transform.parent.GetChild(1).gameObject;
+            }
+
+            idx++;
+        }
+
+        Debug.Log("i_initiated");
+        transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
     }
 }

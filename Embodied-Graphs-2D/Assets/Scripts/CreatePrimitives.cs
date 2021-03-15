@@ -271,10 +271,11 @@ public class CreatePrimitives : MonoBehaviour
 
 
     // Assumes templine has been initialized in pointer.start and pointer.moved
-    /*public GameObject FinishEdgeLine(GameObject templine, Mesh combinedMesh = null)
+    public GameObject FinishEdgeLine(GameObject templine, Mesh combinedMesh = null)
     {
         var lineRenderer = templine.GetComponent<LineRenderer>();
-        var meshFilter = templine.GetComponent<MeshFilter>();
+        var meshFilter = templine.AddComponent<MeshFilter>();
+        var meshRenderer = templine.AddComponent<MeshRenderer>();
 
         Mesh mesh = new Mesh();
         lineRenderer.BakeMesh(mesh, true);
@@ -288,43 +289,14 @@ public class CreatePrimitives : MonoBehaviour
         {
             meshFilter.sharedMesh = combinedMesh;
         }
-        
-        templine.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
 
-        // get rid of the line renderer?
-        //Destroy(templine.GetComponent<LineRenderer>());
-        templine.GetComponent<LineRenderer>().enabled = false;
-
-        // add a collider
-        templine.AddComponent<BoxCollider>();
-
-        templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
-        templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;
-
-        // set collider trigger
-        templine.GetComponent<BoxCollider>().isTrigger = true;
-
-        // disable the collider because we are in the pen mode right now. Pan mode enables back all colliders.
-        templine.GetComponent<BoxCollider>().enabled = false;
+        meshRenderer.sharedMaterial = lineRenderer.material;
+        lineRenderer.enabled = false;        
 
         // set transform position
-        templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
-
-        // update the previous_position variable for templine for checkMove()
-        templine.GetComponent<iconicElementScript>().previous_position = templine.transform.position;
-
-        // Save the area of the bounding box 
-        templine.GetComponent<iconicElementScript>().attribute.Area =
-            templine.GetComponent<MeshFilter>().sharedMesh.bounds.size.x *
-            templine.GetComponent<MeshFilter>().sharedMesh.bounds.size.y * unitScale * unitScale;
-
-        // set current_attribute of penLine
-        templine.GetComponent<iconicElementScript>().current_attribute =
-            templine.GetComponent<iconicElementScript>().attribute.Length;
-
+        templine.transform.position = new Vector3(0, 0, 0); 
         return templine;
     }
-    */
 
     // LOAD A SPRITE AS A PENLINE OBJECT
     /*public GameObject CreatePenLine(string sprite_filename)

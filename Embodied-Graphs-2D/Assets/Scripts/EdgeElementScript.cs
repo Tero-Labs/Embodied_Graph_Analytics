@@ -29,6 +29,9 @@ public class EdgeElementScript : MonoBehaviour
     public bool directed_edge = false;
     public Sprite directed_edge_sprite;
 
+    // for free-hand edge
+    public bool free_hand = false;
+
     public Material icon_elem_material;
     public GameObject paintable_object;
 
@@ -1444,7 +1447,64 @@ public class EdgeElementScript : MonoBehaviour
 
         }
     }
-        
+
+    public void addFreeHandPoint()
+    {
+        GameObject source = edge_start;
+        GameObject target = edge_end;
+
+        LineRenderer l = transform.GetComponent<LineRenderer>();
+        if (video)
+            l.material.SetColor("_Color", Color.red);
+
+        // assuming edge_start is always an anchor        
+        //var edgepoints = new List<Vector3>() { l.GetPosition(0), l.GetPosition(l.positionCount-1) };
+        Vector3[] points_arr = new Vector3[l.positionCount];
+        l.GetPositions(points_arr);
+        var edgepoints = points_arr.ToList();
+
+        transform.GetComponent<EdgeCollider2D>().points = edgepoints.Select(x =>
+        {
+            var pos = transform.GetComponent<EdgeCollider2D>().transform.InverseTransformPoint(x);
+            return new Vector2(pos.x, pos.y);
+        }).ToArray();
+
+        transform.GetComponent<EdgeCollider2D>().edgeRadius = 10;
+
+
+        for (int x = 0; x < 2; x++)
+        {
+            int idx = 0;
+            if (x == 1)
+                idx = l.positionCount - 1;
+
+            GameObject temp = Instantiate(dot_prefab, l.GetPosition(idx), Quaternion.identity, transform);
+            temp.name = "dot_child";
+            temp.transform.parent = transform;
+            temp.transform.SetSiblingIndex(x);
+            if (video)
+            {
+                temp.transform.localScale = new Vector3(5f, 5f, 5f);
+            }
+            else
+            {
+                temp.GetComponent<SpriteRenderer>().color = l.material.color;
+            }
+
+            if (directed_edge && x == 1)
+            {
+                temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
+                Vector3 direction = l.GetPosition(idx) - l.GetPosition(0);
+                temp.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI);
+            }
+            else if (directed_edge && x == 0)
+            {
+                temp.GetComponent<SpriteRenderer>().sprite = null;
+            }
+
+        }
+    }
+
 
     public void updateEndPoint()
     {

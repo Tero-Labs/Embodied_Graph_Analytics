@@ -103,6 +103,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 else
                 {
                     graph_holder = Instantiate(graph_prefab);
+                    graph_holder.transform.parent = paintable.GetComponent<Paintable>().Objects_parent.transform;
                     graph_holder.GetComponent<GraphElementScript>().video_graph = true;
                     graph_holder.GetComponent<GraphElementScript>().abstraction_layer = "graph";
                     graph_holder.GetComponent<GraphElementScript>().paintable = paintable;
@@ -110,6 +111,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     graph_holder.name = "graph_" + paintable.GetComponent<Paintable>().graph_count.ToString();
                     graph_holder.GetComponent<GraphElementScript>().graph_name = "G" + paintable.GetComponent<Paintable>().graph_count.ToString();
                 }
+
+                graph_holder.SetActive(true);
 
                 //temp_parent = Instantiate(graph_prefab);            
 
@@ -148,7 +151,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, 853, first_obj.x));
                         float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, 480, first_obj.y));
 
-                        Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -5f);
+                        Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
                         edge_pos += pos_vec;
 
                         points.Add(pos_vec);
