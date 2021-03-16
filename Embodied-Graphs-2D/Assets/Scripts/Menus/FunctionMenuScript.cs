@@ -396,8 +396,9 @@ public class FunctionMenuScript : MonoBehaviour
                     
                 }
 
-                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
-                dragged_arg_object = null;
+                /*paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+                dragged_arg_object = null;*/
+                StartCoroutine(clearclickedobj());
             }
 
              
@@ -701,13 +702,13 @@ public class FunctionMenuScript : MonoBehaviour
                 StartCoroutine(CheckUnevaluatedFunctionArguments());
                 //transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());                
             }
-            
+
             input_option.SetActive(false);
             paintable.GetComponent<Paintable>().no_func_menu_open = true;            
         }
     }
 
-    public void InitiateFunctionCallHelper(GameObject video_player)
+    public void InitiateFunctionCallHelper(GameObject video_player = null)
     {
         passive_func_call = true;
         transform.parent.GetComponent<FunctionElementScript>().video_player = video_player;
@@ -880,6 +881,8 @@ public class FunctionMenuScript : MonoBehaviour
     {
         if (eval_finished) yield break;
 
+        transform.parent.GetComponent<FunctionElementScript>().graph_generation_done = false;
+
         int idx = 0;
         foreach (GameObject child_graph in argument_objects)
         {
@@ -887,17 +890,39 @@ public class FunctionMenuScript : MonoBehaviour
             if (child_graph.transform.parent.name.Contains("function_line_")
                 && !child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
             {
-                Debug.Log("child_called");
+                Transform cur_function_line = child_graph.transform.parent;
+                Debug.Log("child: " + 
+                    child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().mainInputField.text.ToLower() +
+                    " called.");
                 yield return StartCoroutine
                     (child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().CheckUnevaluatedFunctionArguments());
 
-                argument_objects[idx]= child_graph.transform.parent.GetChild(1).gameObject;
+                yield return null;
+                //Debug.Log("child: " + cur_function_line.name);
+                argument_objects[idx]= cur_function_line.GetChild(1).gameObject;
             }
 
             idx++;
         }
 
-        Debug.Log("i_initiated");
+        //i_initiated
         transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
+        
+        while (transform.parent.GetComponent<FunctionElementScript>().graph_generation_done == false)
+        {
+            Debug.Log("waiting_until_i_am_finished_executing");
+            yield return null;
+        }
+        // an extra yield for double check
+        yield return null;
+    }
+
+    // if we set null directly, other open function menu can not access the parameters
+    IEnumerator clearclickedobj()
+    {
+        yield return null;
+        paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+        dragged_arg_object = null;
+
     }
 }

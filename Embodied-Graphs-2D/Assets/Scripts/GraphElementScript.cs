@@ -409,7 +409,7 @@ public class GraphElementScript : MonoBehaviour
 
     IEnumerator clear_files()
     {
-        File.Delete("Assets/Resources/" + "output.json");
+        //File.Delete("Assets/Resources/" + "output.json");
         File.Delete("Assets/Resources/" + "data.json");
         yield return null;
     }
@@ -480,7 +480,7 @@ public class GraphElementScript : MonoBehaviour
 
         if (target_layer == "abstract")
         {            
-            transform.GetChild(4).position = edge_position;
+            transform.GetChild(4).position = new Vector3(edge_position.x, edge_position.y, -5f);
             transform.GetChild(4).gameObject.SetActive(true);
             transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
                              
@@ -728,6 +728,7 @@ public class GraphElementScript : MonoBehaviour
 
         edgeline.GetComponent<LineRenderer>().SetPosition(0, source_vec);
         edgeline.GetComponent<LineRenderer>().SetPosition(1, target_vec);
+        Destroy(edgeline.GetComponent<TrailRenderer>());
 
         var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1) };
 

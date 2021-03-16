@@ -56,6 +56,7 @@ public class CopyIconicObject : MonoBehaviour
             // if the dragged distance is not too low, or to prevent adding objects when touch is stationary
             if (Vector3.Distance(copy_path[copy_path.Count - 1], pos) > 50)
             {
+                pos.z = toCopy.GetComponent<iconicElementScript>().edge_position.z;
                 copy_path.Add(pos);
 
                 Vector3 target_pos = pos - toCopy.GetComponent<iconicElementScript>().edge_position;
@@ -105,6 +106,7 @@ public class CopyIconicObject : MonoBehaviour
         {
             // add an offset upwards for the first copy
             pos += new Vector3(0, 20, 0);
+            pos.z = toCopy.GetComponent<iconicElementScript>().edge_position.z;
 
             copy_path.Add(pos);
 

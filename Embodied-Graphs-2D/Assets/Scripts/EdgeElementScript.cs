@@ -1393,6 +1393,9 @@ public class EdgeElementScript : MonoBehaviour
     // edge creation
     public void addEndPoint(bool video = false)
     {
+        if (transform.gameObject.GetComponent<TrailRenderer>() != null) 
+            Destroy(transform.gameObject.GetComponent<TrailRenderer>());
+
         GameObject source = edge_start;
         GameObject target = edge_end;
 

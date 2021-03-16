@@ -121,7 +121,7 @@ MonoBehaviour:
     type: 3}
   LabelElement: {fileID: 6996262343074260104, guid: 9ff5c8999e810ac4da2446d02ba14b20,
     type: 3}
-  graph_radial_menu: {fileID: 2838677255334079668, guid: 5eacde4eadc27db49963d370df814a64,
+  graph_radial_menu: {fileID: 2838677255334079668, guid: 9ac0672e99baaf64aa26c3e9dd045813,
     type: 3}
   canvas_radial: {fileID: 0}
   paintable: {fileID: 0}
@@ -133,11 +133,13 @@ MonoBehaviour:
   simplicial_drawn: 0
   hyper_edges_drawn: 0
   abstract_drawn: 0
+  video_graph: 0
   graph:
     edges: []
     simplicials: []
     hyperedges: []
     nodes: 
+  points: []
 --- !u!1 &6186690490208740500
 GameObject:
   m_ObjectHideFlags: 0

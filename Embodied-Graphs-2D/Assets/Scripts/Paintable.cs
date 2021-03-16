@@ -5,6 +5,9 @@ using UnityEngine.InputSystem.EnhancedTouch;
 using UnityEngine.InputSystem;
 using System.Linq;
 using TMPro;
+using Jobberwocky.GeometryAlgorithms.Source.API;
+using Jobberwocky.GeometryAlgorithms.Source.Core;
+using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 
 public class Paintable : MonoBehaviour
 {
@@ -121,7 +124,7 @@ public class Paintable : MonoBehaviour
     public static int function_count = 0;
     public GameObject dragged_arg_textbox;
     public GameObject current_dragged_function;
-    public GameObject potential_tapped_graph;
+    public GameObject potential_tapped_graph;    
 
     // needed for video
     public GameObject videoplayer;
@@ -134,6 +137,8 @@ public class Paintable : MonoBehaviour
 
     // Action History
     public static bool ActionHistoryEnabled = false;
+
+    public GameObject status_label_obj;
 
     // Start is called before the first frame update
     void Start()
@@ -563,6 +568,7 @@ public class Paintable : MonoBehaviour
                     else
                         edge_end = Hit.collider.gameObject;
 
+                    
                     if (!free_hand_edge)
                     {
 
@@ -624,7 +630,7 @@ public class Paintable : MonoBehaviour
                             LineRenderer l = edgeline.transform.GetComponent<LineRenderer>();
                             l.positionCount = edgeline.GetComponent<EdgeElementScript>().points.Count;
                             l.SetPositions(edgeline.GetComponent<EdgeElementScript>().points.ToArray());
-                            Destroy(edgeline.GetComponent<TrailRenderer>());
+                            
                             edgeline = transform.GetComponent<CreatePrimitives>().FinishEdgeLine(edgeline);
                             
 
@@ -1137,6 +1143,13 @@ public class Paintable : MonoBehaviour
                                         return;
                                     }
 
+                                    var hullAPI = new HullAPI();
+                                    var hull = hullAPI.Hull2D(new Hull2DParameters()
+                                    { Points = functionline.GetComponent<FunctionElementScript>().points.ToArray(), Concavity = 3000 });
+
+                                    Vector3[] vertices = hull.vertices;
+
+                                    functionline.GetComponent<FunctionElementScript>().points = vertices.ToList();
                                     functionline = transform.GetComponent<CreatePrimitives>().FinishFunctionLine(functionline);
 
                                     functionline.GetComponent<FunctionElementScript>().InstantiateNameBox();
@@ -2312,11 +2325,16 @@ public class Paintable : MonoBehaviour
         {
             panZoomLocked = !panZoomLocked;
             Debug.Log("panning_value_change"+ panZoomLocked.ToString());
+            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+            temp_stat.GetComponent<Status_label_text>().ChangeLabel("panning: " + panZoomLocked.ToString());
         }
 
         if (Input.GetKeyUp(KeyCode.F))
         {
             free_hand_edge = !free_hand_edge;
+            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+            temp_stat.GetComponent<Status_label_text>().ChangeLabel("free hand drawing: " + free_hand_edge.ToString());
+            Debug.Log("NOT WORKING?");
         }
 
 
@@ -2376,15 +2394,18 @@ public class Paintable : MonoBehaviour
 
         //Graph
         if (Input.GetKeyUp(KeyCode.G))
-        {
-            
+        {            
             graphlocked = !graphlocked;
+            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+            temp_stat.GetComponent<Status_label_text>().ChangeLabel("graph lock: " + graphlocked.ToString());
             Debug.Log("NOT WORKING?");
         }
 
         if (Input.GetKeyUp(KeyCode.D))
         {
             directed_edge = !directed_edge;
+            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+            temp_stat.GetComponent<Status_label_text>().ChangeLabel("directed edge: " + directed_edge.ToString());
         }
 
         if (Input.GetKeyUp(KeyCode.Alpha1) || Input.GetKeyUp(KeyCode.Keypad1))

@@ -8,6 +8,7 @@ public class GraphSliderMenu : MonoBehaviour
 {
     public string cur_layer;
     public GameObject parent;
+    public GameObject menu_object;
     public Slider mainSlider;
 
     public TMP_Text tmptextlabel;
@@ -74,8 +75,31 @@ public class GraphSliderMenu : MonoBehaviour
         }
 
         tmptextlabel.text = cur_layer;
-        parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
+        if (transform.parent.name.Contains("Graph_menu"))
+        {
+            parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
+        }
+        else
+        {
+            //Debug.Log("function_menu");
+            StartCoroutine(functionSliderInitiate(cur_layer));
+        }
+        
     }
 
-   
+    IEnumerator functionSliderInitiate(string cur_layer)
+    {
+        Transform cur_function_line = menu_object.transform.parent;
+        menu_object.GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper();
+
+        while (cur_function_line.GetComponent<FunctionElementScript>().graph_generation_done == false)
+        {
+            //"waiting_until_i_am_finished_executing"
+            yield return null;
+        }
+
+        yield return null;
+        this.parent = cur_function_line.GetChild(1).gameObject;
+        parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
+    }
 }

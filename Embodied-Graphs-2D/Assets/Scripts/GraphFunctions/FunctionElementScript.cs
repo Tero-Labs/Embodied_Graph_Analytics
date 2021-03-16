@@ -100,6 +100,7 @@ public class FunctionElementScript : MonoBehaviour
     //public GameObject details_dropdown;
     public bool global_details_on_path = true;
     public bool fused_function;
+    public bool graph_generation_done;
 
     public GameObject function_menu;
     public GameObject video_player;
@@ -118,8 +119,9 @@ public class FunctionElementScript : MonoBehaviour
 
     IEnumerator clear_files()
     {
-        File.Delete("Assets/Resources/" + "output.json");
+        //File.Delete("Assets/Resources/" + "output.json");
         File.Delete("Assets/Resources/" + "data.json");
+        graph_generation_done = true;
         yield return null;
     }
 
@@ -518,6 +520,7 @@ public class FunctionElementScript : MonoBehaviour
 
         edgeline.GetComponent<LineRenderer>().SetPosition(0, source_vec);
         edgeline.GetComponent<LineRenderer>().SetPosition(1, target_vec);
+        Destroy(edgeline.GetComponent<TrailRenderer>());
 
         var edgepoints = new List<Vector3>() { edgeline.GetComponent<LineRenderer>().GetPosition(0), edgeline.GetComponent<LineRenderer>().GetPosition(1) };
 
