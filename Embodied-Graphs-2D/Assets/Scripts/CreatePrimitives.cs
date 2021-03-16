@@ -21,6 +21,7 @@ public class CreatePrimitives : MonoBehaviour
     // Length, area, distance units
     public static float unitScale = 0.025f;
     public Material solid_mat;
+    public Material transparent_mat;
 
     public GameObject PenLine;
     public GameObject EdgeLinePrefab;
@@ -167,6 +168,69 @@ public class CreatePrimitives : MonoBehaviour
         
         return templine;
     }
+
+    // Assumes templine has been initialized in pointer.start and pointer.moved
+    public GameObject FinishGraphLine(GameObject templine, bool lassocolor = false, int rank = 0)
+    {
+        var lineRenderer = templine.GetComponent<GraphElementScript>().graph_Details.GetComponent<LineRenderer>();
+        var MeshRenderer = templine.GetComponent<GraphElementScript>().graph_Details.GetComponent<MeshRenderer>();
+        var meshFilter = templine.GetComponent<GraphElementScript>().graph_Details.GetComponent<MeshFilter>();
+
+        lineRenderer.numCapVertices = 15;
+        lineRenderer.numCornerVertices = 15;
+        lineRenderer.widthMultiplier = 2;
+        lineRenderer.positionCount = templine.GetComponent<GraphElementScript>().points.Count;
+        lineRenderer.SetPositions(templine.GetComponent<GraphElementScript>().points.ToArray());
+
+        
+        if (lassocolor)
+        {
+            Color color = colors[rank % (colors.Length)];
+
+            //color = new Color(UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f), UnityEngine.Random.Range(0, 1f)); 
+            /*How to change color of material -Unity Forum
+            https://forum.unity.com/threads/how-to-change-color-of-material.874921/ */
+
+            Material new_material = new Material(solid_mat);
+            new_material.SetColor("_Color", color);
+            MeshRenderer.sharedMaterial = new_material;
+            lineRenderer.sharedMaterial = new_material;
+        }
+        else
+        {
+            Material new_material = new Material(solid_mat);
+            new_material.SetColor("_Color", Color.red);
+            MeshRenderer.sharedMaterial = new_material;
+            lineRenderer.sharedMaterial = new_material;
+        }
+
+
+        // If a combined mesh is not passed, use the line renderer mesh (default case)        
+        Mesh mesh = new Mesh();
+        lineRenderer.BakeMesh(mesh, true);
+        meshFilter.sharedMesh = mesh;
+        Destroy(lineRenderer);
+
+        templine.GetComponent<GraphElementScript>().graph_Details.transform.position = new Vector3(0, 0, 0); 
+        return templine;
+    }
+
+    // Assumes templine has been initialized in pointer.start and pointer.moved
+    public Material FindGraphMaterial(bool lassocolor = false, int rank = 0)
+    {
+        Material new_material = new Material(transparent_mat);
+        if (lassocolor)
+        {
+            Color color = colors[rank % (colors.Length)];
+            new_material.SetColor("_Color", new Color(color.r, color.g, color.b, 0.2f));
+        }
+        else
+        {
+            new_material.SetColor("_Color", new Color(0.5f, 0.5f, 0.5f, 0.2f));
+        }
+        return new_material;
+    }
+
 
     // Assumes templine has been initialized in pointer.start and pointer.moved
     public GameObject FinishFunctionLine(GameObject templine, bool lassocolor = false, int rank = 0)

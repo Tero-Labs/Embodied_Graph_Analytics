@@ -6,6 +6,9 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine.Video;
+using Jobberwocky.GeometryAlgorithms.Source.API;
+using Jobberwocky.GeometryAlgorithms.Source.Core;
+using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 
 
 public class GraphElementScript : MonoBehaviour
@@ -47,7 +50,12 @@ public class GraphElementScript : MonoBehaviour
 
     public List<Vector3> points = new List<Vector3>();
 
+    // for shwing abstraction layer name
     TMP_Text tmptextlabel;
+
+    // for graph details showing
+    public GameObject graph_Details;
+    public GameObject topo_label;
 
     // Start is called before the first frame update
     void Start()
@@ -951,4 +959,152 @@ public class GraphElementScript : MonoBehaviour
 
         MenuClickSetup(radmenu);
     }
+
+    public void GraphDetails(bool lassocolor = false, int rank = 0)
+    {
+        List<Vector3> hull_pts = new List<Vector3>();
+
+        //GameObject graph_Details = transform.Find("graph_Details").gameObject;
+        //If the child was found.
+        if (graph_Details != null)
+        {
+            Destroy(graph_Details);
+        }
+
+        graph_Details = new GameObject("graph_Details");
+        graph_Details.transform.parent = transform;
+
+        //var l = graph_Details.AddComponent<LineRenderer>();
+        var mr = graph_Details.AddComponent<MeshRenderer>();
+        var mf = graph_Details.AddComponent<MeshFilter>();
+        //mr.material.SetColor("_Color", Color.red); 
+        mr.material = paintable.GetComponent<CreatePrimitives>().FindGraphMaterial(lassocolor, rank);
+
+        Transform node_parent = transform.GetChild(0);
+        
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            Transform child = node_parent.GetChild(i);
+            if (child.tag == "iconic")
+            {
+                // to optimize we take special measure for videos
+                if (video_graph)
+                {
+                    hull_pts.AddRange(points);
+                }
+                else
+                {
+                    List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
+                    hull_pts.AddRange(returned_pts);
+                }                
+
+                GameObject temp_label = Instantiate(topo_label);
+                temp_label.transform.SetParent(graph_Details.transform);
+
+                temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
+                    new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
+
+                var icon_name = child.GetComponent<iconicElementScript>().icon_name;
+                if (string.IsNullOrWhiteSpace(icon_name))
+                    temp_label.GetComponent<TextMeshProUGUI>().text = child.GetComponent<iconicElementScript>().icon_number.ToString();
+                else
+                    temp_label.GetComponent<TextMeshProUGUI>().text = icon_name;
+            }
+        }
+        
+
+        var hullAPI = new HullAPI();
+        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 30000 });
+
+        Vector3[] vertices = hull.vertices;
+        points = vertices.ToList();
+
+        updatePolygon();
+
+        //paintable.GetComponent<CreatePrimitives>().FinishGraphLine(transform.gameObject);
+        
+    }
+
+    public void updatePolygon()
+    {        
+        //New mesh and game object
+        GameObject myObject = graph_Details;
+
+        //Components
+        var MF = myObject.GetComponent<MeshFilter>();
+        //Create mesh
+        var mesh = CreateMesh();
+        //Assign mesh to game object
+        MF.mesh = mesh;
+
+    }
+
+    Mesh CreateMesh()
+    {
+        int x; //Counter
+
+        //Create a new mesh
+        Mesh mesh = new Mesh();
+
+        //Vertices
+        Vector3[] vertex = new Vector3[points.Count];
+
+        //[SOLVED]Mesh vertex position in world space - Unity Forum
+        //https://forum.unity.com/threads/solved-mesh-vertex-position-in-world-space.30108/
+        // we need local points with respect to the graph parent, because the current points are in global space
+        for (x = 0; x < points.Count; x++)
+        {
+            vertex[x] = transform.InverseTransformPoint(points[x]);
+        }
+
+        //UVs
+        var uvs = new Vector2[vertex.Length];
+
+        for (x = 0; x < vertex.Length; x++)
+        {
+            if ((x % 2) == 0)
+            {
+                uvs[x] = new Vector2(0, 0);
+            }
+            else
+            {
+                uvs[x] = new Vector2(1, 1);
+            }
+        }
+
+        //Triangles
+        var tris = new int[3 * (vertex.Length - 2)];    //3 verts per triangle * num triangles
+        int C1, C2, C3;
+        C1 = 0;
+        C2 = 1;
+        C3 = 2;
+
+        for (x = 0; x < tris.Length; x += 3)
+        {
+            tris[x] = C1;
+            tris[x + 1] = C2;
+            tris[x + 2] = C3;
+
+            C2++;
+            C3++;
+        }
+
+        //Assign data to mesh
+        mesh.vertices = vertex;
+        mesh.uv = uvs;
+        mesh.triangles = tris;
+
+        //Recalculations
+        mesh.RecalculateNormals();
+        mesh.RecalculateBounds();
+        mesh.Optimize();
+
+        //Name the mesh
+        mesh.name = "MyMesh";
+
+        //Return the mesh
+        return mesh;
+    }
+
+
 }

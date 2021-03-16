@@ -140,6 +140,9 @@ MonoBehaviour:
     hyperedges: []
     nodes: 
   points: []
+  graph_Details: {fileID: 0}
+  topo_label: {fileID: 8829594746175238268, guid: 90daaffd0430cf343975d4c68cff4c1d,
+    type: 3}
 --- !u!1 &6186690490208740500
 GameObject:
   m_ObjectHideFlags: 0

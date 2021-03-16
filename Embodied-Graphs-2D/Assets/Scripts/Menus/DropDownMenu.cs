@@ -36,6 +36,9 @@ public class DropDownMenu : MonoBehaviour
         Toggle toggle_5 = toggle_parent.transform.GetChild(4).GetComponent<Toggle>();
         toggle_5.onValueChanged.AddListener(delegate { ShowVideoPlayer(toggle_5); });
 
+        Toggle toggle_6 = toggle_parent.transform.GetChild(5).GetComponent<Toggle>();
+        toggle_6.onValueChanged.AddListener(delegate { ShowGraphDetails(toggle_6); });
+
 
     }
 
@@ -98,6 +101,31 @@ public class DropDownMenu : MonoBehaviour
         {
             cur_function.GetComponent<MeshRenderer>().enabled = toggle.isOn;
         }
+    }
+
+    public void ShowGraphDetails(Toggle toggle)
+    {
+        GameObject[] graphs = GameObject.FindGameObjectsWithTag("graph");
+
+        if (toggle.isOn)
+        {
+            int i = 0; 
+            foreach (GameObject graph in graphs)
+            {
+                graph.GetComponent<GraphElementScript>().GraphDetails(true, i);
+                i++;
+            }
+        }
+        else
+        {
+            foreach (GameObject graph in graphs)
+            {
+                var graph_details = graph.GetComponent<GraphElementScript>().graph_Details;
+                if (graph_details != null)
+                    Destroy(graph_details);
+            }
+        }
+
     }
 
     public void ShowFunctionAnchor(Toggle toggle)
