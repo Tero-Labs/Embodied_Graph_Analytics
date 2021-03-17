@@ -82,7 +82,13 @@ public class GraphSliderMenu : MonoBehaviour
         else
         {
             //Debug.Log("function_menu");
-            StartCoroutine(functionSliderInitiate(cur_layer));
+            if (cur_layer == "graph")
+            {
+                //menu_object.transform.parent.GetChild(1).gameObject.SetActive(false);
+                menu_object.GetComponent<FunctionMenuScript>().Show();
+            }
+            else
+                StartCoroutine(functionSliderInitiate(cur_layer));
         }
         
     }

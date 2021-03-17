@@ -122,6 +122,17 @@ public class FunctionElementScript : MonoBehaviour
         //File.Delete("Assets/Resources/" + "output.json");
         File.Delete("Assets/Resources/" + "data.json");
         graph_generation_done = true;
+
+        if (video_player != null && 
+            video_player.transform.parent.GetComponent<VideoPlayerChildrenAccess>().PlayorPause.GetComponent<VideoPlayPause>().playFlag)
+            
+        {
+            video_player.transform.GetComponent<VideoPlayer>().Play();
+        }
+
+        /*if (video_player != null)
+            transform.GetChild(0).GetComponent<FunctionMenuScript>().videohide();*/
+
         yield return null;
     }
 
@@ -208,9 +219,7 @@ public class FunctionElementScript : MonoBehaviour
                 
         tempgraph.GetComponent<GraphElementScript>().edges_init();
         //tempgraph.GetComponent<GraphElementScript>().Graph_init();
-
-        if (video_player != null)
-            video_player.transform.GetComponent<VideoPlayer>().Play();
+               
 
         StartCoroutine(clear_files());
     }
@@ -386,9 +395,7 @@ public class FunctionElementScript : MonoBehaviour
             
         }
 
-        if (video_player != null)
-            video_player.transform.GetComponent<VideoPlayer>().Play();
-
+        
         StartCoroutine(clear_files());
     }
 
@@ -425,9 +432,7 @@ public class FunctionElementScript : MonoBehaviour
             StartCoroutine(coroutine);
 
         }
-        if (video_player != null)
-            video_player.transform.GetComponent<VideoPlayer>().Play();
-
+        
         StartCoroutine(clear_files());
     }
 
@@ -449,9 +454,9 @@ public class FunctionElementScript : MonoBehaviour
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
 
-        GameObject extra_objects = new GameObject("labels_overlay");
+        /*GameObject extra_objects = new GameObject("labels_overlay");
         extra_objects.transform.parent = temp_graph.transform;
-        extra_objects.transform.SetSiblingIndex(5);
+        extra_objects.transform.SetSiblingIndex(5);*/
 
         // remap node dictionary
         temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
@@ -461,13 +466,16 @@ public class FunctionElementScript : MonoBehaviour
         returned_graphs = JsonUtility.FromJson<Graphs>(File.ReadAllText("Assets/Resources/" + "output.json"));
         cascaded_lasso = true;
 
-        StartCoroutine(community_lasso_initiate(extra_objects));
+        StartCoroutine(community_lasso_initiate(/*extra_objects*/temp_graph));
 
     }
 
-    IEnumerator community_lasso_initiate(GameObject extra_objects)
+    IEnumerator community_lasso_initiate(GameObject /*extra_objects*/temp_graph)
     {
         int idx = 0;
+        GameObject extra_objects = new GameObject("labels_overlay");
+        extra_objects.transform.parent = temp_graph.transform;
+        extra_objects.transform.SetSiblingIndex(5);
 
         foreach (Graph returned_graph in returned_graphs.graphs)
         {
@@ -484,9 +492,7 @@ public class FunctionElementScript : MonoBehaviour
             yield return null;
         }
 
-        if (video_player != null)
-            video_player.transform.GetComponent<VideoPlayer>().Play();
-
+        
         StartCoroutine(clear_files());
     }
 

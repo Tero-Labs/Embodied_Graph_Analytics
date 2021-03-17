@@ -12,7 +12,7 @@ public class VideoPlayPause : MonoBehaviour
     public Sprite pause_sprite;
     [SerializeField]
     private VideoPlayer videoplayer;
-    private bool playFlag;
+    public bool playFlag;
 
     // Start is called before the first frame update
     void Start()

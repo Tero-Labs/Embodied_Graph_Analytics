@@ -10,7 +10,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 {
 
 	public bool selected = false;
-
+    public float width, height;
 
 	public static bool isPointerOverGraphPen = false;
 	public static bool isPointerOverPan = false;
@@ -27,9 +27,15 @@ public class AllButtonsBehaviors : MonoBehaviour
 
 		// change icon color
 		transform.GetComponent<Image>().color = new Color(0f, 0f, 0f, 1f); //new Color(1, 1, 1, 0.5f);
+        		        
+        // change scale
+        transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
 
-		// change scale
-		transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
+        var temp_stat = Instantiate(paint_canvas.GetComponent<Paintable>().status_label_obj, 
+            new Vector3(transform.position.x + (width / 2), transform.position.y - (height), transform.position.z),
+            Quaternion.identity, transform.parent);
+
+        temp_stat.GetComponent<Status_label_text>().ChangeLabel(this.name + "\n selected");
 
         if (this.name == "Pan")
         {
@@ -285,10 +291,13 @@ public class AllButtonsBehaviors : MonoBehaviour
 		buttons = GameObject.FindGameObjectsWithTag("canvas_mode_button");
         paint_canvas = GameObject.FindGameObjectWithTag("paintable_canvas_object");
 
+        width = transform.GetComponent<RectTransform>().sizeDelta.x * transform.GetComponent<RectTransform>().localScale.x;
+        height = transform.GetComponent<RectTransform>().sizeDelta.y * transform.GetComponent<RectTransform>().localScale.y;
+
     }
 
-	// Update is called once per frame
-	void Update()
+    // Update is called once per frame
+    void Update()
 	{
 		if (EventSystem.current.IsPointerOverGameObject(0))
 		{

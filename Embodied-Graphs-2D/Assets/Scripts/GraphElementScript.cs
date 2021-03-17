@@ -814,6 +814,8 @@ public class GraphElementScript : MonoBehaviour
         // check if the current function is part of any function, if so initiate function call again
         foreach (GameObject cur_function in all_functions)
         {
+            if (cur_function == null) continue;
+
             if ((cur_function.transform.childCount > 2))
             {
                 // check if any function argument has been assigned

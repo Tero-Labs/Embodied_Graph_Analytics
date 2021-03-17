@@ -10,7 +10,7 @@ public class Status_label_text : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Destroy(transform.gameObject, 1f);
+        Destroy(transform.gameObject, 0.5f);
     }
 
     public void ChangeLabel(string status)
