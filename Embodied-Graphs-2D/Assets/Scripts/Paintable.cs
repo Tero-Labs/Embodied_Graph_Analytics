@@ -167,26 +167,22 @@ public class Paintable : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //var activeTouches = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches;
-
-        /*
-		#region prevent unwanted touch on canvas
-		// prevent touch or click being registered on the canvas when a gui button is clicked
-		if (AllButtonsBehaviors.isPointerOverIconicPen || AllButtonsBehaviors.isPointerOverSelect || AllButtonsBehaviors.isPointerOverPan
-		|| AllButtonsBehaviors.isPointerOverEdgeButton || AllButtonsBehaviors.isPointerOverGraphPen ||
-		AllButtonsBehaviors.isPointerOverEraserButton || AllButtonsBehaviors.isPointerOverStaticPen || AllButtonsBehaviors.isPointerOverStrokeConvert
-		|| AllButtonsBehaviors.isPointerOverPathDefinition || AllButtonsBehaviors.isPointerOverTextInput || AllButtonsBehaviors.isPointerOverCopy)
-		{
-			return;
-		}
-		#endregion
-		*/
+        //var activeTouches = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches;      
+		
 
         #region iconic element brush
 
         if (iconicElementButton.GetComponent<AllButtonsBehaviors>().selected)
         //!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
         {
+            #region prevent unwanted touch on canvas
+            // prevent touch or click being registered on the canvas when a gui button is clicked
+            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
+            {
+                return;
+            }
+            #endregion
+
             //Debug.Log("entered");
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
@@ -472,6 +468,13 @@ public class Paintable : MonoBehaviour
         #region Graph Pen
         if (graph_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
+            #region prevent unwanted touch on canvas
+            // prevent touch or click being registered on the canvas when a gui button is clicked
+            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
+            {
+                return;
+            }
+            #endregion
 
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
@@ -693,6 +696,13 @@ public class Paintable : MonoBehaviour
         #region Simplicial Pen
         if (simplicial_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
+            #region prevent unwanted touch on canvas
+            // prevent touch or click being registered on the canvas when a gui button is clicked
+            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
+            {
+                return;
+            }
+            #endregion
 
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
@@ -748,6 +758,13 @@ public class Paintable : MonoBehaviour
         #region hypergraph Pen
         if (hyper_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
+            #region prevent unwanted touch on canvas
+            // prevent touch or click being registered on the canvas when a gui button is clicked
+            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
+            {
+                return;
+            }
+            #endregion
 
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {

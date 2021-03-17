@@ -109,12 +109,13 @@ public class DropDownMenu : MonoBehaviour
 
         if (toggle.isOn)
         {
-            int i = 0; 
+            StartCoroutine(GraphDetailsShow(graphs));
+            /*int i = 0; 
             foreach (GameObject graph in graphs)
             {
                 graph.GetComponent<GraphElementScript>().GraphDetails(true, i);
                 i++;
-            }
+            }*/
         }
         else
         {
@@ -126,6 +127,19 @@ public class DropDownMenu : MonoBehaviour
             }
         }
 
+    }
+
+    IEnumerator GraphDetailsShow(GameObject[] graphs)
+    {
+        int i = 0;
+        foreach (GameObject graph in graphs)
+        {
+            if (graph == null) continue;
+
+            graph.GetComponent<GraphElementScript>().GraphDetails(true, i);
+            i++;
+            yield return null;
+        }
     }
 
     public void ShowFunctionAnchor(Toggle toggle)
@@ -146,6 +160,7 @@ public class DropDownMenu : MonoBehaviour
 
         foreach (GameObject cur_vp in vps)
         {
+            cur_vp.transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
             cur_vp.GetComponent<MeshRenderer>().enabled = toggle.isOn;
         }
     }

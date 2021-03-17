@@ -106,6 +106,8 @@ public class FileLoadDialog : MonoBehaviour
                 {
                     transform.GetComponent<Paintable>().createImageIcon(FileBrowser.Result[i]);
                 }
+
+                yield return null;
             }
                 
 

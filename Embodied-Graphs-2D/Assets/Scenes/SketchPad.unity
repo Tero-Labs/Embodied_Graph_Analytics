@@ -337,6 +337,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &26456184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 26456179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c01a4b6918b1724b8e163cb48b167dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pointer: 0
 --- !u!1 &32955497 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2130943085791948220, guid: 4214b57e615806c448ba9d993d629531,
@@ -3390,7 +3403,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 302240324}
   m_HandleRect: {fileID: 302240323}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

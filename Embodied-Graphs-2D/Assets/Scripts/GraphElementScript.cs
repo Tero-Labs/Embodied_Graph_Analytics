@@ -1056,7 +1056,8 @@ public class GraphElementScript : MonoBehaviour
         // we need local points with respect to the graph parent, because the current points are in global space
         for (x = 0; x < points.Count; x++)
         {
-            vertex[x] = transform.InverseTransformPoint(points[x]);
+            //vertex[x] = transform.InverseTransformPoint(points[x]);
+            vertex[x] = points[x];
         }
 
         //UVs

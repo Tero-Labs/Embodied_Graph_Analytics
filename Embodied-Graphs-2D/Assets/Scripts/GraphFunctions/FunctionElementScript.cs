@@ -583,10 +583,25 @@ public class FunctionElementScript : MonoBehaviour
 
         for (int i = 0; i < points.Count; i = i + interval)
         {
-            if (maxx < points[i].x) maxx = points[i].x;
+            /*if (maxx < points[i].x) maxx = points[i].x;
             if (maxy < points[i].y) maxy = points[i].y;
             if (minx > points[i].x) minx = points[i].x;
-            if (miny > points[i].y) miny = points[i].y;
+            if (miny > points[i].y) miny = points[i].y;*/
+            if (maxx < points[i].x)
+            {
+                maxx = points[i].x;
+                maxy = points[i].y;
+            }
+            /*if ((Mathf.Abs(maxx - points[i].x) < 15f) && (maxy < points[i].y))
+            {
+                maxx = points[i].x;
+                maxy = points[i].y;
+            }*/
+            if (minx > points[i].x)
+            {
+                minx = points[i].x;
+                miny = points[i].y;
+            }
         }        
     }
 

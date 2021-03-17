@@ -65,6 +65,9 @@ public class FunctionMenuScript : MonoBehaviour
 
     public string output_type;
 
+    // for drag interaction
+    Color basecolor;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -89,6 +92,8 @@ public class FunctionMenuScript : MonoBehaviour
         draggable_now = false;
 
         main_camera = Camera.main;
+
+        basecolor = img.color;
 
         # region function arguments and types dictionary
         addition_dict = new Dictionary<int, string>()
@@ -526,7 +531,7 @@ public class FunctionMenuScript : MonoBehaviour
             draggable_now = false;
 
             touchDelta = new Vector3(); // reset touchDelta
-            img.color = new Color32(125, 255, 165, 255);
+            img.color = basecolor;//new Color32(125, 255, 165, 255);
 
             paintable.GetComponent<Paintable>().current_dragged_function = null;
 
@@ -923,6 +928,7 @@ public class FunctionMenuScript : MonoBehaviour
 
     IEnumerator CheckUnevaluatedFunctionArguments(GameObject self_call = null)
     {
+        bool temp_flag = true;
         if (!eval_finished || self_call == null)
         {
             transform.parent.GetComponent<FunctionElementScript>().graph_generation_done = false;
@@ -930,8 +936,15 @@ public class FunctionMenuScript : MonoBehaviour
             int idx = 0;
             foreach (GameObject child_graph in argument_objects)
             {
-                // if it is under a function, hide that as well 
-                if (child_graph.transform.parent.name.Contains("function_line_")
+                if (child_graph == null)
+                {
+                    temp_flag = false;
+                    message_box.GetComponent<TextMeshProUGUI>().text = "Can not evaluate!";
+                    break;
+                }
+
+                // if it is under a function, call that as well 
+                    if (child_graph.transform.parent.name.Contains("function_line_")
                     && !child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
                 {
                     Transform cur_function_line = child_graph.transform.parent;
@@ -955,16 +968,19 @@ public class FunctionMenuScript : MonoBehaviour
                 }
 
                 idx++;
-            }
+            }            
 
-            //i_initiated
-            transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
-
-            while (transform.parent.GetComponent<FunctionElementScript>().graph_generation_done == false)
+            if (temp_flag)
             {
-                Debug.Log("waiting_until_" + transform.parent.name + "_finished_executing");
-                yield return null;
+                //i_initiated
+                transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
+                while (transform.parent.GetComponent<FunctionElementScript>().graph_generation_done == false)
+                {
+                    Debug.Log("waiting_until_" + transform.parent.name + "_finished_executing");
+                    yield return null;
+                }
             }
+
             // an extra yield for double check
             yield return null;
         }
