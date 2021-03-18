@@ -285,6 +285,7 @@ public class CreatePrimitives : MonoBehaviour
                 
         // set transform position
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
+        templine.GetComponent<FunctionElementScript>().mesh_holder.SetActive(true);
         templine.GetComponent<FunctionElementScript>().mesh_holder.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
         templine.GetComponent<FunctionElementScript>().points.Clear();
         return templine;
@@ -322,7 +323,7 @@ public class CreatePrimitives : MonoBehaviour
         
         // disable trail renderer, no longer needed
         templine.GetComponent<TrailRenderer>().enabled = false;
-
+        templine.GetComponent<FunctionElementScript>().mesh_holder.SetActive(false);
         templine.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;
 
         // set transform position

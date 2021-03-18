@@ -63,8 +63,10 @@ public class Paintable : MonoBehaviour
     public static GameObject fused_rep_button;
     public GameObject function_brush_button;
     public GameObject video_op_button;
+    public GameObject history_view;
+    public GameObject history_list_viewer;
     public GameObject canvas_radial;
-    public GameObject color_picker;
+    public GameObject color_picker;    
     public FlexibleColorPicker color_picker_script;
 
     public GameObject text_message_worldspace;
@@ -217,10 +219,6 @@ public class Paintable : MonoBehaviour
 
                     templine.GetComponent<LineRenderer>().widthMultiplier = 2;
                     //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
-
-                    // add to history
-                    history.Add(templine);
-
 
                 }
             }
@@ -1171,6 +1169,7 @@ public class Paintable : MonoBehaviour
 
                                     functionline.GetComponent<FunctionElementScript>().InstantiateNameBox();
 
+                                    //StartCoroutine(HistoryModify(functionline));
                                     //functionline.GetComponent<FunctionElementScript>().grapharray = selected_graphs.ToArray();
                                     functionline = null;
                                 }
@@ -1240,6 +1239,7 @@ public class Paintable : MonoBehaviour
         fused_function_lasso.GetComponent<FunctionElementScript>().InstantiateNameBox();
         fused_function_lasso.GetComponent<FunctionElementScript>().fused_function = true;
 
+        //StartCoroutine(HistoryModify(fused_function_lasso));
         Destroy(fused_obj);
     }
 
@@ -2328,7 +2328,6 @@ public class Paintable : MonoBehaviour
                 
     }
 
-    
     void handleKeyInteractions()
     {
         //we don't want any redundant operation when a function name is being typed
@@ -2403,10 +2402,14 @@ public class Paintable : MonoBehaviour
 			GameObject newitem = Instantiate(listtocopy, listtocopy.transform.parent);
 			*/
 
-            /*ActionHistoryEnabled = !ActionHistoryEnabled;
+            ActionHistoryEnabled = !ActionHistoryEnabled;
 
-            if (ActionHistoryEnabled) GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(true);
-            else GameObject.Find("Canvas").transform.Find("ActionHistory").gameObject.SetActive(false);*/
+            history_view.gameObject.SetActive(ActionHistoryEnabled);
+
+            if (ActionHistoryEnabled)
+            {
+                StartCoroutine(HistoryShow());
+            }
         }
 
         //Graph
@@ -2452,6 +2455,74 @@ public class Paintable : MonoBehaviour
         if (Input.touchCount > 1 && templine != null && pan_button.GetComponent<AllButtonsBehaviors>().selected == false)
         {
             Destroy(templine);
+        }
+    }
+
+    public IEnumerator HistoryModify(GameObject functionline)
+    {
+        Debug.Log("called from " + functionline.name);
+
+        history.Add(functionline);
+        yield return null;
+
+        for (int j = 0; j < history.Count; j++)
+        {
+            // remove deleted functions
+            if (history[j] == null) history.RemoveAt(j);
+        }
+
+        if (history.Count > 10)
+        {            
+            for(int j = 0; j < (history.Count - 10); j++)
+            {
+                history.RemoveAt(0);
+            }
+        }
+
+        if (ActionHistoryEnabled)
+        {
+            StartCoroutine(HistoryShow());
+        }
+
+    }
+
+    public IEnumerator HistoryShow()
+    {
+        Debug.Log("modifying ");
+        GameObject first_item = history_list_viewer.transform.GetChild(0).gameObject;
+
+        if (history_list_viewer.transform.childCount > 1)
+        {
+            for (int j = 1; j < history_list_viewer.transform.childCount; j++)
+            {
+                Destroy(history_list_viewer.transform.GetChild(j).gameObject);
+            }
+        }
+
+        int child_iter = 1;
+
+        for (int j = 0; j < history.Count; j++)
+        {
+            if (history[j] == null)
+            {
+                history.RemoveAt(j);
+            }
+
+            else if (history[j].GetComponent<FunctionElementScript>().graph_generation_done)
+            {
+                GameObject temp_func_item = Instantiate(first_item);
+                temp_func_item.transform.parent = history_list_viewer.transform;
+                temp_func_item.transform.SetSiblingIndex(child_iter);
+
+                temp_func_item.GetComponent<TextMeshProUGUI>().text = child_iter.ToString() + ". " + history[j].name + ": " + "\n" +
+                    history[j].transform.GetChild(0).GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text;
+                temp_func_item.GetComponent<TextMeshProUGUI>().fontSize = 8;
+                //temp_func_item.transform.localScale = new Vector3(1f, 1f, 1f);
+                child_iter++;
+
+                yield return null;
+            }
+                            
         }
     }
 }

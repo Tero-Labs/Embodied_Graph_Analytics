@@ -978,11 +978,11 @@ public class FunctionMenuScript : MonoBehaviour
                 {
                     Debug.Log("waiting_until_" + transform.parent.name + "_finished_executing");
                     yield return null;
-                }
+                }                                
             }
 
             // an extra yield for double check
-            yield return null;
+            yield return null;            
         }
 
         else

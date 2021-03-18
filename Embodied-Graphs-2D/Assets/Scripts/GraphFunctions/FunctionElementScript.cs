@@ -134,6 +134,10 @@ public class FunctionElementScript : MonoBehaviour
             transform.GetChild(0).GetComponent<FunctionMenuScript>().videohide();*/
 
         yield return null;
+
+        // update history when execution done
+        Debug.Log("history calling");
+        StartCoroutine(GameObject.Find("Paintable").GetComponent<Paintable>().HistoryModify(transform.gameObject));
     }
 
     public void InstantiateNameBox()
