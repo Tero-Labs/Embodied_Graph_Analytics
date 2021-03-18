@@ -655,6 +655,7 @@ MonoBehaviour:
   history: []
   status_label_obj: {fileID: 5739574344065072630, guid: e1d46fb42c8be6f4ebb5d2cf92f0abe2,
     type: 3}
+  speed: 10
 --- !u!114 &86345611
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -142,6 +142,9 @@ public class Paintable : MonoBehaviour
 
     public GameObject status_label_obj;
 
+    // camera movement
+    public float speed = 10.0f;
+
     // Start is called before the first frame update
     void Start()
 	{
@@ -2331,6 +2334,41 @@ public class Paintable : MonoBehaviour
     void handleKeyInteractions()
     {
         //we don't want any redundant operation when a function name is being typed
+        if (pan_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            if (Input.GetKeyUp(KeyCode.RightArrow))
+            {
+                Camera.main.transform.position += Vector3.right * speed /** Time.deltaTime*/;
+            }
+            if (Input.GetKeyUp(KeyCode.LeftArrow))
+            {
+                Camera.main.transform.position += Vector3.left * speed /** Time.deltaTime*/;
+            }
+            if (Input.GetKeyUp(KeyCode.UpArrow))
+            {
+                Camera.main.transform.position += Vector3.up * speed /** Time.deltaTime*/;
+            }
+            if (Input.GetKeyUp(KeyCode.DownArrow))
+            {
+                Camera.main.transform.position += Vector3.down * speed /** Time.deltaTime*/;
+            }
+            if (Input.GetKeyUp(KeyCode.Plus) || Input.GetKeyUp(KeyCode.KeypadPlus))
+            {
+                float difference = 100;
+                Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);
+                                
+                int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+                text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+            }
+            if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
+            {
+                float difference = 100;
+                Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize + zoom_multiplier * difference, zoom_min, zoom_max);
+
+                int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+                text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+            }
+        }
 
         if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
         {
