@@ -368,6 +368,10 @@ public class Paintable : MonoBehaviour
                             curtouched_obj.GetComponent<iconicElementScript>().searchFunctionAndUpdateLasso();
                     }
 
+                    else if (curtouched_obj.tag == "video_player")
+                    {
+                        curtouched_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().UIlayout();
+                    }
                 }
 
                 else if (activeTouches.phase == UnityEngine.TouchPhase.Began && okayToPan)
@@ -1399,8 +1403,12 @@ public class Paintable : MonoBehaviour
                         menucreation(PenTouchInfo.penPosition);
                     }
                 }
-            }                     
+            }
 
+            else if (pen_dragged_obj.tag == "video_player")
+            {
+                pen_dragged_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().UIlayout();
+            }
 
             pen_dragged_obj = null;
         }

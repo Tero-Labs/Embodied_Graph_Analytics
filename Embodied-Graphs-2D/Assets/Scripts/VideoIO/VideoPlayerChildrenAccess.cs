@@ -16,6 +16,8 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     public Toggle node_radius, site_specific;
     public Toggle auto_track, manual_track;
 
+    public float width, height;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -32,6 +34,43 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         // to setup initial values
         GraphType(node_radius);
         TrackType(auto_track);
+
+        width = quad.transform.localScale.x;
+        height = quad.transform.localScale.y;
+
+        UIlayout();
+    }
+
+    public void UIlayout()
+    {
+        //http://www.robotmonkeybrain.com/convert-unity-ui-screen-space-position-to-world-position/
+        //https://forum.unity.com/threads/world-position-to-local-recttransform-position.445256/
+        //https://forum.unity.com/threads/world-position-to-local-recttransform-position.445256/
+        //https://stackoverflow.com/a/43736203
+
+        Vector3 temp_pos = new Vector3(quad.transform.position.x,
+                                                    quad.transform.position.y + (height / 2) - 10,
+                                                    0f);
+
+        Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos);
+
+        Vector2 rect_Try;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(control_menu.transform.parent.GetComponent<RectTransform>(), screen_temp_pos,
+                                    null, out rect_Try);
+
+        control_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try;
+
+        Vector3 temp_pos_2 = new Vector3(quad.transform.position.x - (width / 2) + 10,
+                                                   quad.transform.position.y,
+                                                   0f);
+
+        Vector3 screen_temp_pos_2 = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos_2);
+
+        Vector2 rect_Try_2;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(settings_menu.transform.parent.GetComponent<RectTransform>(),
+                    screen_temp_pos_2, null, out rect_Try_2);
+
+        settings_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try_2;
     }
 
     void LockInput(InputField input)

@@ -31,8 +31,16 @@ public class AllButtonsBehaviors : MonoBehaviour
         // change scale
         transform.localScale = new Vector3(1.25f, 1.25f, 1.25f);
 
-        var temp_stat = Instantiate(paint_canvas.GetComponent<Paintable>().status_label_obj, 
-            new Vector3(transform.position.x + (width / 2), transform.position.y - (height), transform.position.z),
+        Vector3[] v = new Vector3[4];
+        transform.GetComponent<RectTransform>().GetWorldCorners(v);
+
+        Vector3 center = v[3];//(v[0] + v[3]) / 2;
+        center.y -= (v[1].y - v[0].y);
+
+        //https://docs.unity3d.com/ScriptReference/RectTransform.GetWorldCorners.html
+
+        var temp_stat = Instantiate(paint_canvas.GetComponent<Paintable>().status_label_obj,
+            center,
             Quaternion.identity, transform.parent);
 
         temp_stat.GetComponent<Status_label_text>().ChangeLabel(this.name + "\n selected");
