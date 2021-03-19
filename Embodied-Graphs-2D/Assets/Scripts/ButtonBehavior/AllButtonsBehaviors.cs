@@ -166,11 +166,15 @@ public class AllButtonsBehaviors : MonoBehaviour
                 Destroy(paint_canvas.GetComponent<Paintable>().templine);
                 paint_canvas.GetComponent<Paintable>().templine = null;
             }
+
+            StartCoroutine(CorrectIcons());
         }
         // incase any temp cylinder is left, we will clear them up 
         else if (this.name == "GraphPen")
         {
             paint_canvas.GetComponent<Paintable>().DeleteEmptyEdgeObjects();
+
+            StartCoroutine(CorrectEdges());
         }
 
         else if (this.name == "Pan")
@@ -212,8 +216,10 @@ public class AllButtonsBehaviors : MonoBehaviour
             if (paint_canvas.GetComponent<Paintable>().functionline != null)
             {
                 Destroy(paint_canvas.GetComponent<Paintable>().functionline);
-                paint_canvas.GetComponent<Paintable>().functionline = null;
+                //paint_canvas.GetComponent<Paintable>().functionline = null;
             }
+
+            StartCoroutine(CorrectFunctionLines());
         }
     }
 
@@ -332,4 +338,65 @@ public class AllButtonsBehaviors : MonoBehaviour
 			isPointerOverCopy = false;
 		}
 	}
+
+    IEnumerator CorrectIcons()
+    {        
+        yield return null;
+
+        foreach(GameObject cur in paint_canvas.GetComponent<Paintable>().new_drawn_icons)
+        {
+            if (cur == null) continue;
+            if (cur.GetComponent<iconicElementScript>().points.Count < paint_canvas.GetComponent<Paintable>().min_point_count)
+            {
+                Destroy(cur);
+            }
+            else if(cur.GetComponent<BoxCollider>() == null)
+            {
+                Destroy(cur);
+            }
+        }
+
+        yield return null;
+        paint_canvas.GetComponent<Paintable>().new_drawn_icons.Clear();
+    }
+
+    IEnumerator CorrectEdges()
+    {
+        yield return null;
+
+        foreach (GameObject cur in paint_canvas.GetComponent<Paintable>().new_drawn_edges)
+        {
+            if (cur == null) continue;
+            if (cur.GetComponent<EdgeElementScript>().edge_start == null ||
+                cur.GetComponent<EdgeElementScript>().edge_end == null)
+            {
+                Destroy(cur);
+            }
+            else if (cur.GetComponent<EdgeCollider2D>() == null)
+            {
+                Destroy(cur);
+            }
+        }
+
+        yield return null;
+        paint_canvas.GetComponent<Paintable>().new_drawn_edges.Clear();
+    }
+        
+    IEnumerator CorrectFunctionLines()
+    {
+        yield return null;
+
+        foreach (GameObject cur in paint_canvas.GetComponent<Paintable>().new_drawn_function_lines)
+        {
+            if (cur == null) continue;
+            if (cur.transform.childCount < 3)
+            {
+                Destroy(cur);
+            }
+        }
+
+        yield return null;
+        paint_canvas.GetComponent<Paintable>().new_drawn_function_lines.Clear();
+    }
+
 }

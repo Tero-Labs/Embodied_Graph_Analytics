@@ -84,7 +84,7 @@ public class Paintable : MonoBehaviour
     // needed for drawing
     public GameObject templine;
 	public int totalLines = 0;
-    private static int min_point_count = 30;
+    public int min_point_count = 10;
 
     // holder of all game objects
     public GameObject Objects_parent;
@@ -136,6 +136,9 @@ public class Paintable : MonoBehaviour
 
     // objects history
     public List<GameObject> history = new List<GameObject>();
+    public List<GameObject> new_drawn_icons = new List<GameObject>();
+    public List<GameObject> new_drawn_edges = new List<GameObject>();
+    public List<GameObject> new_drawn_function_lines = new List<GameObject>();
 
     // Action History
     public static bool ActionHistoryEnabled = false;
@@ -174,7 +177,6 @@ public class Paintable : MonoBehaviour
     {
         //var activeTouches = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches;      
 		
-
         #region iconic element brush
 
         if (iconicElementButton.GetComponent<AllButtonsBehaviors>().selected)
@@ -222,7 +224,7 @@ public class Paintable : MonoBehaviour
 
                     templine.GetComponent<LineRenderer>().widthMultiplier = 2;
                     //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
-
+                    new_drawn_icons.Add(templine);
                 }
             }
 
@@ -268,19 +270,21 @@ public class Paintable : MonoBehaviour
                 {
                     if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
                     {
-                        // Debug.Log("here_in_save_mode " + templine.GetComponent<iconicElementScript>().points.Count.ToString());
-                        // TODO: FINISH THE ICONIC ELEMENT
+                        
                         templine = transform.GetComponent<CreatePrimitives>().FinishPenLine(templine);
                         templine.GetComponent<iconicElementScript>().paintable_object = transform.gameObject;
-                        // set templine to null, otherwise, if an existing touch from color picker makes it to the canvas,
-                        // then the object jumps to the color picker (as a new templine hasn't been initialized from touch.begin).
+
+                        //new_drawn_icons.Add(templine);
                         templine = null;
+
                     }
                     else
                     {
                         // delete the templine, not enough points
                         // Debug.Log("here_in_destroy");
                         Destroy(templine);
+                        totalLines--;
+                        //templine = null;
                     }
                 }
                 else
@@ -288,6 +292,8 @@ public class Paintable : MonoBehaviour
                     // the touch didn't end on a line, destroy the line
                     // Debug.Log("here_in_destroy_different_Hit");
                     Destroy(templine);
+                    totalLines--;
+                    //templine = null;
                 }
 
             }
@@ -500,6 +506,7 @@ public class Paintable : MonoBehaviour
                     LineRenderer l = edgeline.transform.GetComponent<LineRenderer>();
                     l.material.SetColor("_Color", color_picker_script.color);
 
+                    new_drawn_edges.Add(edgeline);
                     /*l.startWidth = 2f;
                     l.endWidth = 2f;*/
 
@@ -523,6 +530,7 @@ public class Paintable : MonoBehaviour
                         //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
 
                     }
+
 
                 }
 
@@ -572,8 +580,16 @@ public class Paintable : MonoBehaviour
                     else
                         edge_end = Hit.collider.gameObject;
 
-                    
-                    if (!free_hand_edge)
+                    if (edge_end == edge_start)
+                    {
+                        Destroy(edgeline);
+                        edge_end = null;
+                        edge_start = null;
+                        //edgeline = null;
+                        selected_obj_count--;
+                    }
+
+                    else if (!free_hand_edge)
                     {
 
                         if (edgeline.GetComponent<EdgeElementScript>().points.Count > 2)
@@ -585,32 +601,22 @@ public class Paintable : MonoBehaviour
 
                             // now create the edge in edge script
                             if (edge_end != null && edge_start != null)
-                            {
-                                if (edge_end == edge_start)
-                                {
-                                    Destroy(edgeline);
-                                    edge_end = null;
-                                    edge_start = null;
-                                    edgeline = null;
-                                }
-
+                            {                                
                                 // TODO: IF AN EDGELINE ALREADY EXISTS CONNECTING THESE TWO NODES, THEN DON'T CREATE ANOTHER ONE, DESTROY THE CURRENT.
-                                else
-                                {
-                                    edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
-                                    edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
-                                    edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
+                                
+                                edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
+                                edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
+                                edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
 
-                                    // set line renderer end point
-                                    edgeline.GetComponent<EdgeElementScript>().addEndPoint();
+                                // set line renderer end point
+                                edgeline.GetComponent<EdgeElementScript>().addEndPoint();
 
-                                    GraphCreation();
+                                GraphCreation();
 
-                                    // set edge_end and edge_start back to null
-                                    edge_end = null;
-                                    edge_start = null;
-                                    edgeline = null;
-                                }
+                                // set edge_end and edge_start back to null
+                                edge_end = null;
+                                edge_start = null;
+                                edgeline = null;
                             }
 
                         }
@@ -620,13 +626,15 @@ public class Paintable : MonoBehaviour
                             Destroy(edgeline);
                             edge_start = null;
                             edge_end = null;
-                            edgeline = null;
+                            //edgeline = null;
+                            selected_obj_count--;
                         }
                     }
                     else
                     {
                         if (edgeline.GetComponent<EdgeElementScript>().points.Count > min_point_count)
-                        {                            
+                        {
+                            
                             edgeline.GetComponent<EdgeElementScript>().edge_start = edge_start;
                             edgeline.GetComponent<EdgeElementScript>().edge_end = edge_end;
                             edgeline.GetComponent<EdgeElementScript>().directed_edge = directed_edge;
@@ -651,7 +659,11 @@ public class Paintable : MonoBehaviour
                         {
                             // delete the templine, not enough points
                             // Debug.Log("here_in_destroy");
-                            Destroy(templine);
+                            Destroy(edgeline);
+                            edge_end = null;
+                            edge_start = null;
+                            //edgeline = null;
+                            selected_obj_count--;
                         }
                     }
                     
@@ -665,7 +677,8 @@ public class Paintable : MonoBehaviour
                     Destroy(edgeline);
                     edge_start = null;
                     edge_end = null;
-                    edgeline = null;
+                    //edgeline = null;
+                    selected_obj_count--;
                 }
 
                 // in all other cases, to be safe, just delete the entire edgeline structure
@@ -674,7 +687,8 @@ public class Paintable : MonoBehaviour
                     Destroy(edgeline);
                     edge_start = null;
                     edge_end = null;
-                    edgeline = null;
+                    //edgeline = null;
+                    selected_obj_count--;
                 }
 
 
@@ -683,7 +697,10 @@ public class Paintable : MonoBehaviour
                     // the touch didn't end on a line, destroy the line
                     // Debug.Log("here_in_destroy_different_Hit");
                     Destroy(edgeline);
-                    edgeline = null;
+                    edge_start = null;
+                    edge_end = null;
+                    //edgeline = null;
+                    selected_obj_count--;
                 }
 
                 // the touch has ended, destroy all temp edge cylinders now
@@ -1094,6 +1111,8 @@ public class Paintable : MonoBehaviour
                             function_count++;
                             functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
                             functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
+
+                            new_drawn_function_lines.Add(functionline);
                             //function_menu.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text = "Brush loaded";
                         }
                     }
@@ -1157,7 +1176,8 @@ public class Paintable : MonoBehaviour
                                     if (selected_icons.Count == 0)
                                     {
                                         Destroy(functionline);
-                                        functionline = null;
+                                        //functionline = null;
+                                        function_count--;
                                         return;
                                     }
 
@@ -1181,7 +1201,8 @@ public class Paintable : MonoBehaviour
                                     // delete the templine, not enough points
                                     // Debug.Log("here_in_destroy");
                                     Destroy(functionline);
-                                    functionline = null;
+                                    //functionline = null;
+                                    function_count--;
                                 }
                             }
                             else
@@ -1189,7 +1210,8 @@ public class Paintable : MonoBehaviour
                                 // the touch didn't end on a line, destroy the line
                                 // Debug.Log("here_in_destroy_different_Hit");
                                 Destroy(functionline);
-                                functionline = null;
+                                //functionline = null;
+                                function_count--;
                             }
                         //}
                         // vertex_add_interaction
@@ -1414,10 +1436,11 @@ public class Paintable : MonoBehaviour
                 functionline = Instantiate(FunctionLineElement, vec, Quaternion.identity, Objects_parent.transform);
 
                 functionline.name = "function_line_" + function_count.ToString();
-                function_count++;
+                //function_count++;
                 functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
                 functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
-                //function_menu.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text = "Brush loaded";
+
+                new_drawn_function_lines.Add(functionline);
             }
         }
 
@@ -1477,7 +1500,7 @@ public class Paintable : MonoBehaviour
                         if (selected_icons.Count == 0)
                         {
                             Destroy(functionline);
-                            functionline = null;
+                            //functionline = null;
                             return;
                         }
 
@@ -1542,7 +1565,7 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        functionline = null;
+                        //functionline = null;
                     }
 
                     else if (vertex_del)
@@ -1566,7 +1589,7 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        functionline = null;
+                        //functionline = null;
                     }
 
                     else if (edge_add)
@@ -1589,7 +1612,7 @@ public class Paintable : MonoBehaviour
                         if (selected_icons.Count == 0)
                         {
                             Destroy(functionline);
-                            functionline = null;
+                            //functionline = null;
                             return;
                         }
 
@@ -1609,7 +1632,7 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        functionline = null;
+                        //functionline = null;
                     }
 
                     else if (edge_del)
@@ -1632,7 +1655,7 @@ public class Paintable : MonoBehaviour
                         if (selected_icons.Count == 0)
                         {
                             Destroy(functionline);
-                            functionline = null;
+                            //functionline = null;
                             return;
                         }
 
@@ -1655,13 +1678,13 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        functionline = null;
+                        //functionline = null;
                     }
 
                     else
                     {
                         Destroy(functionline);
-                        functionline = null;
+                        //functionline = null;
                     }
                 }
                 else
@@ -1669,7 +1692,7 @@ public class Paintable : MonoBehaviour
                     // delete the templine, not enough points
                     // Debug.Log("here_in_destroy");
                     Destroy(functionline);
-                    functionline = null;
+                    //functionline = null;
                 }
             }
             else
@@ -1677,7 +1700,7 @@ public class Paintable : MonoBehaviour
                 // the touch didn't end on a line, destroy the line
                 // Debug.Log("here_in_destroy_different_Hit");
                 Destroy(functionline);
-                functionline = null;
+                //functionline = null;
             }
         
         }
@@ -2563,4 +2586,6 @@ public class Paintable : MonoBehaviour
                             
         }
     }
+
+    
 }

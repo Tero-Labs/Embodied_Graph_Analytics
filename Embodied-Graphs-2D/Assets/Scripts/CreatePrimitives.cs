@@ -356,6 +356,7 @@ public class CreatePrimitives : MonoBehaviour
         }
 
         meshRenderer.sharedMaterial = lineRenderer.material;
+        templine.GetComponent<TrailRenderer>().enabled = false;        
         lineRenderer.enabled = false;        
 
         // set transform position
