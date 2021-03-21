@@ -80,7 +80,7 @@ public class Paintable : MonoBehaviour
     public GameObject edge_radial_menu;
     public GameObject node_radial_menu;
     public GameObject graph_radial_menu;   
-    public GameObject function_radial_menu;
+    public GameObject analysis_radial_menu;
 
     // needed for drawing
     public GameObject templine;
@@ -161,8 +161,8 @@ public class Paintable : MonoBehaviour
         copy_button = GameObject.Find("Copy");
         stroke_combine_button = GameObject.Find("StrokeCombine");
         fused_rep_button = GameObject.Find("Fused");
-        function_brush_button = GameObject.Find("function_brush");
-        video_op_button = GameObject.Find("video_op");
+        function_brush_button = GameObject.Find("FunctionPen");
+        video_op_button = GameObject.Find("FileLoad");
 
         text_message_worldspace = GameObject.Find("text_message_worldspace");
 
@@ -1922,9 +1922,7 @@ public class Paintable : MonoBehaviour
             var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
             RaycastHit Hit;
 
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("here_with_tap");
-
+           
             if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
             {
                 Debug.Log("instantiated_templine_with_tap");
@@ -1937,8 +1935,7 @@ public class Paintable : MonoBehaviour
                 functionline.GetComponent<FunctionElementScript>().AddPoint(vec);
                 functionline.GetComponent<FunctionElementScript>().paintable_object = transform.gameObject;
 
-                new_drawn_function_lines.Add(functionline);                
-                temp_stat.GetComponent<Status_label_text>().ChangeLabel("instantiated_templine_with_tap");
+                new_drawn_function_lines.Add(functionline);    
             }
         }
 
@@ -1977,9 +1974,7 @@ public class Paintable : MonoBehaviour
                 {
                     Debug.Log("finished_templine_with_tap");
 
-                    GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-                    temp_stat.GetComponent<Status_label_text>().ChangeLabel("finished_templine_with_tap");
-
+                    
                     if (vertex_add)
                     {
                         List<GameObject> selected_icons = new List<GameObject>();

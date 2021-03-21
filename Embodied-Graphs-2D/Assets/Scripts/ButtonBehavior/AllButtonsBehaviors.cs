@@ -128,7 +128,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
-        else if (this.name == "function_brush")
+        else if (this.name == "FunctionPen")
         {
             enableAllPenObjectColliders();
             //enablesimplicialColliders();
@@ -138,13 +138,21 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
-        else if (this.name == "video_op")
+        else if (this.name == "FileLoad")
         {            
             //paint_canvas.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
             paint_canvas.GetComponent<FileLoadDialog>().DialogShow();
 
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
+
+        else if (this.name == "AnalysisPen")
+        {
+            var analysis_menu = Instantiate(paint_canvas.GetComponent<Paintable>().analysis_radial_menu,
+            /*center,
+            Quaternion.identity,*/ transform.parent);
+        }
+
 
         // deselect all other buttons
         for (int i = 0; i < buttons.Length; i++)
@@ -219,7 +227,7 @@ public class AllButtonsBehaviors : MonoBehaviour
                 paint_canvas.GetComponent<Paintable>().setline = null;
             }
         }
-        else if (this.name == "function_brush")
+        else if (this.name == "FunctionPen")
         {           
             if (paint_canvas.GetComponent<Paintable>().functionline != null)
             {
