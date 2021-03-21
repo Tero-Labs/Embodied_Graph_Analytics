@@ -148,9 +148,15 @@ public class AllButtonsBehaviors : MonoBehaviour
 
         else if (this.name == "AnalysisPen")
         {
-            var analysis_menu = Instantiate(paint_canvas.GetComponent<Paintable>().analysis_radial_menu,
-            /*center,
-            Quaternion.identity,*/ transform.parent);
+            enableAllPenObjectColliders();
+
+            if(!paint_canvas.GetComponent<Paintable>().no_analysis_menu_open)
+            {
+                var analysis_menu = Instantiate(paint_canvas.GetComponent<Paintable>().analysis_radial_menu, transform.parent);
+                analysis_menu.GetComponent<Graphplot>().paintable = paint_canvas;
+                paint_canvas.GetComponent<Paintable>().no_analysis_menu_open = true;
+            }
+            
         }
 
 

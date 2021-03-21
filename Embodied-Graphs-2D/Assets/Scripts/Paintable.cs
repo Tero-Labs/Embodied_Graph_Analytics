@@ -53,16 +53,17 @@ public class Paintable : MonoBehaviour
     public GameObject GraphElement;
 
     // Canvas buttons
-    public static GameObject iconicElementButton;
+    public GameObject iconicElementButton;
     public static GameObject pan_button;
-    public static GameObject graph_pen_button;
-    public static GameObject simplicial_pen_button;
-    public static GameObject hyper_pen_button;
+    public GameObject graph_pen_button;
+    public GameObject simplicial_pen_button;
+    public GameObject hyper_pen_button;
     public GameObject eraser_button;
-    public static GameObject copy_button;
-    public static GameObject stroke_combine_button;
-    public static GameObject fused_rep_button;
+    public GameObject copy_button;
+    public GameObject stroke_combine_button;
+    public GameObject fused_rep_button;
     public GameObject function_brush_button;
+    public GameObject AnalysisPen_button;
     public GameObject video_op_button;
     public GameObject history_view;
     public GameObject history_list_viewer;
@@ -135,6 +136,9 @@ public class Paintable : MonoBehaviour
     // needed for fusion
     public GameObject fused_obj;
 
+    // needed for graph_analysis
+    public bool no_analysis_menu_open;
+
     // objects history
     public List<GameObject> history = new List<GameObject>();
     public List<GameObject> new_drawn_icons = new List<GameObject>();
@@ -152,8 +156,7 @@ public class Paintable : MonoBehaviour
     // Start is called before the first frame update
     void Start()
 	{
-        iconicElementButton = GameObject.Find("IconicPen");
-        pan_button = GameObject.Find("Pan");
+        /*iconicElementButton = GameObject.Find("IconicPen");        
         graph_pen_button = GameObject.Find("GraphPen");
         simplicial_pen_button = GameObject.Find("SimplicialPen");
         hyper_pen_button = GameObject.Find("HyperPen"); 
@@ -166,7 +169,9 @@ public class Paintable : MonoBehaviour
 
         text_message_worldspace = GameObject.Find("text_message_worldspace");
 
-        canvas_radial = GameObject.Find("canvas_radial");
+        canvas_radial = GameObject.Find("canvas_radial");*/
+
+        pan_button = GameObject.Find("Pan");
 
         no_func_menu_open = true;
         dragged_arg_textbox = null;
@@ -1312,6 +1317,27 @@ public class Paintable : MonoBehaviour
 
         #endregion
 
+        #region analysis
+        if (AnalysisPen_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            if (PenTouchInfo.PressedThisFrame)
+            {
+                Debug.Log("pressed");
+
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+
+                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.tag == "iconic")
+                {
+                    dragged_arg_textbox = Hit.collider.gameObject;
+                    Debug.Log("collided_with" + dragged_arg_textbox.tag);                    
+                }
+            }
+
+            else if (PenTouchInfo.ReleasedThisFrame)
+                StartCoroutine(clearclickedobj());
+        }
+        #endregion
 
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
         handleKeyInteractions();
@@ -2845,6 +2871,10 @@ public class Paintable : MonoBehaviour
         {
             return;
         }
+        if (AnalysisPen_button.GetComponent<AllButtonsBehaviors>().selected)
+        {
+            return;
+        }
 
         if (Input.GetKeyUp(KeyCode.L))
         {
@@ -3070,5 +3100,9 @@ public class Paintable : MonoBehaviour
         }
     }
 
-    
+    public IEnumerator clearclickedobj()
+    {
+        yield return null;
+        dragged_arg_textbox = null;
+    }
 }

@@ -998,6 +998,5 @@ public class FunctionMenuScript : MonoBehaviour
         yield return null;
         paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
         dragged_arg_object = null;
-
     }
 }
