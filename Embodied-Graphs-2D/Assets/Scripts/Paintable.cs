@@ -345,7 +345,7 @@ public class Paintable : MonoBehaviour
                 //}
 
             }
-            else if (Input.touchCount == 2 && !panZoomLocked) // && pan_button.GetComponent<PanButtonBehavior>().selected)
+            /*else if (Input.touchCount == 2 && !panZoomLocked) // && pan_button.GetComponent<PanButtonBehavior>().selected)
             {
                 //Debug.Log("double_finger_tap");
                 // NO ANCHOR TAPPED, JUST ZOOM IN/PAN
@@ -371,7 +371,7 @@ public class Paintable : MonoBehaviour
                 text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
 
 
-            }
+            }*/
             else if (activeTouches.Count == 1 && !panZoomLocked)
             {
 
@@ -425,7 +425,7 @@ public class Paintable : MonoBehaviour
                     // OnLongTap(activeTouches[0].screenPosition);
                 }
             }
-            else if (Input.touchCount == 1 && !panZoomLocked)
+            /*else if (Input.touchCount == 1 && !panZoomLocked)
             {
                 UnityEngine.Touch activeoldTouches = Input.GetTouch(0);
 
@@ -540,7 +540,7 @@ public class Paintable : MonoBehaviour
                 }
 
                 OnShortTap();
-            }
+            }*/
             else
             {
                 previousTouchEnded = true;
@@ -2277,16 +2277,22 @@ public class Paintable : MonoBehaviour
         {
             Debug.Log("hit:" + hit2d.collider.gameObject.tag);
             Vector3 vec_radius_offset = new Vector3(0f, 10f, 0f);
-            GameObject radmenu = Instantiate(edge_radial_menu,
-                        canvas_radial.transform.TransformPoint(hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center - vec_radius_offset)
-                        /*hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center*/,
-                        Quaternion.identity,
-                        canvas_radial.transform);
+            GameObject radmenu = Instantiate(edge_radial_menu, Vector3.zero, Quaternion.identity, canvas_radial.transform);
+
             radmenu.GetComponent<EdgeMenuScript>().menu_parent = hit2d.collider.gameObject;
             edge_menu_create = true;
+
+            Vector3 temp_pos = hit2d.collider.gameObject.GetComponent<EdgeCollider2D>().bounds.center - vec_radius_offset;
+            Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos);
+
+            Vector2 anchored_pos;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas_radial.transform.GetComponent<RectTransform>(), screen_temp_pos,
+                                        null, out anchored_pos);
+
+            radmenu.GetComponent<RectTransform>().anchoredPosition = anchored_pos;
         }
 
-        //if (edge_menu_create) return;
+        if (edge_menu_create) return;
 
         if (Physics.Raycast(ray, out Hit))
         {
@@ -2310,14 +2316,21 @@ public class Paintable : MonoBehaviour
 
                     var radius_offset = Hit.collider.gameObject.GetComponent<iconicElementScript>().radius;
                     Vector3 vec_radius_offset = new Vector3(0f, 1.25f * radius_offset, 0f);
-                    GameObject radmenu = Instantiate(node_radial_menu,
-                            canvas_radial.transform.TransformPoint(Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position - vec_radius_offset)
-                            /*Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position*/,
-                            Quaternion.identity,
-                            canvas_radial.transform);
+                    GameObject radmenu = Instantiate(node_radial_menu, Vector3.zero,
+                            Quaternion.identity, canvas_radial.transform);
+
                     radmenu.GetComponent<NodeMenuScript>().menu_parent = Hit.collider.gameObject;
                     Hit.collider.gameObject.GetComponent<iconicElementScript>().menu_open = true;
                     edge_menu_create = false;
+
+                    Vector3 temp_pos = Hit.collider.gameObject.GetComponent<iconicElementScript>().edge_position - vec_radius_offset;
+                    Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos);
+
+                    Vector2 anchored_pos;
+                    RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas_radial.transform.GetComponent<RectTransform>(), screen_temp_pos,
+                                                null, out anchored_pos);
+
+                    radmenu.GetComponent<RectTransform>().anchoredPosition = anchored_pos;
                 }
             }
 

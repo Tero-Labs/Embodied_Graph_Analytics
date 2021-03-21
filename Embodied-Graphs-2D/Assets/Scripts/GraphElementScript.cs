@@ -949,6 +949,14 @@ public class GraphElementScript : MonoBehaviour
                             Quaternion.identity,
                             canvas_radial.transform);
 
+        /*Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, edge_position);
+
+        Vector2 anchored_pos;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas_radial.transform.GetComponent<RectTransform>(), screen_temp_pos,
+                                    null, out anchored_pos);
+
+        radmenu.GetComponent<RectTransform>().anchoredPosition = anchored_pos;*/
+
         MenuClickSetup(radmenu);
     }
 
