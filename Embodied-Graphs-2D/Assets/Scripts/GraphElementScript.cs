@@ -14,12 +14,16 @@ using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 public class GraphElementScript : MonoBehaviour
 {
     public Vector3 edge_position;
+    public Vector3 center_position;
+
     public string graph_name;
     public string nodes_str;
     public string edges_str;
     public string hyper_edges_str;
     public string simplicial_str;
     public string abstraction_layer;
+
+    public string layout_layer;
 
     public bool splined_edge_flag;
     public bool conversion_done;
@@ -56,6 +60,8 @@ public class GraphElementScript : MonoBehaviour
     // for graph details showing
     public GameObject graph_Details;
     public GameObject topo_label;
+
+    public GraphCordinate graphCordinate;
 
     // Start is called before the first frame update
     void Start()
@@ -202,6 +208,7 @@ public class GraphElementScript : MonoBehaviour
     public int nodes_init()
     {
         edge_position = Vector3.zero;
+        center_position = Vector3.zero;
         
         graph.nodes = new List<int>();
 
@@ -233,9 +240,12 @@ public class GraphElementScript : MonoBehaviour
                         child.GetComponent<iconicElementScript>().edge_position.z
                         );
                 }
+
+                center_position += child.GetComponent<iconicElementScript>().edge_position;
             }
         }
 
+        center_position = center_position / icon_count;
         return icon_count;
     }
 
@@ -356,7 +366,7 @@ public class GraphElementScript : MonoBehaviour
         Radmenu.transform.GetChild(0).GetComponent<RadialSliderValueListener>().setup();*/
 
         Transform rad_menu = Radmenu.transform.GetChild(1);
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < rad_menu.childCount; i++)
         {
             Transform child = rad_menu.GetChild(i);
 
@@ -390,10 +400,119 @@ public class GraphElementScript : MonoBehaviour
                 InputField mainInputField = child.GetComponent<InputField>();
                 mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
             }
-                        
+            else if (child.name == "Dropdown")
+            {
+                TMP_Dropdown dropdown = child.GetComponent<TMP_Dropdown>();
+                dropdown.onValueChanged.AddListener(delegate { ChangeLayout(dropdown); });
+            }
 
         }
     }
+
+    void ChangeLayout(TMP_Dropdown dropdown)
+    {
+        
+        string target_layout = dropdown.captionText.text;
+
+        if (target_layout == "manual")
+        {
+            layout_layer = target_layout;
+            return;
+        }
+
+        //Graph_as_Str();
+        Graph_init();
+        GetGraphJson();
+
+        bool flag = false;
+
+        flag = transform.GetComponent<HelloClient>().Call_Server("layout_" + target_layout, "layout_" + target_layout);
+
+        if (flag)
+        {
+            layout_layer = target_layout;
+            conversion_done = false;
+        }
+    }
+
+    public void showLayout(string serverUpdate, string command)
+    {
+        Debug.Log("triggered for " + command);
+        graphCordinate = JsonUtility.FromJson<GraphCordinate>(File.ReadAllText("Assets/Resources/" + "output.json"));
+        Debug.Log(JsonUtility.ToJson(graphCordinate));
+
+        float rad_x = Mathf.Abs(edge_position.x - center_position.x);
+        float rad_y = Mathf.Abs(edge_position.y - center_position.y);
+
+        foreach (single_node_cord cur_cord in graphCordinate.node_cord)
+        {
+            if (nodeMaps.ContainsKey(cur_cord.node_id.ToString()))
+            {
+                Transform child = nodeMaps[cur_cord.node_id.ToString()];
+
+                float x = 0.5f;                
+                float.TryParse(cur_cord.x, out x);
+                float y = 0.5f;
+                float.TryParse(cur_cord.y, out y);
+
+                Vector3 position = new Vector3(center_position.x + (x * rad_x),
+                    center_position.y + (y * rad_y), center_position.z);
+
+                Vector3 new_pos = child.InverseTransformDirection(position) -
+                            child.InverseTransformDirection(child.GetComponent<iconicElementScript>().bounds_center);
+
+                child.position = new Vector3(new_pos.x, new_pos.y, -40f);
+                child.GetComponent<iconicElementScript>().edge_position = position;
+                
+                //Debug.Log("now modify positions: " + new_pos.ToString());                
+            }
+        }
+
+        Transform[] allChildrenedge = transform.GetChild(1).GetComponentsInChildren<Transform>();
+        foreach (Transform child in allChildrenedge)
+        {
+            if (child.tag == "edge")
+            {
+                if (splined_edge_flag)
+                    child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
+                else
+                    child.GetComponent<EdgeElementScript>().updateEndPoint();
+            }
+
+        }        
+
+        Transform[] simplicials = transform.GetChild(2).GetComponentsInChildren<Transform>();
+        foreach (Transform each_simplicial in simplicials)
+        {
+            if (each_simplicial.tag != "simplicial")
+                continue;
+
+            if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
+            {
+                each_simplicial.GetComponent<SimplicialElementScript>().UpdateVertices();
+                //each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
+            }
+            else
+            {
+                each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint();
+            }
+        }
+                
+        Transform[] hyper_edges = transform.GetChild(3).GetComponentsInChildren<Transform>();
+        foreach (Transform child in hyper_edges)
+        {
+            if (child.tag == "hyper")
+            {
+                //child.transform.position += diff;
+                child.GetComponent<HyperElementScript>().UpdateChildren();
+            }
+
+        }
+
+        conversion_done = true;   
+        StartCoroutine(clear_files());
+    }
+
 
     void DestroyMenu(GameObject Radmenu)
     {
@@ -404,8 +523,10 @@ public class GraphElementScript : MonoBehaviour
     // Checks if there is anything entered into the input field.
     void LockInput(InputField input)
     {
+        Paintable.click_on_inputfield = true;
+
         if (input.text.Length > 0)
-        {
+        {            
             graph_name = input.text;
             tmptextlabel.text = graph_name;
             if (transform.childCount > 4)
@@ -539,15 +660,15 @@ public class GraphElementScript : MonoBehaviour
 
         if (abstraction_layer == "graph")
         {
-            flag = transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + edges_str, abstraction_layer + "_to_" + target_layer);
+            flag = transform.GetComponent<HelloClient>().Call_Server(nodes_str + "-" + edges_str, abstraction_layer + "_to_" + target_layer);
         }
         else if (abstraction_layer == "simplicial")
         {
-            flag = transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + simplicial_str, abstraction_layer + "_to_" + target_layer);
+            flag = transform.GetComponent<HelloClient>().Call_Server(nodes_str + "-" + simplicial_str, abstraction_layer + "_to_" + target_layer);
         }
         else
         {
-            flag = transform.GetComponent<HelloClient>().Abstraction_conversion(nodes_str + "-" + hyper_edges_str, abstraction_layer + "_to_" + target_layer);
+            flag = transform.GetComponent<HelloClient>().Call_Server(nodes_str + "-" + hyper_edges_str, abstraction_layer + "_to_" + target_layer);
         }
 
         // set the current layer

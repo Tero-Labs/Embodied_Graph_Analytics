@@ -14,7 +14,7 @@ public class HelloClient : MonoBehaviour
         //_helloRequester.Stop();
     }
 
-    public bool Abstraction_conversion(string graph_as_string, string conversion_type)
+    public bool Call_Server(string graph_as_string, string conversion_type)
     {
         if (_helloRequester != null)
         {
@@ -42,7 +42,12 @@ public class HelloClient : MonoBehaviour
             if (_helloRequester.serverUpdateCame)
             {
                 _helloRequester.serverUpdateCame = false;
-                transform.GetComponent<GraphElementScript>().showconversion(_helloRequester.serverUpdate, _helloRequester.command);
+                // layout change called
+                if (_helloRequester.command.Contains("layout_"))
+                    transform.GetComponent<GraphElementScript>().showLayout(_helloRequester.serverUpdate, _helloRequester.command);
+                // abstraction change call
+                else
+                    transform.GetComponent<GraphElementScript>().showconversion(_helloRequester.serverUpdate, _helloRequester.command);
             }
         }
         

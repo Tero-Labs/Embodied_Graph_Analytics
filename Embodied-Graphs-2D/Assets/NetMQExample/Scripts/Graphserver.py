@@ -21,6 +21,8 @@ context = zmq.Context()
 socket = context.socket(zmq.REP)
 socket.bind("tcp://*:8080")
 
+print("Server_loaded")
+
 def packJson(G):
     edges = []
     for cur_edge in G.edges():
@@ -236,6 +238,45 @@ def graph_addition(all_graphs):
     #nx.draw(G_new, with_labels=True, font_weight='bold')
     return G
     
+def Graph_getLayout(all_graphs, layout_type):
+    
+    G = nx.Graph()
+    G.add_nodes_from(all_graphs[0]["node"])
+    G.add_edges_from(all_graphs[0]["edges"])
+    
+    pos = []
+    node_cord = []       
+    
+    try:
+        if (layout_type == "circular"):
+            pos=nx.circular_layout(G)
+        
+        elif (layout_type == "random"):
+            pos=nx.random_layout(G)
+        
+        elif (layout_type == "spring"):
+            pos=nx.spring_layout(G)
+        
+        elif (layout_type == "spectral"):
+            pos=nx.spectral_layout(G)
+        
+        else:
+            pos=nx.fruchterman_reingold_layout(G)            
+            
+        for each_pos in pos.keys():
+            pixel_cord = pos[each_pos]
+            #node_cord.append({"node_id": each_pos, "x": str(round(pixel_cord[0],3)), "y": str(round(pixel_cord[1],3))})
+            node_cord.append({"node_id": each_pos, "x": str(pixel_cord[0]), "y": str(pixel_cord[1])})
+        
+    except:         
+        node_cord.append({"node_id": -1, "x": str(-1), "y": str(-1)})
+        
+    final_json = {"node_cord": node_cord}
+    print(final_json)
+    with open("../../Resources/output.json", 'w') as json_file:
+        json.dump(final_json, json_file)
+    
+    return G, pos
 
 ## So we can have an empty edge/face/simplex set everywhere, even the
 ## node set can be empty
@@ -505,7 +546,7 @@ if __name__ == '__main__':
                 packJson(G)
                 socket.send(("addition").encode('ascii'))  
             else:            
-                socket.send((impossible).encode('ascii'))
+                socket.send(("impossible").encode('ascii'))
                 
         elif message.decode('utf8') == "topological":
             all_graphs = unpackJson()
@@ -528,6 +569,12 @@ if __name__ == '__main__':
             source, target =  args[1], args[-1]
             find_shortest_path(all_graphs, int(source), int(target))
             socket.send(("shortestpath").encode('ascii'))
+            
+        elif "layout" in message.decode('utf8'):
+            all_graphs = unpackJson()
+            args = message.decode('utf8').split("_")
+            Graph_getLayout(all_graphs, args[-1])
+            socket.send(("layout").encode('ascii')) 
             
         elif message.decode('utf8') == "graph_to_simplicial":
             #TypeError: a bytes-like object is required, not 'str'

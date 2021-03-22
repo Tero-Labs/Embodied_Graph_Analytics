@@ -20,8 +20,10 @@ public class NodeMenuScript : MonoBehaviour
     // Checks if there is anything entered into the input field.
     void LockInput(InputField input)
     {
+        Paintable.click_on_inputfield = true;
+
         if (input.text.Length > 0)
-        {
+        {            
             menu_parent.GetComponent<iconicElementScript>().icon_name = input.text;
             //ToDo:show_name_in_a_text
             //menu_parent.name = input.text;

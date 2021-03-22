@@ -78,8 +78,11 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         // if a function is getting evaluated now, we will not receive any further input
         /*if (paintable.GetComponent<Paintable>().no_func_menu_open)
             return;*/
+
+        Paintable.click_on_inputfield = true;
+
         if (input.text.Length > 0)
-        {
+        {            
             float result = slider.GetComponent<VideoController>().node_radius;
             float.TryParse(input.text, out result);
             slider.GetComponent<VideoController>().node_radius = result;

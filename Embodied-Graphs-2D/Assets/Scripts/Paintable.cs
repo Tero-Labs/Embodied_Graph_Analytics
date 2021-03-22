@@ -145,6 +145,9 @@ public class Paintable : MonoBehaviour
     public List<GameObject> new_drawn_edges = new List<GameObject>();
     public List<GameObject> new_drawn_function_lines = new List<GameObject>();
 
+    // extra check for inputfields
+    public static bool click_on_inputfield;
+
     // Action History
     public static bool ActionHistoryEnabled = false;
 
@@ -291,7 +294,7 @@ public class Paintable : MonoBehaviour
                         // Debug.Log("here_in_destroy");
                         Destroy(templine);
                         totalLines--;
-                        //templine = null;
+                        templine = null;
                     }
                 }
                 else
@@ -300,7 +303,7 @@ public class Paintable : MonoBehaviour
                     // Debug.Log("here_in_destroy_different_Hit");
                     Destroy(templine);
                     totalLines--;
-                    //templine = null;
+                    templine = null;
                 }
 
             }
@@ -670,7 +673,7 @@ public class Paintable : MonoBehaviour
                         Destroy(edgeline);
                         edge_end = null;
                         edge_start = null;
-                        //edgeline = null;
+                        edgeline = null;
                         selected_obj_count--;
                     }
 
@@ -711,7 +714,7 @@ public class Paintable : MonoBehaviour
                             Destroy(edgeline);
                             edge_start = null;
                             edge_end = null;
-                            //edgeline = null;
+                            edgeline = null;
                             selected_obj_count--;
                         }
                     }
@@ -747,7 +750,7 @@ public class Paintable : MonoBehaviour
                             Destroy(edgeline);
                             edge_end = null;
                             edge_start = null;
-                            //edgeline = null;
+                            edgeline = null;
                             selected_obj_count--;
                         }
                     }
@@ -762,7 +765,7 @@ public class Paintable : MonoBehaviour
                     Destroy(edgeline);
                     edge_start = null;
                     edge_end = null;
-                    //edgeline = null;
+                    edgeline = null;
                     selected_obj_count--;
                 }
 
@@ -772,7 +775,7 @@ public class Paintable : MonoBehaviour
                     Destroy(edgeline);
                     edge_start = null;
                     edge_end = null;
-                    //edgeline = null;
+                    edgeline = null;
                     selected_obj_count--;
                 }
 
@@ -784,7 +787,7 @@ public class Paintable : MonoBehaviour
                     Destroy(edgeline);
                     edge_start = null;
                     edge_end = null;
-                    //edgeline = null;
+                    edgeline = null;
                     selected_obj_count--;
                 }
 
@@ -1261,7 +1264,7 @@ public class Paintable : MonoBehaviour
                                     if (selected_icons.Count == 0)
                                     {
                                         Destroy(functionline);
-                                        //functionline = null;
+                                        functionline = null;
                                         function_count--;
                                         return;
                                     }
@@ -1286,7 +1289,7 @@ public class Paintable : MonoBehaviour
                                     // delete the templine, not enough points
                                     // Debug.Log("here_in_destroy");
                                     Destroy(functionline);
-                                    //functionline = null;
+                                    functionline = null;
                                     function_count--;
                                 }
                             }
@@ -1295,7 +1298,7 @@ public class Paintable : MonoBehaviour
                                 // the touch didn't end on a line, destroy the line
                                 // Debug.Log("here_in_destroy_different_Hit");
                                 Destroy(functionline);
-                                //functionline = null;
+                                functionline = null;
                                 function_count--;
                             }
                         //}
@@ -1340,9 +1343,15 @@ public class Paintable : MonoBehaviour
         #endregion
 
         // HANDLE ANY RELEVANT KEY INPUT FOR PAINTABLE'S OPERATIONS
-        handleKeyInteractions();
-    }
+        //handleKeyInteractions();
 
+        /*if (!function_brush_button.GetComponent<AllButtonsBehaviors>().selected &&
+            !AnalysisPen_button.GetComponent<AllButtonsBehaviors>().selected)
+        {*/
+            StartCoroutine(HandleKeyboardInput());
+        //}        
+    }
+        
     public void ConvertToFunction(GameObject fused_obj)
     {
         GameObject fused_function_lasso = Instantiate(FunctionLineElement, fused_obj.transform.position, Quaternion.identity, Objects_parent.transform);
@@ -2020,7 +2029,7 @@ public class Paintable : MonoBehaviour
                         if (selected_icons.Count == 0)
                         {
                             Destroy(functionline);
-                            //functionline = null;
+                            functionline = null;
                             return;
                         }
 
@@ -2085,7 +2094,7 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        //functionline = null;
+                        functionline = null;
                     }
 
                     else if (vertex_del)
@@ -2109,7 +2118,7 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        //functionline = null;
+                        functionline = null;
                     }
 
                     else if (edge_add)
@@ -2132,7 +2141,7 @@ public class Paintable : MonoBehaviour
                         if (selected_icons.Count == 0)
                         {
                             Destroy(functionline);
-                            //functionline = null;
+                            functionline = null;
                             return;
                         }
 
@@ -2152,7 +2161,7 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        //functionline = null;
+                        functionline = null;
                     }
 
                     else if (edge_del)
@@ -2175,7 +2184,7 @@ public class Paintable : MonoBehaviour
                         if (selected_icons.Count == 0)
                         {
                             Destroy(functionline);
-                            //functionline = null;
+                            functionline = null;
                             return;
                         }
 
@@ -2198,13 +2207,13 @@ public class Paintable : MonoBehaviour
                         //potential_tapped_graph.GetComponent<GraphElementScript>().Graph_as_Str();
 
                         Destroy(functionline);
-                        //functionline = null;
+                        functionline = null;
                     }
 
                     else
                     {
                         Destroy(functionline);
-                        //functionline = null;
+                        functionline = null;
                     }
                 }
                 else
@@ -2212,7 +2221,7 @@ public class Paintable : MonoBehaviour
                     // delete the templine, not enough points
                     // Debug.Log("here_in_destroy");
                     Destroy(functionline);
-                    //functionline = null;
+                    functionline = null;
                 }
             }
             else
@@ -2220,7 +2229,7 @@ public class Paintable : MonoBehaviour
                 // the touch didn't end on a line, destroy the line
                 // Debug.Log("here_in_destroy_different_Hit");
                 Destroy(functionline);
-                //functionline = null;
+                functionline = null;
             }
 
             potential_tapped_graph = null;
@@ -2830,6 +2839,9 @@ public class Paintable : MonoBehaviour
 
     void handleKeyInteractions()
     {
+        if (click_on_inputfield) return;
+        Debug.Log("click_on_inputfield: " + click_on_inputfield.ToString());
+
         //we don't want any redundant operation when a function name is being typed
         if (pan_button.GetComponent<AllButtonsBehaviors>().selected)
         {
@@ -3104,5 +3116,211 @@ public class Paintable : MonoBehaviour
     {
         yield return null;
         dragged_arg_textbox = null;
+    }
+
+    public IEnumerator HandleKeyboardInput()
+    {
+        //yield return new WaitForSeconds(5);
+
+        Debug.Log("click_on_inputfield: " + click_on_inputfield.ToString());
+
+        if (!click_on_inputfield)
+        {
+
+            //we don't want any redundant operation when a function name is being typed
+            if (pan_button.GetComponent<AllButtonsBehaviors>().selected)
+            {
+                if (Input.GetKeyUp(KeyCode.RightArrow))
+                {
+                    Camera.main.transform.position += Vector3.right * speed /** Time.deltaTime*/;
+                }
+                if (Input.GetKeyUp(KeyCode.LeftArrow))
+                {
+                    Camera.main.transform.position += Vector3.left * speed /** Time.deltaTime*/;
+                }
+                if (Input.GetKeyUp(KeyCode.UpArrow))
+                {
+                    Camera.main.transform.position += Vector3.up * speed /** Time.deltaTime*/;
+                }
+                if (Input.GetKeyUp(KeyCode.DownArrow))
+                {
+                    Camera.main.transform.position += Vector3.down * speed /** Time.deltaTime*/;
+                }
+                if (Input.GetKeyUp(KeyCode.Plus) || Input.GetKeyUp(KeyCode.KeypadPlus))
+                {
+                    float difference = 100;
+                    Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);
+
+                    int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+                    text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+                }
+                if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
+                {
+                    float difference = 100;
+                    Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize + zoom_multiplier * difference, zoom_min, zoom_max);
+
+                    int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+                    text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+                }
+            }
+
+
+            if (Input.GetKeyUp(KeyCode.L))
+            {
+                panZoomLocked = !panZoomLocked;
+                Debug.Log("panning_value_change" + panZoomLocked.ToString());
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("panning: " + panZoomLocked.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.F))
+            {
+                free_hand_edge = !free_hand_edge;
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("free hand drawing: " + free_hand_edge.ToString());
+                Debug.Log("NOT WORKING?");
+            }
+
+
+            if (Input.GetKeyUp(KeyCode.Escape))
+            {
+                //cleanUpRadialCanvas();
+            }
+
+            if (Input.GetKeyUp(KeyCode.F10))
+            {
+                allowOpacity = !allowOpacity;
+                Debug.Log("allow opacity: " + allowOpacity.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.Delete))
+            {
+                // delete game objects from history, starting with the latest
+                if (history.Count > 0)
+                {
+                    Destroy(history[history.Count - 1]);
+                    history.RemoveAt(history.Count - 1);
+                }
+            }
+
+            // test thumbnail
+            if (Input.GetKeyUp(KeyCode.T))
+            {
+                /*
+                if (gameObject.transform.childCount > 0)
+                {
+                    RuntimePreviewGenerator.PreviewDirection = new Vector3(0, 0, 1);
+                    RuntimePreviewGenerator.BackgroundColor = new Color(0.3f, 0.3f, 0.3f, 0f);
+                    RuntimePreviewGenerator.OrthographicMode = true;
+
+                    Sprite action = Sprite.Create(RuntimePreviewGenerator.GenerateModelPreview(gameObject.transform.GetChild(0), 128, 128)
+                        , new Rect(0, 0, 128, 128), new Vector2(0.5f, 0.5f), 20f);
+                    GameObject.Find("Action").GetComponent<Image>().sprite = action;
+                }
+                */
+            }
+
+            // test adding to action history from one template
+            if (Input.GetKeyUp(KeyCode.M))
+            {
+                // This test works
+                /*
+                GameObject actionhist = GameObject.Find("ActionHistory");
+                GameObject listtocopy = actionhist.transform.GetChild(0).GetChild(0).GetChild(1).gameObject;
+                GameObject newitem = Instantiate(listtocopy, listtocopy.transform.parent);
+                */
+
+                ActionHistoryEnabled = !ActionHistoryEnabled;
+
+                history_view.gameObject.SetActive(ActionHistoryEnabled);
+
+                if (ActionHistoryEnabled)
+                {
+                    StartCoroutine(HistoryShow());
+                }
+            }
+
+            //Graph
+            if (Input.GetKeyUp(KeyCode.G))
+            {
+                graphlocked = !graphlocked;
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("graph lock: " + graphlocked.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.D))
+            {
+                directed_edge = !directed_edge;
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("directed edge: " + directed_edge.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.Alpha1) || Input.GetKeyUp(KeyCode.Keypad1))
+            {
+                vertex_add = !vertex_add;
+                if (vertex_add)
+                {
+                    vertex_del = false;
+                    edge_add = false;
+                    edge_del = false;
+                }
+
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("vertex addition: " + vertex_add.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.Alpha2) || Input.GetKeyUp(KeyCode.Keypad2))
+            {
+                vertex_del = !vertex_del;
+                if (vertex_del)
+                {
+                    vertex_add = false;
+                    edge_add = false;
+                    edge_del = false;
+                }
+
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("vertex deletion: " + vertex_del.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.Alpha3) || Input.GetKeyUp(KeyCode.Keypad3))
+            {
+                edge_add = !edge_add;
+                if (edge_add)
+                {
+                    vertex_add = false;
+                    vertex_del = false;
+                    edge_del = false;
+                }
+
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("edge addition: " + edge_add.ToString());
+            }
+
+            if (Input.GetKeyUp(KeyCode.Alpha4) || Input.GetKeyUp(KeyCode.Keypad4))
+            {
+                edge_del = !edge_del;
+                if (edge_del)
+                {
+                    vertex_add = false;
+                    vertex_del = false;
+                    edge_add = false;
+                }
+
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("edge deletion: " + edge_del.ToString());
+            }
+
+            StartCoroutine(clearkeyboard());
+
+        }
+
+        yield return null;
+    }
+
+    public IEnumerator clearkeyboard()
+    {
+        yield return null;
+        click_on_inputfield = false;           
     }
 }

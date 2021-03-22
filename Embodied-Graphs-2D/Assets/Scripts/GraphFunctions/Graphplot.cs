@@ -34,7 +34,21 @@ public class Graphplot : MonoBehaviour
     {
         main_camera = Camera.main;
         show_graph.onClick.AddListener(delegate { OnGraphShow(); });
+        mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
     }
+
+    void LockInput(InputField input)
+    {
+        // if a function is getting evaluated now, we will not receive any further input
+        /*if (input.text.Length > 0)
+        {
+            Paintable.click_on_inputfield = true;
+        }*/
+
+        Paintable.click_on_inputfield = true;
+        
+    }
+
 
     void OnGraphShow()
     {

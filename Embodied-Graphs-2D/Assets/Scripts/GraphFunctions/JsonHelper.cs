@@ -40,13 +40,27 @@ public class Graphs
     public List<Graph> graphs;
 }
 
+[Serializable]
+public class single_node_cord
+{
+    public int node_id;
+    public string x;
+    public string y;
+}
+
+[Serializable]
+public class GraphCordinate
+{
+    public List<single_node_cord> node_cord;
+}
+
 public class JsonHelper : MonoBehaviour
 {
     // Start is called before the first frame update
     void Start()
     {
-        Graph graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
-        Debug.Log(JsonUtility.ToJson(graph));
+        //Graph graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
+        //Debug.Log(JsonUtility.ToJson(graph));
     }
 
     void Sample()

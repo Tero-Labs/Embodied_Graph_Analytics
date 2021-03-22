@@ -614,10 +614,12 @@ public class FunctionMenuScript : MonoBehaviour
         // if a function is getting evaluated now, we will not receive any further input
         /*if (paintable.GetComponent<Paintable>().no_func_menu_open)
             return;*/
+
+        Paintable.click_on_inputfield = true;
+
         if (input.text.Length > 0)
-        {
-            match_found = false;
-            
+        {            
+            match_found = false;            
 
             // ToDo: show red flag where no match
 

@@ -20,8 +20,10 @@ public class EdgeMenuScript : MonoBehaviour
     // Checks if there is anything entered into the input field.
     void LockInput(InputField input)
     {
+        Paintable.click_on_inputfield = true;
+
         if (input.text.Length > 0)
-        {
+        {            
             weight = int.Parse(input.text);
             menu_parent.GetComponent<EdgeElementScript>().edge_weight = weight;
             Debug.Log("weight" + input.text + "has been updated for"+ menu_parent.name);
