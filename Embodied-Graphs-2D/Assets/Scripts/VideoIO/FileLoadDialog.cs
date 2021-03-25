@@ -100,6 +100,10 @@ public class FileLoadDialog : MonoBehaviour
                     // load the annotate file as well
                     int trim_pos = FileBrowser.Result[i].IndexOf(".");                    
                     slider.GetComponent<VideoController>().loadAnnotation(FileBrowser.Result[i].Substring(0, trim_pos) + ".json");
+
+                    if (FileBrowser.Result[i].Contains("airplane"))
+                        slider.GetComponent<VideoController>().loadRoutes(FileBrowser.Result[i].Substring(0, trim_pos) + "_routes.json");
+
                     slider.GetComponent<VideoController>().paintable = transform.gameObject;
                 }
                 else if(FileBrowser.Result[i].EndsWith(".jpg") || FileBrowser.Result[i].EndsWith(".png"))

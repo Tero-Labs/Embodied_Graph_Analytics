@@ -16,6 +16,7 @@ public class tracked_object
 {
     public List<bounds> bounds;    
     public int id;
+    public string name;
 }
 
 [Serializable]
@@ -28,6 +29,21 @@ public class frame
 public class frames
 {
     public List<frame> all_frame;
+    public int width;
+    public int height;
+    public string node_type;
+}
+
+[Serializable]
+public class route
+{
+    public List<Edge> edges;
+}
+
+[Serializable]
+public class all_route
+{
+    public List<route> edge_list;
 }
 
 public class AnnotateHelper : MonoBehaviour

@@ -138,7 +138,12 @@ public class FunctionMenuScript : MonoBehaviour
 
     private void Update()
     {
-        
+       if (mainInputField != null && mainInputField.isFocused)
+       {
+            Paintable.click_on_inputfield = true;
+            return;
+        }                
+
         if (paintable.GetComponent<Paintable>().function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
         {
             if (PenTouchInfo.PressedThisFrame)

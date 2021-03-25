@@ -34,7 +34,7 @@ public class Graphplot : MonoBehaviour
     {
         main_camera = Camera.main;
         show_graph.onClick.AddListener(delegate { OnGraphShow(); });
-        mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
+        //mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
     }
 
     void LockInput(InputField input)
@@ -127,7 +127,12 @@ public class Graphplot : MonoBehaviour
 
     void Update()
     {
-        
+        if (mainInputField != null && mainInputField.isFocused)
+        {
+            Paintable.click_on_inputfield = true;
+            return;
+        }
+
         // only work in graph analysis operation        
         checkDragOrPress();
 

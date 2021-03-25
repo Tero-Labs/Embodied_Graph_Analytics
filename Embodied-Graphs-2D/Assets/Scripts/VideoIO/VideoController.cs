@@ -13,6 +13,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     public Slider mainSlider;
 
     frames frames_annotation;
+    all_route All_Route;
+
     public float width, height;    
     public int frequency;    
     public Vector3[] vec;
@@ -49,6 +51,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         //temp_parent = Instantiate(graph_prefab);
     }
 
+    public void loadRoutes(string filename)
+    {
+        Debug.Log("filename:" + filename);
+        All_Route = JsonUtility.FromJson<all_route>(File.ReadAllText(filename));
+
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -66,37 +75,42 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 if (graph_holder != null)
                 {
                     /*Destroy(temp_parent);
-                    temp_parent = null;*/
+                    temp_parent = null;*/                 
+                    
 
-                    GameObject nodepar = graph_holder.transform.GetChild(0).gameObject;
-                    GameObject edgepar = graph_holder.transform.GetChild(1).gameObject;
-                    GameObject simplicialpar = graph_holder.transform.GetChild(2).gameObject;
-                    GameObject hyperpar = graph_holder.transform.GetChild(3).gameObject;
+                    if (frames_annotation.node_type != "static")
+                    {
+                        GameObject nodepar = graph_holder.transform.GetChild(0).gameObject;
+                        Destroy(nodepar);
+                        GameObject tempnodeparent = new GameObject("node_parent_1");
+                        tempnodeparent.tag = "node_parent";
+                        tempnodeparent.transform.parent = graph_holder.transform;
+                        tempnodeparent.transform.SetSiblingIndex(0);
 
-                    Destroy(nodepar);
-                    Destroy(edgepar);
-                    Destroy(simplicialpar);
-                    Destroy(hyperpar);
+                        GameObject edgepar = graph_holder.transform.GetChild(1).gameObject;
+                        GameObject simplicialpar = graph_holder.transform.GetChild(2).gameObject;
+                        GameObject hyperpar = graph_holder.transform.GetChild(3).gameObject;
 
-                    GameObject tempnodeparent = new GameObject("node_parent_1");
-                    tempnodeparent.tag = "node_parent";
-                    tempnodeparent.transform.parent = graph_holder.transform;
-                    tempnodeparent.transform.SetSiblingIndex(0);
+                        Destroy(edgepar);
+                        Destroy(simplicialpar);
+                        Destroy(hyperpar);
 
-                    GameObject tempedgeparent = new GameObject("edge_parent_1");
-                    tempedgeparent.tag = "edge_parent";
-                    tempedgeparent.transform.parent = graph_holder.transform;
-                    tempedgeparent.transform.SetSiblingIndex(1);
+                        GameObject tempedgeparent = new GameObject("edge_parent_1");
+                        tempedgeparent.tag = "edge_parent";
+                        tempedgeparent.transform.parent = graph_holder.transform;
+                        tempedgeparent.transform.SetSiblingIndex(1);
 
-                    GameObject tempsimplicialparent = new GameObject("simplicial_parent_1");
-                    tempsimplicialparent.tag = "simplicial_parent";
-                    tempsimplicialparent.transform.parent = graph_holder.transform;
-                    tempsimplicialparent.transform.SetSiblingIndex(2);
+                        GameObject tempsimplicialparent = new GameObject("simplicial_parent_1");
+                        tempsimplicialparent.tag = "simplicial_parent";
+                        tempsimplicialparent.transform.parent = graph_holder.transform;
+                        tempsimplicialparent.transform.SetSiblingIndex(2);
 
-                    GameObject temphyperparent = new GameObject("hyper_parent_1");
-                    temphyperparent.tag = "hyper_parent";
-                    temphyperparent.transform.parent = graph_holder.transform;
-                    temphyperparent.transform.SetSiblingIndex(3);
+                        GameObject temphyperparent = new GameObject("hyper_parent_1");
+                        temphyperparent.tag = "hyper_parent";
+                        temphyperparent.transform.parent = graph_holder.transform;
+                        temphyperparent.transform.SetSiblingIndex(3);
+                    }                
+                                      
 
 
                 }
@@ -114,10 +128,18 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                 graph_holder.SetActive(true);
 
-                //temp_parent = Instantiate(graph_prefab);            
+            if (graph_holder.transform.GetChild(0).childCount == 0)
+            {
 
                 all_icons = new List<GameObject>();
-                List<tracked_object> all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;
+                List<tracked_object> all_objects;
+
+                if (frames_annotation.node_type != "static")
+                    all_objects = frames_annotation.all_frame[(int)videoplayer.frame].objects;
+                else
+                    all_objects = frames_annotation.all_frame[0].objects;
+
+
                 // because, we do not want to increase total icon numbers in each frame, which will be ambigious
                 int num = paintable.GetComponent<Paintable>().totalLines;
                 List<Vector3> graph_points = new List<Vector3>();
@@ -133,7 +155,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     num++;
                     temp.tag = "iconic";
-                    temp.name = "iconic_" + /*num*/cur_obj.id.ToString();
+                    temp.name = "iconic_" + /*num*/cur_obj.name;
                     temp.GetComponent<iconicElementScript>().icon_number = /*num*/cur_obj.id;
                     temp.GetComponent<iconicElementScript>().video_icon = true;
                     all_icons.Add(temp);
@@ -148,8 +170,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     foreach (bounds first_obj in cur_obj.bounds)
                     {
-                        float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, 853, first_obj.x));
-                        float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, 480, first_obj.y));
+                        float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, frames_annotation.width, first_obj.x));
+                        float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, frames_annotation.height, first_obj.y));
 
                         Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
                         edge_pos += pos_vec;
@@ -179,7 +201,11 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     temp.GetComponent<iconicElementScript>().centroid = edge_pos;
 
                     // again we optimize by approxmating the radius calculation
-                    temp.GetComponent<iconicElementScript>().radius = Vector3.Distance(points[0], points[1]) / 2;
+                    if (points.Count > 1)
+                        temp.GetComponent<iconicElementScript>().radius = Vector3.Distance(points[0], points[1]) / 2;
+                    else
+                        temp.GetComponent<iconicElementScript>().radius = 20f;
+
                     float rad = temp.GetComponent<iconicElementScript>().radius;
                     Vector3 size = new Vector3(rad, rad, rad);
 
@@ -194,8 +220,11 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                 graph_holder.GetComponent<GraphElementScript>().graph.edges = new List<Edge>();
 
-                // create graph based on node radius
-                // tODo: try updated algorithm
+            }
+
+            // create graph based on node radius
+            if (graph_type == "NodeRadius")
+            {
                 for (int i = 0; i < all_icons.Count; i++)
                 {
                     for (int j = (i + 1); j < all_icons.Count; j++)
@@ -209,7 +238,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                             temp.GetComponent<EdgeElementScript>().edge_start = all_icons[i];
                             temp.GetComponent<EdgeElementScript>().edge_end = all_icons[j];
                             temp.GetComponent<EdgeElementScript>().video = true;
-                            
+
 
                             //temp.GetComponent<EdgeElementScript>().addDot();
                             //temp.GetComponent<EdgeElementScript>().updateEndPoint();
@@ -224,8 +253,34 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         }
                     }
                 }
-                                
-                graph_holder.GetComponent<GraphElementScript>().RequestRecalculationonValueChange(videoplayer.transform.gameObject);
+            }
+            // create site specific edges  
+            else
+            {
+                List<Edge> all_edges = All_Route.edge_list[(int)videoplayer.frame].edges;
+
+                foreach (Edge cur_edge in all_edges)
+                {
+                    GameObject temp = Instantiate(edge_prefab, Vector3.zero, Quaternion.identity, graph_holder.transform.GetChild(1));
+
+                    temp.tag = "edge";
+                    temp.GetComponent<EdgeElementScript>().edge_start = 
+                        graph_holder.GetComponent<GraphElementScript>().nodeMaps[cur_edge.edge_start.ToString()].gameObject;
+
+                    temp.GetComponent<EdgeElementScript>().edge_end =
+                        graph_holder.GetComponent<GraphElementScript>().nodeMaps[cur_edge.edge_end.ToString()].gameObject;
+
+                    temp.GetComponent<EdgeElementScript>().video = true;
+
+
+                    //temp.GetComponent<EdgeElementScript>().addDot();
+                    //temp.GetComponent<EdgeElementScript>().updateEndPoint();
+                    temp.GetComponent<EdgeElementScript>().addEndPoint(true);
+                                        
+                    graph_holder.GetComponent<GraphElementScript>().graph.edges.Add(cur_edge);
+                }                
+            }
+            graph_holder.GetComponent<GraphElementScript>().RequestRecalculationonValueChange(videoplayer.transform.gameObject);
 
             //}
             /*else if (graph_holder != null)

@@ -186,20 +186,32 @@ public class Paintable : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        #region prevent unwanted touch on canvas
+        // prevent touch or click being registered on the canvas when a gui button is clicked
+        if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
+        {
+            return;
+        }
+
+        if (AllButtonsBehaviors.isPointerOverIconicPen || AllButtonsBehaviors.isPointerOverGraphPen || AllButtonsBehaviors.isPointerOverSimplicialPen
+        || AllButtonsBehaviors.isPointerOverHyperPen || AllButtonsBehaviors.isPointerOverPan ||
+        AllButtonsBehaviors.isPointerOverEraser || AllButtonsBehaviors.isPointerOverCopy || AllButtonsBehaviors.isPointerOverCombine
+        || AllButtonsBehaviors.isPointerOverFuse || AllButtonsBehaviors.isPointerOverFunction || AllButtonsBehaviors.isPointerOverAnalysis
+        || AllButtonsBehaviors.isPointerOverLoad || DropDownMenu.isPointerOverDropDown)
+        {
+            Debug.Log("unwanted_touch_removed");
+            return;
+        }
+
+
+        #endregion
+
         #region iconic element brush
 
         if (iconicElementButton.GetComponent<AllButtonsBehaviors>().selected)
         //!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
         {
-            #region prevent unwanted touch on canvas
-            // prevent touch or click being registered on the canvas when a gui button is clicked
-            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
-            {
-                return;
-            }
-            #endregion
-
+            
             //Debug.Log("entered");
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
@@ -226,7 +238,7 @@ public class Paintable : MonoBehaviour
 
                     templine.transform.GetComponent<LineRenderer>().material.SetColor("_Color", color_picker_script.color);
                     templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
-                    Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
+                    //Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
 
                     
                     templine.GetComponent<TrailRenderer>().widthMultiplier = 2;
@@ -609,7 +621,7 @@ public class Paintable : MonoBehaviour
                     {
                         edgeline.GetComponent<EdgeElementScript>().free_hand = free_hand_edge;
                         edgeline.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
-                        Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
+                        //Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
 
                         edgeline.GetComponent<TrailRenderer>().widthMultiplier = 1f;
                         //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
@@ -1455,8 +1467,12 @@ public class Paintable : MonoBehaviour
                         if (pen_dragged_obj.transform.parent.tag == "node_parent"
                             && pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().video_graph==false)
                         {
-                            pen_dragged_obj.transform.parent.parent.position += diff;
-                            pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
+                            
+                            if (!pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().video_graph)
+                            {
+                                pen_dragged_obj.transform.parent.parent.position += diff;
+                                pen_dragged_obj.transform.parent.parent.GetComponent<GraphElementScript>().checkHitAndMove(diff);
+                            }                                
                         }
                     }
                     else if(pen_dragged_obj.GetComponent<iconicElementScript>().video_icon == false)
@@ -3120,9 +3136,7 @@ public class Paintable : MonoBehaviour
 
     public IEnumerator HandleKeyboardInput()
     {
-        //yield return new WaitForSeconds(5);
-
-        Debug.Log("click_on_inputfield: " + click_on_inputfield.ToString());
+        //Debug.Log("click_on_inputfield: " + click_on_inputfield.ToString());
 
         if (!click_on_inputfield)
         {
@@ -3311,16 +3325,14 @@ public class Paintable : MonoBehaviour
                 temp_stat.GetComponent<Status_label_text>().ChangeLabel("edge deletion: " + edge_del.ToString());
             }
 
-            StartCoroutine(clearkeyboard());
+            //StartCoroutine(clearkeyboard());
+           
 
         }
 
+        click_on_inputfield = false;
         yield return null;
     }
 
-    public IEnumerator clearkeyboard()
-    {
-        yield return null;
-        click_on_inputfield = false;           
-    }
+    
 }

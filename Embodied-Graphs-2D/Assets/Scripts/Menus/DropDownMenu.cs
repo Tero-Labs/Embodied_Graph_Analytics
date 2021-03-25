@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Michsky.UI.ModernUIPack;
+using UnityEngine.EventSystems;
 
 public class DropDownMenu : MonoBehaviour
 {
     public GameObject toggle_parent;
     public GameObject details_dropdown;
     public bool nodes_visibility;
+    public static bool isPointerOverDropDown = false;
 
     // Start is called before the first frame update
     void Start()
@@ -63,6 +65,14 @@ public class DropDownMenu : MonoBehaviour
     void Update()
     {
         // applyDetails();
+        if (EventSystem.current.IsPointerOverGameObject(0))
+        {
+            isPointerOverDropDown = true;
+        }
+        else
+        {
+            isPointerOverDropDown = false;
+        }
     }
 
     public void ShowNodes(Toggle toggle)

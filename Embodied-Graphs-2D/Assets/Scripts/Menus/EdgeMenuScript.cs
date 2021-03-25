@@ -30,5 +30,11 @@ public class EdgeMenuScript : MonoBehaviour
         }
     }
 
-    
+    // Update is called once per frame
+    void Update()
+    {
+        if (mainInputField != null && mainInputField.isFocused)
+            Paintable.click_on_inputfield = true;
+    }
+
 }

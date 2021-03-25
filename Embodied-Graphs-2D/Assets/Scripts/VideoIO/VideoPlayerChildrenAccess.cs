@@ -49,7 +49,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         //https://stackoverflow.com/a/43736203
 
         Vector3 temp_pos = new Vector3(quad.transform.position.x,
-                                                    quad.transform.position.y + (height / 2) - 10,
+                                                    quad.transform.position.y - (height/2) - 45,
                                                     0f);
 
         Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos);
@@ -60,7 +60,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 
         control_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try;
 
-        Vector3 temp_pos_2 = new Vector3(quad.transform.position.x - (width / 2) + 10,
+        Vector3 temp_pos_2 = new Vector3(quad.transform.position.x + (width / 2) + 72,
                                                    quad.transform.position.y,
                                                    0f);
 
@@ -120,7 +120,11 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (mainInputField != null && mainInputField.isFocused)
+        {
+            Paintable.click_on_inputfield = true;
+            return;
+        }
     }
 
     public void checkHitAndMove(Vector3 diff)
@@ -128,7 +132,12 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         transform.position += diff;
         control_menu.transform.position += diff;
         settings_menu.transform.position += diff;
-        slider.GetComponent<VideoController>().graph_holder.transform.position += diff;
+        if (slider.GetComponent<VideoController>().graph_holder != null)
+        {
+            slider.GetComponent<VideoController>().graph_holder.transform.position += diff;
+            slider.GetComponent<VideoController>().graph_holder.GetComponent<GraphElementScript>().checkHitAndMove(diff);
+        }
+            
     }
 
 }

@@ -63,6 +63,9 @@ public class GraphElementScript : MonoBehaviour
 
     public GraphCordinate graphCordinate;
 
+    //MENU
+    InputField mainInputField;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -77,14 +80,17 @@ public class GraphElementScript : MonoBehaviour
         graph_drawn = false;
         simplicial_drawn = false;
         hyper_edges_drawn = false;
-        
+
+        layout_layer = "manual";
+
         //splined_edge_flag = false;
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (mainInputField != null && mainInputField.isFocused)
+            Paintable.click_on_inputfield = true;
     }
 
     void DeleteChildren(Transform trans)
@@ -397,7 +403,7 @@ public class GraphElementScript : MonoBehaviour
             }
             else if (child.name == "change_name")
             {
-                InputField mainInputField = child.GetComponent<InputField>();
+                /*InputField*/ mainInputField = child.GetComponent<InputField>();
                 mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
             }
             else if (child.name == "Dropdown")
@@ -724,14 +730,9 @@ public class GraphElementScript : MonoBehaviour
                 }
                 // else keep previous children, no need to redraw
                 // however, we force a mandatory initial conversion if child count is zero           
-                else if (graph_drawn == false)
-                {
-                    graph_drawn = true;
+                else 
+                {                    
                     if (transform.GetChild(1).childCount > 0) return;
-                }
-                else
-                {
-                    return;
                 }
 
                 foreach (string edge in newedges)
@@ -756,14 +757,9 @@ public class GraphElementScript : MonoBehaviour
                 {
                     DeleteChildren(transform.GetChild(2));
                 }
-                // force initial conversion
-                else if (simplicial_drawn)
+                // force initial conversion                
+                else
                 {
-                    return;
-                }
-                else if (simplicial_drawn == false)
-                {
-                    simplicial_drawn = true;
                     if (transform.GetChild(2).childCount > 0) return;
                 }
 
@@ -795,14 +791,8 @@ public class GraphElementScript : MonoBehaviour
                 {
                     DeleteChildren(transform.GetChild(3));
                 }
-                // force initial conversion
-                else if (hyper_edges_drawn)
+                else
                 {
-                    return;
-                }
-                else if (hyper_edges_drawn == false)
-                {
-                    hyper_edges_drawn = true;
                     if (transform.GetChild(3).childCount > 0) return;
                 }
 
@@ -962,7 +952,7 @@ public class GraphElementScript : MonoBehaviour
 
     public void checkHitAndMove(Vector3 diff)
     {
-        if (video_graph) return;
+        //if (video_graph) return;
         edge_position = Vector3.zero;
 
         /*if (transform.GetChild(0).gameObject.activeSelf)
@@ -1066,17 +1056,18 @@ public class GraphElementScript : MonoBehaviour
             canvas_radial = arg_canvas_radial;
 
         GameObject radmenu = Instantiate(graph_radial_menu,
-                            canvas_radial.transform.TransformPoint(edge_position /*+ new Vector3(10f, 0f, 0f)*/),
+                            Vector3.zero
+                            /*canvas_radial.transform.TransformPoint(edge_position + new Vector3(10f, 0f, 0f))*/,
                             Quaternion.identity,
                             canvas_radial.transform);
 
-        /*Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, edge_position);
+        Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, edge_position);
 
         Vector2 anchored_pos;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvas_radial.transform.GetComponent<RectTransform>(), screen_temp_pos,
                                     null, out anchored_pos);
 
-        radmenu.GetComponent<RectTransform>().anchoredPosition = anchored_pos;*/
+        radmenu.GetComponent<RectTransform>().anchoredPosition = anchored_pos;
 
         MenuClickSetup(radmenu);
     }

@@ -12,11 +12,18 @@ public class AllButtonsBehaviors : MonoBehaviour
 	public bool selected = false;
     public float width, height;
 
-	public static bool isPointerOverGraphPen = false;
-	public static bool isPointerOverPan = false;
-	public static bool isPointerOverIconicPen = false;
+    public static bool isPointerOverIconicPen = false;
+    public static bool isPointerOverGraphPen = false;
+	public static bool isPointerOverSimplicialPen = false;
+	public static bool isPointerOverHyperPen = false;
+	public static bool isPointerOverPan = false;	
 	public static bool isPointerOverEraser = false;
 	public static bool isPointerOverCopy = false;
+	public static bool isPointerOverCombine = false;
+	public static bool isPointerOverFuse = false;
+	public static bool isPointerOverFunction = false;
+	public static bool isPointerOverAnalysis = false;
+	public static bool isPointerOverLoad = false;
 
 	GameObject[] buttons;
     GameObject paint_canvas;
@@ -329,36 +336,70 @@ public class AllButtonsBehaviors : MonoBehaviour
 	{
 		if (EventSystem.current.IsPointerOverGameObject(0))
 		{
-			if (this.name == "Pan")
-				isPointerOverPan = true;
-			else isPointerOverPan = false;
+            if (this.name == "IconicPen")
+                isPointerOverIconicPen = true;
+            else isPointerOverIconicPen = false;
 
-			if (this.name == "Eraser")
+            if (this.name == "GraphPen")
+                isPointerOverGraphPen = true;
+            else isPointerOverGraphPen = false;                                             
+
+            if (this.name == "SimplicialPen")
+                isPointerOverSimplicialPen = true;
+            else isPointerOverSimplicialPen = false;
+
+            if (this.name == "HyperPen")
+                isPointerOverHyperPen = true;
+            else isPointerOverHyperPen = false;
+
+            if (this.name == "Pan")
+                isPointerOverPan = true;
+            else isPointerOverPan = false;
+
+            if (this.name == "Eraser")
                 isPointerOverEraser = true;
-			else isPointerOverEraser = false;
+            else isPointerOverEraser = false;
 
-			if (this.name == "IconicPen")
-				isPointerOverIconicPen = true;
-			else isPointerOverIconicPen = false;
+            if (this.name == "Copy")
+                isPointerOverCopy = true;
+            else isPointerOverCopy = false;
 
-			if (this.name == "GraphPen")
-				isPointerOverGraphPen = true;
-			else isPointerOverGraphPen = false;
-            
-			if (this.name == "Copy")
-				isPointerOverCopy = true;
-			else isPointerOverCopy = false;
+            if (this.name == "StrokeCombine")
+                isPointerOverCombine = true;
+            else isPointerOverCombine = false;
 
-			
-		}
+            if (this.name == "Fused")
+                isPointerOverFuse = true;
+            else isPointerOverFuse = false;
+
+            if (this.name == "FunctionPen")
+                isPointerOverFunction = true;
+            else isPointerOverFunction = false;
+
+            if (this.name == "AnalysisPen")
+                isPointerOverAnalysis = true;
+            else isPointerOverAnalysis = false;
+
+            if (this.name == "FileLoad")
+                isPointerOverLoad = true;
+            else isPointerOverLoad = false;
+
+        }
 		else
 		{
-			isPointerOverPan = false;
+            isPointerOverIconicPen = false;
+            isPointerOverGraphPen = false;
+            isPointerOverSimplicialPen = false;
+            isPointerOverHyperPen = false;
+            isPointerOverPan = false;
             isPointerOverEraser = false;
-			isPointerOverIconicPen = false;
-			isPointerOverGraphPen = false;
-			isPointerOverCopy = false;
-		}
+            isPointerOverCopy = false;
+            isPointerOverCombine = false;
+            isPointerOverFuse = false;
+            isPointerOverFunction = false;
+            isPointerOverAnalysis = false;
+            isPointerOverLoad = false;
+}
 	}
 
     IEnumerator CorrectIcons()
