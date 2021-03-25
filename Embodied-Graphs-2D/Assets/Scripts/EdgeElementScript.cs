@@ -1712,12 +1712,10 @@ public class EdgeElementScript : MonoBehaviour
         if (node_parent.tag == "edge_parent")
         {
             node_parent.parent.GetComponent<GraphElementScript>().edges_init();
-            //node_parent.parent.GetComponent<GraphElementScript>().edges_as_Str();
         }
         else if (node_parent.tag == "simplicial_parent")
         {
             node_parent.parent.GetComponent<GraphElementScript>().simplicial_init();
-            //node_parent.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
         }
     }
 }

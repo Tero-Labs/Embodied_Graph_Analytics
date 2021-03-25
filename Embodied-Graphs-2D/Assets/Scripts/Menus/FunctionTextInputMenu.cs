@@ -26,7 +26,10 @@ public class FunctionTextInputMenu : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (mainInputField != null && mainInputField.isFocused)
+        {
+            Paintable.click_on_inputfield = true;
+        }
     }
 
     // Checks if there is anything entered into the input field.

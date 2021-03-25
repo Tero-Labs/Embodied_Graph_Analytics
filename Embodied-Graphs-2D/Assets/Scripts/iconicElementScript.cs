@@ -450,10 +450,9 @@ public class iconicElementScript : MonoBehaviour
     void OnDestroy()
     {
         Transform node_parent = transform.parent;
-        if (node_parent.tag == "node_parent")
+        if (paintable_object != null && node_parent != null && node_parent.tag == "node_parent")
         {
-            node_parent.parent.GetComponent<GraphElementScript>().Graph_init();
-            //node_parent.parent.GetComponent<GraphElementScript>().Graph_as_Str();
+            paintable_object.GetComponent<Paintable>().searchNodeAndDeleteEdge(transform.gameObject);
         }
     }
 

@@ -229,7 +229,7 @@ public class GraphElementScript : MonoBehaviour
         for (int i = 0; i < node_parent.childCount; i++)
         {
             Transform child = node_parent.GetChild(i);
-            if (child.tag == "iconic")
+            if (child != null && child.tag == "iconic")
             {
                 icon_count++;
                 graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
@@ -267,7 +267,10 @@ public class GraphElementScript : MonoBehaviour
         for (int i = 0; i < edge_parent.childCount; i++)
         {
             Transform child = edge_parent.GetChild(i);
-            if (child.tag == "edge")
+            if (child != null &&
+                child.tag == "edge" &&
+                child.GetComponent<EdgeElementScript>().edge_start != null &&
+                child.GetComponent<EdgeElementScript>().edge_end != null)
             {
                 Edge edge = new Edge();
                 edge.edge_start = child.GetComponent<EdgeElementScript>().edge_start.GetComponent<iconicElementScript>().icon_number;
@@ -292,23 +295,33 @@ public class GraphElementScript : MonoBehaviour
         for (int i = 0; i < simp_parent.childCount; i++)
         {
             Transform child = simp_parent.GetChild(i);
-            if (child.tag == "simplicial")
+            if (child != null && child.tag == "simplicial")
             {
+                bool flag = true;
                 HyperOrSimplicialEdge simplicial = new HyperOrSimplicialEdge();
                 simplicial.nodes = new List<int>();
 
                 if (child.GetComponent<SimplicialElementScript>() != null)
                 {
                     foreach (GameObject node in child.GetComponent<SimplicialElementScript>().thenodes)
-                        simplicial.nodes.Add(node.GetComponent<iconicElementScript>().icon_number);                    
+                    {
+                        if (node == null) { flag = false; break; }
+                        simplicial.nodes.Add(node.GetComponent<iconicElementScript>().icon_number);
+                    }                                          
                 }
                 else
                 {
+                    if (child.GetComponent<EdgeElementScript>().edge_start == null || child.GetComponent<EdgeElementScript>().edge_end == null)
+                    {
+                        flag = false;
+                        continue;
+                    }
+
                     simplicial.nodes.Add(child.GetComponent<EdgeElementScript>().edge_start.GetComponent<iconicElementScript>().icon_number);
                     simplicial.nodes.Add(child.GetComponent<EdgeElementScript>().edge_end.GetComponent<iconicElementScript>().icon_number);                    
                 }
 
-                graph.simplicials.Add(simplicial);
+                if (flag) graph.simplicials.Add(simplicial);
             }
         }
     }
@@ -325,15 +338,19 @@ public class GraphElementScript : MonoBehaviour
         for (int i = 0; i < hyper_parent.childCount; i++)
         {
             Transform child = hyper_parent.GetChild(i);
-            if (child.tag == "hyper")
+            if (child != null && child.tag == "hyper")
             {
+                bool flag = true;
                 HyperOrSimplicialEdge hyperedge = new HyperOrSimplicialEdge();
                 hyperedge.nodes = new List<int>();
 
                 foreach (GameObject node in child.GetComponent<HyperElementScript>().thenodes)
+                {
+                    if (node == null) { flag = false; break; }
                     hyperedge.nodes.Add(node.GetComponent<iconicElementScript>().icon_number);
+                }
 
-                graph.hyperedges.Add(hyperedge);
+                if (flag) graph.hyperedges.Add(hyperedge);
             }
         }        
     }
@@ -384,6 +401,7 @@ public class GraphElementScript : MonoBehaviour
             else if (child.name == "show_node")
             {
                 Toggle toggle = child.GetChild(0).GetComponent<Toggle>();
+                toggle.isOn = transform.GetChild(0).gameObject.activeSelf;
                 toggle.onValueChanged.AddListener(delegate { ShowNodes(toggle); });
             }
             else if (child.name == "name")
@@ -394,11 +412,15 @@ public class GraphElementScript : MonoBehaviour
             else if (child.name == "show_edges")
             {
                 Toggle toggle = child.GetChild(0).GetComponent<Toggle>();
+                toggle.isOn = (transform.GetChild(1).gameObject.activeSelf ||
+                    transform.GetChild(2).gameObject.activeSelf ||
+                    transform.GetChild(3).gameObject.activeSelf);
                 toggle.onValueChanged.AddListener(delegate { ShowEdges(toggle); });
             }
             else if (child.name == "layer_lock")
             {
                 Toggle toggle = child.GetChild(0).GetComponent<Toggle>();
+                toggle.isOn = graph_lock;
                 toggle.onValueChanged.AddListener(delegate { GraphLock(toggle); });
             }
             else if (child.name == "change_name")
@@ -409,6 +431,7 @@ public class GraphElementScript : MonoBehaviour
             else if (child.name == "Dropdown")
             {
                 TMP_Dropdown dropdown = child.GetComponent<TMP_Dropdown>();
+                dropdown.value = Paintable.layout_dict[layout_layer];
                 dropdown.onValueChanged.AddListener(delegate { ChangeLayout(dropdown); });
             }
 
@@ -518,8 +541,7 @@ public class GraphElementScript : MonoBehaviour
         conversion_done = true;   
         StartCoroutine(clear_files());
     }
-
-
+    
     void DestroyMenu(GameObject Radmenu)
     {
         Destroy(Radmenu);

@@ -578,13 +578,13 @@ public class CreatePrimitives : MonoBehaviour
         Mesh cmesh = new Mesh();
         cmesh.CombineMeshes(combine);
 
-        paintable_object.GetComponent<Paintable>().totalLines++;
+        Paintable.totalLines++;
 
         templine = Instantiate(paintable_object.GetComponent<Paintable>().IconicElement, paintable_object.GetComponent<Paintable>().Objects_parent.transform);
         templine.GetComponent<TrailRenderer>().material = penlines[0].GetComponent<MeshRenderer>().sharedMaterial;
         templine.GetComponent<LineRenderer>().material = penlines[0].GetComponent<MeshRenderer>().sharedMaterial;
 
-        int icon_num = paintable_object.GetComponent<Paintable>().totalLines;
+        int icon_num = Paintable.totalLines;
         templine.name = "iconic_" + icon_num.ToString();
         templine.tag = "iconic";
         templine.GetComponent<iconicElementScript>().icon_number = icon_num;

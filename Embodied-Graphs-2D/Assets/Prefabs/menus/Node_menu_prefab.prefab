@@ -641,8 +641,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainInputField: {fileID: 8751983380840765681}
+  delete: {fileID: 6431486667964601135}
+  copy: {fileID: 4910628501965981286}
   menu_parent: {fileID: 0}
-  weight: 0
 --- !u!114 &1475176958081674728
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -141,7 +141,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
 
                 // because, we do not want to increase total icon numbers in each frame, which will be ambigious
-                int num = paintable.GetComponent<Paintable>().totalLines;
+                int num = Paintable.totalLines;
                 List<Vector3> graph_points = new List<Vector3>();
 
                 graph_holder.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();

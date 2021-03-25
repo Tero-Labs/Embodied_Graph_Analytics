@@ -85,8 +85,8 @@ public class Paintable : MonoBehaviour
 
     // needed for drawing
     public GameObject templine;
-	public int totalLines = 0;
-    public int min_point_count = 10;
+	public static int totalLines = 0;
+    public int min_point_count = 20;
 
     // holder of all game objects
     public GameObject Objects_parent;
@@ -148,6 +148,7 @@ public class Paintable : MonoBehaviour
     // extra check for inputfields
     public static bool click_on_inputfield;
 
+
     // Action History
     public static bool ActionHistoryEnabled = false;
 
@@ -155,6 +156,18 @@ public class Paintable : MonoBehaviour
 
     // camera movement
     public float speed = 10.0f;
+
+    // graph layout
+    // dictionary with init values
+    public static Dictionary<string, int> layout_dict = new Dictionary<string, int>()
+    {
+        ["manual"] = 0,
+        ["circular"] = 1,
+        ["random"] = 2,
+        ["spring"] = 3,
+        ["spectral"] = 4,
+        ["fruchterman"] = 5
+    };
 
     // Start is called before the first frame update
     void Start()
@@ -978,7 +991,7 @@ public class Paintable : MonoBehaviour
                         {                            
                             searchNodeAndDeleteEdge(Hit.collider.gameObject);
                             Destroy(Hit.collider.gameObject);
-                            temp.parent.GetComponent<GraphElementScript>().Graph_init();
+                            StartCoroutine(ClearGraphData("iconic", temp.gameObject));
                         } 
                     }
                     else
@@ -995,7 +1008,8 @@ public class Paintable : MonoBehaviour
                     Destroy(Hit.collider.gameObject);
 
                     if (temp.tag == "simplicial_parent")
-                        temp.parent.GetComponent<GraphElementScript>().simplicial_init();
+                        StartCoroutine(ClearGraphData("simplicial", temp.gameObject));                   
+
                 }
                 // set anchor
                 else if (Hit.collider.gameObject.tag == "hyper")
@@ -1005,7 +1019,8 @@ public class Paintable : MonoBehaviour
                     Destroy(Hit.collider.gameObject);
 
                     if (temp.tag == "hyper_parent")
-                        temp.parent.GetComponent<GraphElementScript>().hyperedges_init();
+                        StartCoroutine(ClearGraphData("hyper", temp.gameObject));
+                   // temp.parent.GetComponent<GraphElementScript>().hyperedges_init();
                 }
             }
 
@@ -1015,8 +1030,8 @@ public class Paintable : MonoBehaviour
                 Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
                 if (temp.tag == "edge_parent")
-                    temp.parent.GetComponent<GraphElementScript>().edges_init();
-                //temp.parent.GetComponent<GraphElementScript>().edges_as_Str();
+                    StartCoroutine(ClearGraphData("edge", temp.gameObject));
+                //temp.parent.GetComponent<GraphElementScript>().edges_init();
 
             }
             else if (hit2d.collider != null && hit2d.collider.gameObject.tag == "simplicial")
@@ -1024,8 +1039,8 @@ public class Paintable : MonoBehaviour
                 Transform temp = hit2d.collider.gameObject.transform.parent;
                 Destroy(hit2d.collider.gameObject);
                 if (temp.tag == "simplicial_parent")
-                    temp.parent.GetComponent<GraphElementScript>().simplicial_init();
-                //temp.parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+                    StartCoroutine(ClearGraphData("simplicial", temp.gameObject));
+                //temp.parent.GetComponent<GraphElementScript>().simplicial_init();
             }
         }
         #endregion
@@ -2779,7 +2794,7 @@ public class Paintable : MonoBehaviour
         }
     }
 
-    void searchNodeAndDeleteEdge(GameObject node_name)
+    public void searchNodeAndDeleteEdge(GameObject node_name)
     {
         Transform Prev_node_parent = node_name.transform.parent;
 
@@ -3128,10 +3143,29 @@ public class Paintable : MonoBehaviour
         }
     }
 
+    // clear dragged object in a coroutine, otherwise some scripts can not access it
     public IEnumerator clearclickedobj()
     {
         yield return null;
         dragged_arg_textbox = null;
+    }
+
+    // call graph_init in coroutine, after the destory has been taken care of
+    public IEnumerator ClearGraphData(string deleted_mode, GameObject temp)
+    {
+        yield return null;
+
+        if (deleted_mode == "iconic")
+            temp.transform.parent.GetComponent<GraphElementScript>().nodes_init();
+
+        else if (deleted_mode == "edge")
+            temp.transform.parent.GetComponent<GraphElementScript>().edges_init();
+
+        else if (deleted_mode == "simplicial")
+            temp.transform.parent.GetComponent<GraphElementScript>().simplicial_init();
+
+        else if (deleted_mode == "hyper")
+            temp.transform.parent.GetComponent<GraphElementScript>().hyperedges_init();
     }
 
     public IEnumerator HandleKeyboardInput()
