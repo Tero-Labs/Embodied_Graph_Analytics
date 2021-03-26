@@ -1155,7 +1155,28 @@ public class GraphElementScript : MonoBehaviour
                     temp_label.GetComponent<TextMeshProUGUI>().text = icon_name;
             }
         }
-        
+
+        Transform edge_parent = transform.GetChild(1);
+
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            Transform child = edge_parent.GetChild(i);
+            if (child.tag == "edge")
+            {
+               
+                GameObject temp_label = Instantiate(topo_label);
+                temp_label.transform.SetParent(graph_Details.transform);
+
+                Vector3 temp_vec = Vector3.Lerp(child.GetComponent<EdgeElementScript>().edge_start.GetComponent<iconicElementScript>().edge_position,
+                    child.GetComponent<EdgeElementScript>().edge_end.GetComponent<iconicElementScript>().edge_position,
+                    0.5f);
+
+                temp_label.transform.position = temp_vec;
+
+                temp_label.GetComponent<TextMeshProUGUI>().text = child.GetComponent<EdgeElementScript>().edge_weight.ToString();
+            }
+        }
+
 
         var hullAPI = new HullAPI();
         var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 30000 });

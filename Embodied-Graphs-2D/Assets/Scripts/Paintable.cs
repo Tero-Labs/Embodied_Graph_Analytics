@@ -53,6 +53,7 @@ public class Paintable : MonoBehaviour
     public GameObject GraphElement;
 
     // Canvas buttons
+    public GameObject staticElementButton;
     public GameObject iconicElementButton;
     public static GameObject pan_button;
     public GameObject graph_pen_button;
@@ -206,7 +207,7 @@ public class Paintable : MonoBehaviour
             return;
         }
 
-        if (AllButtonsBehaviors.isPointerOverIconicPen || AllButtonsBehaviors.isPointerOverGraphPen || AllButtonsBehaviors.isPointerOverSimplicialPen
+        if (AllButtonsBehaviors.isPointerOverStaticPen || AllButtonsBehaviors.isPointerOverIconicPen || AllButtonsBehaviors.isPointerOverGraphPen || AllButtonsBehaviors.isPointerOverSimplicialPen
         || AllButtonsBehaviors.isPointerOverHyperPen || AllButtonsBehaviors.isPointerOverPan ||
         AllButtonsBehaviors.isPointerOverEraser || AllButtonsBehaviors.isPointerOverCopy || AllButtonsBehaviors.isPointerOverCombine
         || AllButtonsBehaviors.isPointerOverFuse || AllButtonsBehaviors.isPointerOverFunction || AllButtonsBehaviors.isPointerOverAnalysis
@@ -218,6 +219,105 @@ public class Paintable : MonoBehaviour
 
 
         #endregion
+
+        #region static element brush
+
+        if (staticElementButton.GetComponent<AllButtonsBehaviors>().selected)
+        //!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
+        {
+
+            //Debug.Log("entered");
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) &&
+                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                {                    
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -40); 
+                    
+                    templine = Instantiate(IconicElement, vec, Quaternion.identity, Objects_parent.transform);
+
+                    templine.name = "static_" ;
+                    templine.tag = "static";
+
+                    templine.GetComponent<iconicElementScript>().points.Add(vec);
+
+                    templine.transform.GetComponent<LineRenderer>().material.SetColor("_Color", color_picker_script.color);
+                    templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
+                    //Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
+
+
+                    templine.GetComponent<TrailRenderer>().widthMultiplier = 2;
+                    //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+
+                    templine.GetComponent<LineRenderer>().widthMultiplier = 2;
+                    //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+                    new_drawn_icons.Add(templine);
+                }
+            }
+
+            else if (templine != null &&
+                PenTouchInfo.PressedNow //currentPen.tip.isPressed
+                && (PenTouchInfo.penPosition -
+                (Vector2)templine.GetComponent<iconicElementScript>().points[templine.GetComponent<iconicElementScript>().points.Count - 1]).magnitude > 0f)
+            {
+                // add points to the last line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) &&
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                {
+
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
+
+                    templine.GetComponent<TrailRenderer>().transform.position = vec;
+                    templine.GetComponent<iconicElementScript>().points.Add(vec);
+
+                    // pressure based pen width
+                    templine.GetComponent<iconicElementScript>().updateLengthFromPoints();
+                    templine.GetComponent<iconicElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                    templine.GetComponent<iconicElementScript>().reNormalizeCurveWidth();
+                    templine.GetComponent<TrailRenderer>().widthCurve = templine.GetComponent<iconicElementScript>().widthcurve;
+
+                }
+            }
+
+            else if (templine != null && PenTouchInfo.ReleasedThisFrame)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); //currentPen.position.ReadValue());// Input.GetTouch(0).position);
+                RaycastHit Hit;
+
+                if (Physics.Raycast(ray, out Hit) &&
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                {
+                    if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
+                    {
+
+                        templine = transform.GetComponent<CreatePrimitives>().FinishStaticLine(templine);
+                        templine = null;
+
+                    }
+                    else
+                    {
+                        Destroy(templine);
+                        templine = null;
+                    }
+                }
+                else
+                {
+                    Destroy(templine);
+                    templine = null;
+                }
+
+            }
+
+        }
+
+
+        #endregion
+
 
         #region iconic element brush
 
@@ -248,6 +348,7 @@ public class Paintable : MonoBehaviour
 
                     templine.GetComponent<iconicElementScript>().points.Add(vec);
                     templine.GetComponent<iconicElementScript>().icon_number = totalLines;
+                    templine.GetComponent<iconicElementScript>().icon_name = templine.name;
 
                     templine.transform.GetComponent<LineRenderer>().material.SetColor("_Color", color_picker_script.color);
                     templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
@@ -1021,6 +1122,10 @@ public class Paintable : MonoBehaviour
                     if (temp.tag == "hyper_parent")
                         StartCoroutine(ClearGraphData("hyper", temp.gameObject));
                    // temp.parent.GetComponent<GraphElementScript>().hyperedges_init();
+                }
+                else if (Hit.collider.gameObject.tag == "static")
+                {                    
+                    Destroy(Hit.collider.gameObject);
                 }
             }
 

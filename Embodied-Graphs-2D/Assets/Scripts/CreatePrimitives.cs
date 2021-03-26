@@ -86,6 +86,63 @@ public class CreatePrimitives : MonoBehaviour
         commonShapes = Resources.LoadAll<Sprite>("Shapes/CommonShapes");*/
     }
 
+    public GameObject FinishStaticLine(GameObject templine, Mesh combinedMesh = null)
+    {
+
+        // compute centroid and bounds
+        templine.GetComponent<iconicElementScript>().computeCentroid();
+        templine.GetComponent<iconicElementScript>().computeBounds();
+
+        // set line renderer, width
+        templine.GetComponent<LineRenderer>().widthCurve = templine.GetComponent<iconicElementScript>().widthcurve;
+
+        templine.GetComponent<LineRenderer>().numCapVertices = 15;
+        templine.GetComponent<LineRenderer>().numCornerVertices = 15;
+
+        templine.GetComponent<LineRenderer>().positionCount = templine.GetComponent<iconicElementScript>().points.Count;
+        templine.GetComponent<LineRenderer>().SetPositions(templine.GetComponent<iconicElementScript>().points.ToArray());
+       
+        var lineRenderer = templine.GetComponent<LineRenderer>();
+        var meshFilter = templine.GetComponent<MeshFilter>();
+
+
+        // If a combined mesh is not passed, use the line renderer mesh (default case)
+        if (combinedMesh == null)
+        {
+            Mesh mesh = new Mesh();
+            lineRenderer.BakeMesh(mesh, true);
+            meshFilter.sharedMesh = mesh;
+        }
+        else
+        {
+            meshFilter.sharedMesh = combinedMesh;
+        }
+
+        //meshObj.GetComponent<MeshRenderer>().sharedMaterial = templine.GetComponent<iconicElementScript>().icon_elem_material;
+        templine.GetComponent<MeshRenderer>().sharedMaterial = lineRenderer.material;
+
+        // get rid of the line renderer?
+        Destroy(templine.GetComponent<LineRenderer>());
+        Destroy(templine.GetComponent<TrailRenderer>());
+        Destroy(templine.GetComponent<iconicElementScript>());
+
+        // add a collider        
+        templine.AddComponent<BoxCollider>();
+        templine.GetComponent<BoxCollider>().size = templine.GetComponent<MeshFilter>().sharedMesh.bounds.size;
+        templine.GetComponent<BoxCollider>().center = templine.GetComponent<MeshFilter>().sharedMesh.bounds.center;;
+
+        // set collider trigger
+        templine.GetComponent<BoxCollider>().isTrigger = true;
+
+        // disable the collider because we are in the pen mode right now. Pan mode enables back all colliders.
+        templine.GetComponent<BoxCollider>().enabled = true;
+
+        // set transform position
+        templine.transform.position = new Vector3(0, 0, 0);
+
+        return templine;
+    }
+
 
     // ======================== PenLine Free-form ============================
 

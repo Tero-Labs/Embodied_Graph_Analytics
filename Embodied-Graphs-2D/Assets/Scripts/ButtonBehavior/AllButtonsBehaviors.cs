@@ -12,6 +12,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 	public bool selected = false;
     public float width, height;
 
+    public static bool isPointerOverStaticPen = false;
     public static bool isPointerOverIconicPen = false;
     public static bool isPointerOverGraphPen = false;
 	public static bool isPointerOverSimplicialPen = false;
@@ -64,6 +65,16 @@ public class AllButtonsBehaviors : MonoBehaviour
         }
 
         else if (this.name == "IconicPen")
+        {
+            // allow drawing over existing pen/set etc. objects without interfering
+            disableAllPenObjectColliders();
+            disablesimplicialColliders();
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.red;
+        }
+
+        else if (this.name == "StaticPen")
         {
             // allow drawing over existing pen/set etc. objects without interfering
             disableAllPenObjectColliders();
@@ -188,7 +199,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 		transform.localScale = new Vector3(1f, 1f, 1f);
 
         // when a new button is selected, a templine might still exist. We need to destroy that as well.
-        if (this.name == "IconicPen")
+        if (this.name == "IconicPen" || this.name == "StaticPen")
         {
             if (paint_canvas.GetComponent<Paintable>().templine != null)
             {
@@ -198,6 +209,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 
             StartCoroutine(CorrectIcons());
         }
+
         // incase any temp cylinder is left, we will clear them up 
         else if (this.name == "GraphPen")
         {
@@ -336,6 +348,10 @@ public class AllButtonsBehaviors : MonoBehaviour
 	{
 		if (EventSystem.current.IsPointerOverGameObject(0))
 		{
+            if (this.name == "StaticPen")
+                isPointerOverStaticPen = true;
+            else isPointerOverStaticPen = false;
+
             if (this.name == "IconicPen")
                 isPointerOverIconicPen = true;
             else isPointerOverIconicPen = false;
@@ -387,6 +403,7 @@ public class AllButtonsBehaviors : MonoBehaviour
         }
 		else
 		{
+            isPointerOverStaticPen = false;
             isPointerOverIconicPen = false;
             isPointerOverGraphPen = false;
             isPointerOverSimplicialPen = false;
@@ -409,10 +426,14 @@ public class AllButtonsBehaviors : MonoBehaviour
         foreach(GameObject cur in paint_canvas.GetComponent<Paintable>().new_drawn_icons)
         {
             if (cur == null) continue;
-            if (cur.GetComponent<iconicElementScript>().points.Count < paint_canvas.GetComponent<Paintable>().min_point_count)
+            if (cur.GetComponent<iconicElementScript>() != null)
             {
-                Destroy(cur);
+                if (cur.GetComponent<iconicElementScript>().points.Count < paint_canvas.GetComponent<Paintable>().min_point_count)
+                {
+                    Destroy(cur);
+                }
             }
+            
             else if(cur.GetComponent<BoxCollider>() == null)
             {
                 Destroy(cur);
