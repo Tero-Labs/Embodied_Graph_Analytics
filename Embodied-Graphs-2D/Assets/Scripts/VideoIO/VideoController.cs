@@ -121,9 +121,9 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     graph_holder.GetComponent<GraphElementScript>().video_graph = true;
                     graph_holder.GetComponent<GraphElementScript>().abstraction_layer = "graph";
                     graph_holder.GetComponent<GraphElementScript>().paintable = paintable;
-                    paintable.GetComponent<Paintable>().graph_count++;
-                    graph_holder.name = "graph_" + paintable.GetComponent<Paintable>().graph_count.ToString();
-                    graph_holder.GetComponent<GraphElementScript>().graph_name = "G" + paintable.GetComponent<Paintable>().graph_count.ToString();
+                    Paintable.graph_count++;
+                    graph_holder.name = "graph_" + Paintable.graph_count.ToString();
+                    graph_holder.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
                 }
 
                 graph_holder.SetActive(true);

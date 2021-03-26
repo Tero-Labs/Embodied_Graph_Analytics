@@ -133,6 +133,14 @@ public class FunctionElementScript : MonoBehaviour
         /*if (video_player != null)
             transform.GetChild(0).GetComponent<FunctionMenuScript>().videohide();*/
 
+        // restoring their inactiveness
+        for (int i = 0; i < transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects.Length; i++)
+        {
+            if (transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[i].name == "temp_graph")
+                transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[i].SetActive(false);
+        }
+
+        
         yield return null;
 
         // update history when execution done
@@ -165,11 +173,11 @@ public class FunctionElementScript : MonoBehaviour
         GameObject tempgraph = Instantiate(graph_prefab, new Vector3(0, 0, 0), Quaternion.identity, transform);
         tempgraph.transform.SetSiblingIndex(1);
 
-        paintable_object.GetComponent<Paintable>().graph_count++;
+        Paintable.graph_count++;
 
-        tempgraph.name = "graph_" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
+        tempgraph.name = "graph_" + Paintable.graph_count.ToString();
         tempgraph.tag = "graph";
-        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + paintable_object.GetComponent<Paintable>().graph_count.ToString();
+        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
         tempgraph.GetComponent<GraphElementScript>().paintable = paintable_object;
         tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
 
@@ -317,7 +325,13 @@ public class FunctionElementScript : MonoBehaviour
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
+        temp_graph.SetActive(true);
 
+        Paintable.graph_count++;
+        temp_graph.name = "graph_" + Paintable.graph_count.ToString();
+        temp_graph.tag = "graph";
+        temp_graph.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
+        
         // remap node dictionary
         temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
         temp_graph.GetComponent<GraphElementScript>().nodes_init();
@@ -410,6 +424,12 @@ public class FunctionElementScript : MonoBehaviour
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
+        temp_graph.SetActive(true);
+
+        Paintable.graph_count++;
+        temp_graph.name = "graph_" + Paintable.graph_count.ToString();
+        temp_graph.tag = "graph";
+        temp_graph.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
 
         temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
         temp_graph.GetComponent<GraphElementScript>().nodes_init();
@@ -457,6 +477,12 @@ public class FunctionElementScript : MonoBehaviour
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
         temp_graph.transform.SetSiblingIndex(1);
+        temp_graph.SetActive(true);
+
+        Paintable.graph_count++;
+        temp_graph.name = "graph_" + Paintable.graph_count.ToString();
+        temp_graph.tag = "graph";
+        temp_graph.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
 
         /*GameObject extra_objects = new GameObject("labels_overlay");
         extra_objects.transform.parent = temp_graph.transform;
@@ -1962,15 +1988,21 @@ public class FunctionElementScript : MonoBehaviour
     {
         //Debug.Log("vector_"+p.ToString()+"_own_"+this.transform.position.ToString());
         int j = points.Count - 1;
+        int interval = Mathf.Max(1, (int)Math.Floor((float)(points.Count / 40)));
+
         bool inside = false;
-        for (int i = 0; i < points.Count; j = i++)
+        for (int i = 0; i < points.Count; i = i + interval)
         {
+            //Debug.Log("I:" + i.ToString() + ", J: " + j.ToString());
+
             if (((points[i].y <= p.y && p.y < points[j].y) || (points[j].y <= p.y && p.y < points[i].y)) &&
                (p.x < (points[j].x - points[i].x) * (p.y - points[i].y) / (points[j].y - points[i].y) + points[i].x))
             {
                 inside = !inside;
 
             }
+
+            j = i;
 
         }
         return inside;

@@ -438,6 +438,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             {
                 Destroy(cur);
             }
+
+            else if (cur.GetComponent<MeshFilter>().sharedMesh == null)
+            {
+                Destroy(cur);
+            }
         }
 
         yield return null;

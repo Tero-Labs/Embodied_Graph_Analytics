@@ -1,1 +1,1 @@
-{"node_cord": [{"node_id": 8, "x": "-1.0", "y": "0.7653668647301791"}, {"node_id": 7, "x": "-0.41421356237309503", "y": "-0.7653668647301803"}, {"node_id": 5, "x": "0.41421356237309503", "y": "-0.7653668647301793"}, {"node_id": 6, "x": "1.0", "y": "0.7653668647301803"}]}
+{"edges": [{"edge_start": 1, "edge_end": 2, "weight": 1}, {"edge_start": 3, "edge_end": 4, "weight": 1}, {"edge_start": 3, "edge_end": 5, "weight": 1}, {"edge_start": 5, "edge_end": 4, "weight": 1}], "simplicials": [], "hyperedges": [], "nodes": [1, 2, 3, 5, 4]}

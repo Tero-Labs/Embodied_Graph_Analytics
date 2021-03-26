@@ -108,7 +108,7 @@ public class Paintable : MonoBehaviour
     public List<GameObject> hypernodes = new List<GameObject>();
 
     // needed for graph
-    public int graph_count = 0;
+    public static int graph_count = 0;
 
     // needed for panning
     private bool taping_flag;

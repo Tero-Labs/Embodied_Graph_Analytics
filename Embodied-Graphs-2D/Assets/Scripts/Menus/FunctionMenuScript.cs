@@ -141,7 +141,7 @@ public class FunctionMenuScript : MonoBehaviour
        if (mainInputField != null && mainInputField.isFocused)
        {
             Paintable.click_on_inputfield = true;
-            return;
+            //return;
         }                
 
         if (paintable.GetComponent<Paintable>().function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
@@ -336,19 +336,32 @@ public class FunctionMenuScript : MonoBehaviour
                             if (dragged_arg_object.transform.parent.tag == "node_parent")
                             {
                                 temp = dragged_arg_object.transform.parent.parent;
-                                cur_arg_Str[index] = temp.GetComponent<GraphElementScript>().graph_name;
+                                temp = FindifInsideLasso(temp.gameObject);
+
                                 // argument obj referece update for calculation
                                 //argument_objects[cur_order_dict[index]] = temp.gameObject;
-                                argument_objects[index] = temp.gameObject;
+                                if (temp != null)
+                                {
+                                    argument_objects[index] = temp.gameObject;
+                                    cur_arg_Str[index] = temp.GetComponent<GraphElementScript>().graph_name;
+                                }
+                                    
                             }
+
                             else if (dragged_arg_object.transform.parent.tag == "edge_parent")
                             {
                                 temp = dragged_arg_object.transform.parent.parent;
-                                cur_arg_Str[index] = temp.GetComponent<GraphElementScript>().graph_name;
+                                temp = FindifInsideLasso(temp.gameObject);
+
                                 // argument obj referece update for calculation
                                 //argument_objects[cur_order_dict[index]] = temp.gameObject;
-                                argument_objects[index] = temp.gameObject;
+                                if (temp != null)
+                                {
+                                    argument_objects[index] = temp.gameObject;
+                                    cur_arg_Str[index] = temp.GetComponent<GraphElementScript>().graph_name;
+                                }                                    
                             }
+
                             else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null &&
                                 paintable.GetComponent<Paintable>().dragged_arg_textbox.transform.GetComponent<FunctionMenuScript>().output_type != "scalar")
                             {
@@ -358,22 +371,50 @@ public class FunctionMenuScript : MonoBehaviour
                                 argument_objects[index] = temp.parent.GetChild(1).gameObject;
                             }
                         }
+
                         else if (cur_dict[index] == "iconic" && dragged_arg_object.tag == "iconic")
                         {
                             temp = dragged_arg_object.transform;
-                            cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
+
                             // argument obj referece update for calculation
                             //argument_objects[cur_order_dict[index]] = temp.gameObject;
-                            argument_objects[index] = temp.gameObject;
+                            if (transform.parent.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                                temp.GetComponent<iconicElementScript>().edge_position))
+                            {
+                                cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
+                                argument_objects[index] = temp.gameObject;
+                            }
+                            else
+                                temp = null;                            
+                           
                         }
+
                         else if (cur_dict[index] == "iconic" && dragged_arg_object.tag == "edge")
                         {
                             temp = dragged_arg_object.GetComponent<EdgeElementScript>().edge_start.transform;
-                            cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
-                            // argument obj referece update for calculation
-                            //argument_objects[cur_order_dict[index]] = temp.gameObject;
-                            argument_objects[index] = temp.gameObject;
+
+                            if (transform.parent.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                                temp.GetComponent<iconicElementScript>().edge_position))
+                            {
+                                cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
+                                argument_objects[index] = temp.gameObject;
+                            }
+                            else
+                            {
+                                temp = dragged_arg_object.GetComponent<EdgeElementScript>().edge_end.transform;
+
+                                if (transform.parent.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                                    temp.GetComponent<iconicElementScript>().edge_position))
+                                {
+                                    cur_arg_Str[index] = temp.GetComponent<iconicElementScript>().icon_number.ToString();
+                                    argument_objects[index] = temp.gameObject;
+                                }
+                                else
+                                    temp = null;
+                            }
+                            
                         }
+
                         else if (cur_dict[index] == "string" || cur_dict[index] == "int")
                         {
                             // double check if the draaged object is not null
@@ -445,6 +486,71 @@ public class FunctionMenuScript : MonoBehaviour
         }
         else
             return;
+    }
+
+    Transform FindifInsideLasso(GameObject graph)
+    {
+        List<int> selected_icons = new List<int>();
+
+        Transform node_parent = graph.transform.GetChild(0);
+
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            Transform child = node_parent.GetChild(i);
+            if (child != null && child.tag == "iconic")
+            {
+                if (transform.parent.GetComponent<FunctionElementScript>().isInsidePolygon(
+                                                child.GetComponent<iconicElementScript>().edge_position))
+                {
+                    selected_icons.Add(child.GetComponent<iconicElementScript>().icon_number);
+                }
+            }
+        }
+        
+        if (node_parent.childCount == selected_icons.Count)
+        {
+            //Debug.Log("completely inside our lasso");
+            return graph.transform;
+        }
+        // create new temporary graph
+        else if (selected_icons.Count > 0) 
+        {
+            //Debug.Log("partially inside lasso");
+            
+            GameObject temp_graph = Instantiate(graph);
+            temp_graph.transform.parent = graph.transform.parent;
+            temp_graph.name = "temp_graph";
+
+            temp_graph.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
+            temp_graph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
+
+            node_parent = temp_graph.transform.GetChild(0);
+            for (int i = 0; i < node_parent.childCount; i++)
+            {
+                Transform child = node_parent.GetChild(i);
+                if (child != null && child.tag == "iconic")
+                {
+                    if (selected_icons.Contains(child.GetComponent<iconicElementScript>().icon_number) == false)
+                    {
+                        Destroy(child.gameObject);
+                    }
+                    else
+                    {
+                        temp_graph.GetComponent<GraphElementScript>().graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
+                        temp_graph.GetComponent<GraphElementScript>().nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
+                    }
+                }
+            }
+
+            temp_graph.SetActive(false);
+            return temp_graph.transform;
+        }
+        else
+        {
+            //Debug.Log("completely outside lasso");
+            return null;
+        }
+
     }
 
     public void checkHitAndMove()
@@ -809,7 +915,7 @@ public class FunctionMenuScript : MonoBehaviour
         UIsetafterEval(output);
     }
 
-    void UIsetafterEval(string output = null)
+    public void UIsetafterEval(string output = null)
     {
         /*if (instant_eval)
         {
@@ -847,6 +953,7 @@ public class FunctionMenuScript : MonoBehaviour
                 }
             }
         }
+
 
         text_label.GetComponent<TextMeshProUGUI>().text = text_label.GetComponent<TextMeshProUGUI>().text.Replace(" ", "");
 
@@ -972,6 +1079,7 @@ public class FunctionMenuScript : MonoBehaviour
                 {
                     Transform cur_function_line = child_graph.transform.parent;
                     argument_objects[idx] = cur_function_line.GetChild(1).gameObject;
+                    cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().UIsetafterEval("");
                 }
 
                 idx++;
@@ -979,13 +1087,19 @@ public class FunctionMenuScript : MonoBehaviour
 
             if (temp_flag)
             {
+                // setting the temp_graphs active to avoid possible conflicts
+                for (int i = 0; i < argument_objects.Length; i++)
+                {
+                    if (argument_objects[i].name == "temp_graph") argument_objects[i].SetActive(true);
+                }
+
                 //i_initiated
                 transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());
                 while (transform.parent.GetComponent<FunctionElementScript>().graph_generation_done == false)
                 {
                     Debug.Log("waiting_until_" + transform.parent.name + "_finished_executing");
                     yield return null;
-                }                                
+                }                
             }
 
             // an extra yield for double check

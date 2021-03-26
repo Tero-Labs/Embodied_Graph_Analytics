@@ -344,7 +344,7 @@ public class CreatePrimitives : MonoBehaviour
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
         templine.GetComponent<FunctionElementScript>().mesh_holder.SetActive(true);
         templine.GetComponent<FunctionElementScript>().mesh_holder.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
-        templine.GetComponent<FunctionElementScript>().points.Clear();
+        //templine.GetComponent<FunctionElementScript>().points.Clear();
         return templine;
     }
 
@@ -385,7 +385,7 @@ public class CreatePrimitives : MonoBehaviour
 
         // set transform position
         templine.transform.position = new Vector3(0, 0, 0); //meshObj.transform.position;
-        templine.GetComponent<FunctionElementScript>().points.Clear();
+        //templine.GetComponent<FunctionElementScript>().points.Clear();
 
         Debug.Log("inside_videolasso");
         return templine;

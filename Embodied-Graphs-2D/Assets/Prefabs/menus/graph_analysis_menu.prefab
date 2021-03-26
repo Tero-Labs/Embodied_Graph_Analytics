@@ -1604,7 +1604,7 @@ MonoBehaviour:
   paintable: {fileID: 0}
   main_camera: {fileID: 0}
   Graph: {fileID: 374068876495148022}
-  TotalPoints: 5
+  TotalPoints: 3
   show_graph: {fileID: 6289321095599697776}
   mainInputField: {fileID: 6289321094260326920}
   arg_1: {fileID: 6289321094456451642}

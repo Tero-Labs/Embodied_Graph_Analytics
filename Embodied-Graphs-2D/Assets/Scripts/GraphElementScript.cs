@@ -1158,7 +1158,7 @@ public class GraphElementScript : MonoBehaviour
 
         Transform edge_parent = transform.GetChild(1);
 
-        for (int i = 0; i < node_parent.childCount; i++)
+        for (int i = 0; i < edge_parent.childCount; i++)
         {
             Transform child = edge_parent.GetChild(i);
             if (child.tag == "edge")
