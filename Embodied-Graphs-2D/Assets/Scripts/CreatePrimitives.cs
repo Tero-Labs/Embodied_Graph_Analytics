@@ -7,6 +7,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using TMPro;
+using System.IO;
 /*using uPIe;
 using PDollarGestureRecognizer;
 
@@ -60,6 +61,20 @@ public class CreatePrimitives : MonoBehaviour
     public Sprite[] commonShapes;
 
     //public int totalLines = 0;
+
+    void Start()
+    {
+        /*List<Dictionary<string, object>> data = CSVReader.Read("iris_multiclass");
+
+        foreach (var line in data)
+        {
+            foreach (var col in line)
+            {
+                print(col);
+            }
+        }*/
+
+    }
 
     // Start is called before the first frame update
     void Awake()
