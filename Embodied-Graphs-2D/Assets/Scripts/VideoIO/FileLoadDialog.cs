@@ -102,7 +102,12 @@ public class FileLoadDialog : MonoBehaviour
                     slider.GetComponent<VideoController>().loadAnnotation(FileBrowser.Result[i].Substring(0, trim_pos) + ".json");
 
                     if (FileBrowser.Result[i].Contains("airplane"))
+                    {
                         slider.GetComponent<VideoController>().loadRoutes(FileBrowser.Result[i].Substring(0, trim_pos) + "_routes.json");
+                        temp.transform.GetComponent<VideoPlayerChildrenAccess>().node_radius.isOn = false;
+                        temp.transform.GetComponent<VideoPlayerChildrenAccess>().site_specific.isOn = true;
+                    }
+                        
 
                     slider.GetComponent<VideoController>().paintable = transform.gameObject;
                 }

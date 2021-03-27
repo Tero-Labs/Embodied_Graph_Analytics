@@ -568,6 +568,13 @@ public class iconicElementScript : MonoBehaviour
                         cur_function.GetComponent<FunctionElementScript>().updateLassoPointsIconDrag();
                         break;
                     }
+                    else if (function_argument.tag == "function" && function_argument.transform.GetChild(1).tag == "graph" &&
+                        transform.parent.tag == "node_parent" &&
+                        transform.parent.parent.gameObject == function_argument.transform.GetChild(1).gameObject)
+                    {
+                        cur_function.GetComponent<FunctionElementScript>().updateLassoPointsIconDrag();
+                        break;
+                    }
                     // else if the argument is an icon and matches with this object, call update lasso
                     else if (function_argument.tag == "iconic" && function_argument == transform.gameObject)
                     {

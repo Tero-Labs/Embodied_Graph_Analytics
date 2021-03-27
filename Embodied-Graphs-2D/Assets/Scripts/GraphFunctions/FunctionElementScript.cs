@@ -116,6 +116,7 @@ public class FunctionElementScript : MonoBehaviour
     Graphs returned_graphs;
     Graph returned_graph;
     bool cascaded_lasso = false;
+    public string output;
 
     IEnumerator clear_files()
     {
@@ -133,11 +134,13 @@ public class FunctionElementScript : MonoBehaviour
         /*if (video_player != null)
             transform.GetChild(0).GetComponent<FunctionMenuScript>().videohide();*/
 
+        transform.GetChild(0).GetComponent<FunctionMenuScript>().UIsetafterEval(output);
+
         // restoring their inactiveness
-        for (int i = 0; i < transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects.Length; i++)
+        for (int i = 0; i < transform.GetComponent<FunctionCaller>().selected_final_graphs.Length; i++)
         {
-            if (transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[i].name == "temp_graph")
-                transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[i].SetActive(false);
+            if (transform.GetComponent<FunctionCaller>().selected_final_graphs[i].name == "temp_graph")
+                transform.GetComponent<FunctionCaller>().selected_final_graphs[i].SetActive(false);
         }
 
         
@@ -161,6 +164,7 @@ public class FunctionElementScript : MonoBehaviour
     // ToDo: instantiate the graph somewhere else? perform the toggle operation here as well
     public void ServerOutputProcessing(string graph_as_Str)
     {
+        output = graph_as_Str;
         // if returned as a graph
         // destroy previous function outputs, if any
         Destroy(transform.GetChild(1).gameObject);
@@ -196,7 +200,7 @@ public class FunctionElementScript : MonoBehaviour
 
         foreach (int current_node in returned_graph.nodes)
         {
-            foreach (GameObject current_graph in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            foreach (GameObject current_graph in transform.GetComponent<FunctionCaller>().selected_final_graphs)
             {
                 if (current_graph.tag == "graph")
                 {
@@ -235,7 +239,7 @@ public class FunctionElementScript : MonoBehaviour
 
         StartCoroutine(clear_files());
     }
-    
+
     /*public void InstantiateGraph(string graph_as_Str)
     {
         Debug.Log("graph_as_Str: " + graph_as_Str);
@@ -278,7 +282,7 @@ public class FunctionElementScript : MonoBehaviour
 
         foreach (string current_node in each_node)
         {
-            foreach (GameObject current_graph in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            foreach (GameObject current_graph in transform.GetComponent<FunctionCaller>().selected_graphs)
             {
                 if (current_graph.tag == "graph")
                 {
@@ -320,7 +324,7 @@ public class FunctionElementScript : MonoBehaviour
 
     public void InstantiateTopoGraph()
     {
-        GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
+        GameObject graph = transform.GetComponent<FunctionCaller>().selected_final_graphs[0];
 
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
@@ -419,7 +423,7 @@ public class FunctionElementScript : MonoBehaviour
 
     public void InstantiatePathGraph()
     {
-        GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
+        GameObject graph = transform.GetComponent<FunctionCaller>().selected_final_graphs[0];
 
         GameObject temp_graph = Instantiate(graph);
         temp_graph.transform.parent = transform;
@@ -470,7 +474,7 @@ public class FunctionElementScript : MonoBehaviour
 
     public void InstantiateCommunityGraph()
     {
-        GameObject graph = transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[0];
+        GameObject graph = transform.GetComponent<FunctionCaller>().selected_final_graphs[0];
 
         if (graph.tag != "graph") return;
                 
@@ -698,110 +702,18 @@ public class FunctionElementScript : MonoBehaviour
                 .Select(n => values.Skip(n).Take(movingWindow).Average())
                 .ToList();
     }
-       
-    public void updateLassoPoints()
-    {
-         
-        if (!fused_function && !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
-        {
-            List<Vector3> hull_pts = new List<Vector3>();
-            int center_count = 0;
-            joint_centroid = Vector3.zero;
-
-            foreach (GameObject function_argument in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
-            {
-                if (function_argument == null) continue;
-
-                if (function_argument.tag == "graph")
-                {
-                    bool video_flag = false;
-
-                    Transform[] allChildrennode = function_argument.transform.GetChild(0).GetComponentsInChildren<Transform>();
-                    foreach (Transform child in allChildrennode)
-                    {
-                        if (child.tag == "iconic")
-                        {
-                            // to optimize we take special measure for videos
-                            if (child.GetComponent<iconicElementScript>().video_icon)
-                            {
-                                hull_pts.AddRange(function_argument.GetComponent<GraphElementScript>().points);
-                                video_flag = true;
-                                break;
-                            }
-
-                            List<Vector3> returned_pts = child.GetComponent<iconicElementScript>().hullPoints();
-                            hull_pts.AddRange(returned_pts);
-                            center_count++;
-                            joint_centroid += child.GetComponent<iconicElementScript>().edge_position;
-                        }
-                    }
-
-                    if (video_flag) continue;
-
-                    // we want the edges to stay within the lasso as well 
-                    Transform[] allChildrenedge = function_argument.transform.GetChild(1).GetComponentsInChildren<Transform>();
-                    foreach (Transform child in allChildrenedge)
-                    {
-                        if (child.tag == "edge")
-                        {
-                            Vector3[] returned_pts_arr = new Vector3[child.GetComponent<LineRenderer>().positionCount];
-                            int temp = child.GetComponent<LineRenderer>().GetPositions(returned_pts_arr);
-
-                            // adding a little offset so that it does not look too tight
-                            for (int i = 0; i < returned_pts_arr.Length; i++)
-                            {
-                                hull_pts.Add(returned_pts_arr[i] - new Vector3(0, edge_offset, 0));
-                                hull_pts.Add(returned_pts_arr[i] + new Vector3(0, edge_offset, 0));
-                            }
-
-                            /*List<Vector3> returned_pts = returned_pts_arr.ToList();
-                            hull_pts.AddRange(returned_pts);*/
-                        }
-
-                    }
-                }
-                else if (function_argument.tag == "iconic")
-                {
-                    List<Vector3> returned_pts = function_argument.GetComponent<iconicElementScript>().hullPoints();
-                    hull_pts.AddRange(returned_pts);
-                    center_count++;
-                    joint_centroid += function_argument.GetComponent<iconicElementScript>().edge_position;
-                }
-            }
-                        
-
-            joint_centroid = joint_centroid / center_count;
-
-            var hullAPI = new HullAPI();
-            var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 3000 });
-
-            Vector3[] vertices = hull.vertices;
-            //Array.Sort(vertices);
-            Debug.Log("hulled: ");            
-
-            mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
-            transform.GetComponent<LineRenderer>().enabled = true;
-
-            points = vertices.ToList();
-
-            paintable_object.GetComponent<CreatePrimitives>().FinishFunctionLine(transform.gameObject);
-            transform.GetChild(0).position = new Vector3(maxx+15, maxy+15, -5);
-        }
-
-
-    }
-
+  
     public void updateLassoPointsIconDrag()
     {
-
-        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled && 
-            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval)
+        // we don't want the function to change it's shape if it is a fused function
+        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled /*&& 
+            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval*/)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
             joint_centroid = Vector3.zero;
 
-            foreach (GameObject function_argument in transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects)
+            foreach (GameObject function_argument in transform.GetComponent<FunctionCaller>().selected_final_graphs)
             {
                 if (function_argument == null) continue;
 
@@ -897,7 +809,7 @@ public class FunctionElementScript : MonoBehaviour
         }
     }
     
-    public void updateLassoPoints(GameObject graph)
+    /*public void updateLassoPoints(GameObject graph)
     {
         if (fused_function) return;
 
@@ -948,8 +860,7 @@ public class FunctionElementScript : MonoBehaviour
                                 hull_pts.Add(returned_pts_arr[i] + new Vector3(0, edge_offset, 0));
                             }
 
-                            /*List<Vector3> returned_pts = returned_pts_arr.ToList();
-                            hull_pts.AddRange(returned_pts);*/
+                            
                         }
 
                     }
@@ -974,7 +885,7 @@ public class FunctionElementScript : MonoBehaviour
             transform.GetChild(0).position = new Vector3(maxx + 15, maxy + 15, -5);
         }
         
-    }
+    }*/
 
     public void updatechildLassoPoints(List<int> nodes, GameObject gameObject, int idx)
     {

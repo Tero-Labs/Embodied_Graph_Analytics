@@ -81,14 +81,18 @@ public class GraphSliderMenu : MonoBehaviour
         }
         else
         {
-            //Debug.Log("function_menu");
+            Debug.Log("function_menu:"+ menu_object.transform.parent.name);
             if (cur_layer == "graph")
             {
                 //menu_object.transform.parent.GetChild(1).gameObject.SetActive(false);
                 menu_object.GetComponent<FunctionMenuScript>().Show();
             }
-            else
+            else if (cur_layer == "simplicial" && menu_object.transform.parent.GetChild(1).tag != "graph")
                 StartCoroutine(functionSliderInitiate(cur_layer));
+            else
+                StartCoroutine(RunConversion(cur_layer));
+                //parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
+            
         }
         
     }
@@ -107,5 +111,21 @@ public class GraphSliderMenu : MonoBehaviour
         yield return null;
         this.parent = cur_function_line.GetChild(1).gameObject;
         parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
+    }
+
+    IEnumerator RunConversion(string cur_layer)
+    {
+        // wait until current conversion is done
+        while (true)
+        {
+            yield return null;
+            if (this.parent.GetComponent<GraphElementScript>().conversion_done)
+            {
+                Debug.Log("Conversion Done");
+                break;
+            }
+        }
+
+        this.parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
     }
 }

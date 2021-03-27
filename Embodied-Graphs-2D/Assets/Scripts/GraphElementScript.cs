@@ -967,6 +967,14 @@ public class GraphElementScript : MonoBehaviour
                         yield return null;
                         break;
                     }
+                    else if (function_argument.tag == "function" && function_argument.transform.GetChild(1).tag == "graph" &&
+                        transform.gameObject == function_argument.transform.GetChild(1).gameObject)
+                    {
+                        video_player.transform.GetComponent<VideoPlayer>().Pause();
+                        cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper(video_player);
+                        yield return null;
+                        break;
+                    }
                 }
             }
         }

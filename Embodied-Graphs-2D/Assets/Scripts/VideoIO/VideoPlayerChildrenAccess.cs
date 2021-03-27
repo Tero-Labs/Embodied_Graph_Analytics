@@ -25,14 +25,14 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         delete.onClick.AddListener(delegate { Delete(); });
         mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
 
-        node_radius.onValueChanged.AddListener(delegate { GraphType(node_radius); });
-        site_specific.onValueChanged.AddListener(delegate { GraphType(site_specific); });
+        node_radius.onValueChanged.AddListener(delegate { GraphType(); });
+        site_specific.onValueChanged.AddListener(delegate { GraphType(); });
 
         auto_track.onValueChanged.AddListener(delegate { TrackType(auto_track); });
         manual_track.onValueChanged.AddListener(delegate { TrackType(manual_track); });
 
         // to setup initial values
-        GraphType(node_radius);
+        GraphType();
         TrackType(auto_track);
 
         width = quad.transform.localScale.x;
@@ -89,7 +89,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         }
     }
 
-    void GraphType(Toggle toggle)
+    public void GraphType()
     {        
         if (site_specific.isOn) slider.GetComponent<VideoController>().graph_type = "SiteSpecific";
         else slider.GetComponent<VideoController>().graph_type = "NodeRadius";

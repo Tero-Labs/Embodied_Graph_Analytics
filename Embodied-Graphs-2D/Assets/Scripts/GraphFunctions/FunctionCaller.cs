@@ -8,7 +8,7 @@ public class FunctionCaller : MonoBehaviour
     private HelloRequester _helloRequester;
     private string graphs_as_string;
 
-    GameObject[] selected_graphs;
+    public GameObject[] selected_final_graphs;
 
     private void Start()
     {
@@ -36,19 +36,25 @@ public class FunctionCaller : MonoBehaviour
 
     public void GetGraphJson(GameObject[] selected_graphs, string function_name)
     {
-        this.selected_graphs = selected_graphs;
+        this.selected_final_graphs = (GameObject[]) selected_graphs.Clone();
+
+        for (int i = 0; i < selected_final_graphs.Length; i++)
+        {
+            if (selected_final_graphs[i].tag == "function")
+                this.selected_final_graphs[i] = selected_final_graphs[i].transform.GetChild(1).gameObject;
+        }
 
         bool coercion = false;
 
         string abs_layer = "";
-        for (int i = 0; i < selected_graphs.Length; i++)
+        for (int i = 0; i < selected_final_graphs.Length; i++)
         {
-            if (selected_graphs[i].tag != "graph") continue;
+            if (selected_final_graphs[i].tag != "graph") continue;
             if (abs_layer == "")
-                abs_layer = selected_graphs[i].GetComponent<GraphElementScript>().abstraction_layer;
+                abs_layer = selected_final_graphs[i].GetComponent<GraphElementScript>().abstraction_layer;
             else
             {
-                if (abs_layer != selected_graphs[i].GetComponent<GraphElementScript>().abstraction_layer)
+                if (abs_layer != selected_final_graphs[i].GetComponent<GraphElementScript>().abstraction_layer)
                 {
                     Debug.Log("coercion needed");
                     coercion = true;
@@ -59,7 +65,7 @@ public class FunctionCaller : MonoBehaviour
 
         if (coercion)
         {
-            StartCoroutine(RunCoercionModel(selected_graphs, function_name));
+            StartCoroutine(RunCoercionModel(selected_final_graphs, function_name));
             return;
         }
 
@@ -67,11 +73,11 @@ public class FunctionCaller : MonoBehaviour
         Graphs graphs = new Graphs();
         graphs.graphs = new List<Graph>();
 
-        for (int i = 0; i < selected_graphs.Length; i++)
+        for (int i = 0; i < selected_final_graphs.Length; i++)
         {
-            if (selected_graphs[i].tag != "graph") continue;
+            if (selected_final_graphs[i].tag != "graph") continue;
 
-            graphs.graphs.Add(selected_graphs[i].GetComponent<GraphElementScript>().graph);
+            graphs.graphs.Add(selected_final_graphs[i].GetComponent<GraphElementScript>().graph);
         }
 
         Debug.Log(JsonUtility.ToJson(graphs));
@@ -125,8 +131,8 @@ public class FunctionCaller : MonoBehaviour
     {
         if (function_name == "shortestpath")
         {
-            function_name += "_" + selected_graphs[1].GetComponent<iconicElementScript>().icon_number.ToString();
-            function_name += "_" + selected_graphs[2].GetComponent<iconicElementScript>().icon_number.ToString();
+            function_name += "_" + selected_final_graphs[1].GetComponent<iconicElementScript>().icon_number.ToString();
+            function_name += "_" + selected_final_graphs[2].GetComponent<iconicElementScript>().icon_number.ToString();
         }
 
         if (_helloRequester != null)

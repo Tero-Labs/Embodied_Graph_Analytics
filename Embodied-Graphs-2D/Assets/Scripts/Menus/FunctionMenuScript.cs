@@ -13,7 +13,10 @@ public class FunctionMenuScript : MonoBehaviour
     public Toggle show_result;
     public bool keep_child_object;
     public bool eval_finished;
+
+    // to trace if it was initiated from the slider
     public bool passive_func_call = false;
+    public bool passive_func_call_root = false;
 
     public InputField mainInputField;
     public Button perform_action;
@@ -83,7 +86,7 @@ public class FunctionMenuScript : MonoBehaviour
         dragged_arg_object = null;
 
         keepchilden.onValueChanged.AddListener(delegate { ChildToggle(keepchilden); });
-        evaluation_type.onValueChanged.AddListener(delegate { InstantEvalToggle(evaluation_type); });
+        //evaluation_type.onValueChanged.AddListener(delegate { InstantEvalToggle(evaluation_type); });
         instant_eval = false;
         keep_child_object = true;
 
@@ -368,7 +371,8 @@ public class FunctionMenuScript : MonoBehaviour
                                 Debug.Log("here_in_arg_drag");
                                 temp = paintable.GetComponent<Paintable>().dragged_arg_textbox.transform;
                                 cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text;
-                                argument_objects[index] = temp.parent.GetChild(1).gameObject;
+                                //argument_objects[index] = temp.parent.GetChild(1).gameObject;
+                                argument_objects[index] = temp.parent.gameObject;
                             }
                         }
 
@@ -830,6 +834,7 @@ public class FunctionMenuScript : MonoBehaviour
     public void InitiateFunctionCallHelper(GameObject video_player = null)
     {
         passive_func_call = true;
+        passive_func_call_root = true;
         transform.parent.GetComponent<FunctionElementScript>().video_player = video_player;
         StartCoroutine(CheckUnevaluatedFunctionArguments());
     }
@@ -843,6 +848,8 @@ public class FunctionMenuScript : MonoBehaviour
                 // if it is under a function, hide that as well 
                 if (child_graph.transform.parent.name.Contains("function_line_"))
                 {
+                    // setting as true, otherwise the function will not be called
+                    child_graph.transform.parent.GetChild(0).gameObject.SetActive(true);
                     child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().Hide();
                     child_graph.transform.parent.gameObject.SetActive(false);
                 }
@@ -851,17 +858,32 @@ public class FunctionMenuScript : MonoBehaviour
                     child_graph.SetActive(false);
                 }
             }
+
+            else if (child_graph != null && child_graph.tag == "function")
+            {
+                // setting as true, otherwise the function will not be called
+                child_graph.transform.GetChild(0).gameObject.SetActive(true);
+                child_graph.transform.GetChild(0).GetComponent<FunctionMenuScript>().Hide();
+                child_graph.transform.gameObject.SetActive(false);
+            }
         }
     }
 
     public void Show()
     {
-        transform.parent.GetComponent<FunctionElementScript>().mesh_holder.SetActive(true);
+        // we need not show anything, if the final evaluation was done 
+        if (eval_finished) return;
+
+        // show if it was a passive function call or a call through slider 
+        /*transform.parent.GetComponent<FunctionElementScript>().mesh_holder.SetActive(true);
         message_box.GetComponent<TextMeshProUGUI>().text = "";
         settings.transform.gameObject.SetActive(true);
         perform_action.transform.gameObject.SetActive(true);
-        transform.gameObject.SetActive(true);
-        transform.parent.GetChild(1).gameObject.SetActive(false);
+        transform.gameObject.SetActive(true);*/
+
+        transform.parent.gameObject.SetActive(true);
+        // very important. we will be hiding the child object produced earlier
+        transform.parent.GetChild(1).gameObject.SetActive(false);        
 
         foreach (GameObject child_graph in argument_objects)
         {            
@@ -873,13 +895,19 @@ public class FunctionMenuScript : MonoBehaviour
                 if (child_graph.transform.parent.name.Contains("function_line_"))                    
                 {
                     child_graph.transform.parent.gameObject.SetActive(true);
-                    //&& !child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
+
                     child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().Show();                    
                 }
                 else
                 {
                     child_graph.SetActive(true);
                 }
+            }
+            else if (child_graph != null && child_graph.tag == "function")
+            {
+                // setting as true, otherwise the function will not be called
+                child_graph.SetActive(true);
+                child_graph.transform.GetChild(0).GetComponent<FunctionMenuScript>().Show();
             }
         }
     }
@@ -912,38 +940,27 @@ public class FunctionMenuScript : MonoBehaviour
             if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(); //(output);
         }
 
-        UIsetafterEval(output);
+        // moved to functionelementscript because the coroutine can not run if i hide the object 
+        //UIsetafterEval(output);
     }
 
     public void UIsetafterEval(string output = null)
-    {
-        /*if (instant_eval)
-        {
-            // show results instantly             
-            settings.transform.gameObject.SetActive(false);
-            transform.gameObject.SetActive(false);
-            if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
-                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
-        }
-        else
-        {
-            if (output_type == "graph")
-            {
-                transform.parent.GetChild(1).gameObject.SetActive(false);
-            }
-        }*/
-
-        if (!keep_child_object || passive_func_call)
+    {        
+        // hide the children graph if the option was set or passive call was introduced from the current function line
+        if (!keep_child_object || (passive_func_call && passive_func_call_root))
         {
             foreach (GameObject child_graph in argument_objects)
             {
                 if (child_graph.tag == "graph")
-                {
+                {                    
                     // if it is under a function, hide that as well 
                     if (child_graph.transform.parent.name.Contains("function_line_"))
                     {
                         // recursive hide call
+                        // setting as true, otherwise the function will not be called
+                        child_graph.transform.parent.GetChild(0).gameObject.SetActive(true);
                         child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().Hide();
+                        // not sure about the following line
                         child_graph.transform.parent.gameObject.SetActive(false);
                     }
                     else
@@ -951,34 +968,47 @@ public class FunctionMenuScript : MonoBehaviour
                         child_graph.SetActive(false);
                     }
                 }
+
+                else if (child_graph.tag == "function")
+                {
+                    // recursive hide call
+                    // setting as true, otherwise the function will not be called
+                    child_graph.transform.GetChild(0).gameObject.SetActive(true);
+                    child_graph.transform.GetChild(0).GetComponent<FunctionMenuScript>().Hide();
+                    // not sure about the following line
+                    child_graph.SetActive(false);
+                }
             }
         }
 
-
         text_label.GetComponent<TextMeshProUGUI>().text = text_label.GetComponent<TextMeshProUGUI>().text.Replace(" ", "");
-
 
         if (passive_func_call == false)
         {
-            message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text;
-            settings.transform.gameObject.SetActive(false);
-            perform_action.transform.gameObject.SetActive(false);
-            eval_finished = true;
-            instant_eval = true;
-            input_option.SetActive(false);
+            // to enable calling again when it was called passively
+            eval_finished = true;            
+            transform.parent.GetComponent<FunctionElementScript>().mesh_holder.SetActive(false);
+            transform.gameObject.SetActive(false);
         }
+        else
+        {
+            eval_finished = false;
+        }                
+        
+        /*settings.transform.gameObject.SetActive(false);
+        perform_action.transform.gameObject.SetActive(false);
+        input_option.SetActive(false);*/
 
         if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
             paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
 
-        if (output_type == "scalar") text_label.GetComponent<TextMeshProUGUI>().text = output;
-        else if (passive_func_call == false)
+        // need modification when it is scalar output based on whether the slider was called or not
+        if (output_type == "scalar")
         {
-            transform.gameObject.SetActive(false);
-            transform.parent.GetComponent<FunctionElementScript>().mesh_holder.SetActive(false);
-            /*transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>().sharedMesh.Clear();
-            transform.parent.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled = false;*/
-        }
+            message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text;
+            text_label.GetComponent<TextMeshProUGUI>().text = output;
+        }            
+        
 
     }
 
@@ -988,11 +1018,11 @@ public class FunctionMenuScript : MonoBehaviour
         else keep_child_object = false;
     }
 
-    void InstantEvalToggle(Toggle toggle)
+    /*void InstantEvalToggle(Toggle toggle)
     {
         if (toggle.isOn) instant_eval = true;
         else instant_eval = false;
-    }
+    }*/
 
     void OnSettingsButton(Button settings)
     {
@@ -1045,11 +1075,11 @@ public class FunctionMenuScript : MonoBehaviour
         bool temp_flag = true;
         if (!eval_finished || self_call == null)
         {
-            transform.parent.GetComponent<FunctionElementScript>().graph_generation_done = false;
-
+            
             int idx = 0;
             foreach (GameObject child_graph in argument_objects)
             {
+                // if an argument is missing
                 if (child_graph == null)
                 {
                     temp_flag = false;
@@ -1057,36 +1087,58 @@ public class FunctionMenuScript : MonoBehaviour
                     break;
                 }
 
-                // if it is under a function, call that as well 
-                    if (child_graph.transform.parent.name.Contains("function_line_")
+                // if it is under a function, call that as well if it is not evaluated already
+                if (child_graph.name.Contains("function_line_")
+                    && !child_graph.transform.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
+                {
+                    Transform cur_function_line = child_graph.transform;
+                    cur_function_line.GetChild(0).gameObject.SetActive(true);
+
+                    cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().passive_func_call = passive_func_call;
+
+                    Debug.Log("child: " +
+                        cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().mainInputField.text.ToLower() +
+                        " called.");
+                    yield return StartCoroutine
+                        (cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().CheckUnevaluatedFunctionArguments());
+
+                    yield return null;
+                    //argument_objects[idx] = cur_function_line.gameObject;
+                }
+
+                /*else if (child_graph.transform.parent.name.Contains("function_line_")
                     && !child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
                 {
                     Transform cur_function_line = child_graph.transform.parent;
-                    //if (passive_func_call) child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().passive_func_call = true;
+                    cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().passive_func_call = passive_func_call;
 
                     Debug.Log("child: " +
-                        child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().mainInputField.text.ToLower() +
+                        cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().mainInputField.text.ToLower() +
                         " called.");
                     yield return StartCoroutine
-                        (child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().CheckUnevaluatedFunctionArguments());
+                        (cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().CheckUnevaluatedFunctionArguments());
 
                     yield return null;
                     //Debug.Log("child: " + cur_function_line.name);
                     argument_objects[idx] = cur_function_line.GetChild(1).gameObject;
                 }
-                else if (child_graph.transform.parent.name.Contains("function_line_")
+                */
+                // it is already evaluated, hence just get the output
+                /*else if (child_graph.transform.parent.name.Contains("function_line_")
                     && child_graph.transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
                 {
                     Transform cur_function_line = child_graph.transform.parent;
                     argument_objects[idx] = cur_function_line.GetChild(1).gameObject;
-                    cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().UIsetafterEval("");
-                }
+                    //cur_function_line.GetChild(0).GetComponent<FunctionMenuScript>().UIsetafterEval("");
+                }*/
 
                 idx++;
             }            
 
             if (temp_flag)
             {
+                transform.parent.GetComponent<FunctionElementScript>().graph_generation_done = false;
+
                 // setting the temp_graphs active to avoid possible conflicts
                 for (int i = 0; i < argument_objects.Length; i++)
                 {
@@ -1109,7 +1161,7 @@ public class FunctionMenuScript : MonoBehaviour
         else
         {
             transform.parent.GetChild(1).gameObject.SetActive(true);
-            UIsetafterEval();
+            //UIsetafterEval();
         }
     }
 
