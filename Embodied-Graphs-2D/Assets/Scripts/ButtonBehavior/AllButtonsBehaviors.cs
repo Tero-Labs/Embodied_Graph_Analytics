@@ -61,6 +61,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().okayToPan = true;
             paint_canvas.GetComponent<Paintable>().panZoomLocked = false;
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
@@ -70,6 +75,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             disableAllPenObjectColliders();
             disablesimplicialColliders();
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.red;
         }
@@ -80,6 +90,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             disableAllPenObjectColliders();
             disablesimplicialColliders();
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.red;
         }
@@ -89,6 +104,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             enableAllPenObjectColliders();
             disablesimplicialColliders();
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         }
@@ -100,6 +120,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().SimplicialVertices.Clear();
             paint_canvas.GetComponent<Paintable>().Simplicialnodes.Clear();
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0f, 0f, 1f, 0.3f); 
         }
@@ -111,6 +136,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().hyperVertices.Clear();
             paint_canvas.GetComponent<Paintable>().hypernodes.Clear();
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0.5f, 0.5f, 0.5f, 0.5f);
         }
@@ -120,6 +150,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             enablesimplicialColliders();
             enableAllPenObjectColliders();
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
@@ -130,12 +165,23 @@ public class AllButtonsBehaviors : MonoBehaviour
             //paint_canvas.GetComponent<Paintable>().okayToPan = false;
             this.transform.GetComponent<CopyIconicObject>().start_copying = false;
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
         else if (this.name == "StrokeCombine")
         {
             disablesimplicialColliders();
+
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
@@ -143,6 +189,12 @@ public class AllButtonsBehaviors : MonoBehaviour
         {
             enableAllPenObjectColliders();
             disablesimplicialColliders();
+
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
@@ -153,6 +205,12 @@ public class AllButtonsBehaviors : MonoBehaviour
             //disable_menu_creation
             paint_canvas.GetComponent<Paintable>().panZoomLocked = true;
 
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
+
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
@@ -160,6 +218,12 @@ public class AllButtonsBehaviors : MonoBehaviour
         {            
             //paint_canvas.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
             paint_canvas.GetComponent<FileLoadDialog>().DialogShow();
+
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
 
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
@@ -174,7 +238,14 @@ public class AllButtonsBehaviors : MonoBehaviour
                 analysis_menu.GetComponent<Graphplot>().paintable = paint_canvas;
                 paint_canvas.GetComponent<Paintable>().no_analysis_menu_open = true;
             }
-            
+
+            /*ColorPickerClickCheck.Rpointer = false;
+            ColorPickerClickCheck.Gpointer = false;
+            ColorPickerClickCheck.Bpointer = false;
+            ColorPickerClickCheck.Apointer = false;
+            ColorPickerClickCheck.previewpointer = false;*/
+
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
 
@@ -346,7 +417,7 @@ public class AllButtonsBehaviors : MonoBehaviour
     // Update is called once per frame
     void Update()
 	{
-		if (EventSystem.current.IsPointerOverGameObject(0))
+		/*if (EventSystem.current.IsPointerOverGameObject(0))
 		{
             if (this.name == "StaticPen")
                 isPointerOverStaticPen = true;
@@ -416,7 +487,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             isPointerOverFunction = false;
             isPointerOverAnalysis = false;
             isPointerOverLoad = false;
-}
+}*/
 	}
 
     IEnumerator CorrectIcons()

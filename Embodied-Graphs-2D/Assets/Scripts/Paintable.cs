@@ -8,6 +8,7 @@ using TMPro;
 using Jobberwocky.GeometryAlgorithms.Source.API;
 using Jobberwocky.GeometryAlgorithms.Source.Core;
 using Jobberwocky.GeometryAlgorithms.Source.Parameters;
+using UnityEngine.EventSystems;
 
 public class Paintable : MonoBehaviour
 {
@@ -87,7 +88,7 @@ public class Paintable : MonoBehaviour
     // needed for drawing
     public GameObject templine;
 	public static int totalLines = 0;
-    public int min_point_count = 20;
+    public int min_point_count = 30;
 
     // holder of all game objects
     public GameObject Objects_parent;
@@ -201,21 +202,29 @@ public class Paintable : MonoBehaviour
     void Update()
     {
         #region prevent unwanted touch on canvas
-        // prevent touch or click being registered on the canvas when a gui button is clicked
-        if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
+        if (EventSystem.current.IsPointerOverGameObject(-1))
         {
+            Debug.Log("detected_touch_over_UI");
             return;
         }
+                
 
-        if (AllButtonsBehaviors.isPointerOverStaticPen || AllButtonsBehaviors.isPointerOverIconicPen || AllButtonsBehaviors.isPointerOverGraphPen || AllButtonsBehaviors.isPointerOverSimplicialPen
+        /*if (AllButtonsBehaviors.isPointerOverStaticPen || AllButtonsBehaviors.isPointerOverIconicPen || 
+            AllButtonsBehaviors.isPointerOverGraphPen || AllButtonsBehaviors.isPointerOverSimplicialPen
         || AllButtonsBehaviors.isPointerOverHyperPen || AllButtonsBehaviors.isPointerOverPan ||
         AllButtonsBehaviors.isPointerOverEraser || AllButtonsBehaviors.isPointerOverCopy || AllButtonsBehaviors.isPointerOverCombine
         || AllButtonsBehaviors.isPointerOverFuse || AllButtonsBehaviors.isPointerOverFunction || AllButtonsBehaviors.isPointerOverAnalysis
-        || AllButtonsBehaviors.isPointerOverLoad || DropDownMenu.isPointerOverDropDown)
+        || AllButtonsBehaviors.isPointerOverLoad)
         {
             Debug.Log("unwanted_touch_removed");
             return;
         }
+
+        if (DropDownMenu.isPointerOverDropDown)
+        {
+            Debug.Log("unwanted_touch_on_dropdown_removed");
+            return;
+        }*/
 
 
         #endregion
@@ -474,8 +483,9 @@ public class Paintable : MonoBehaviour
                 // show zoom percentage text
                 // Assuming these parameters for orthographic size: min: 200, max: 500
                 int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
-                GameObject.Find("text_message_worldspace").GetComponent<TextMeshProUGUI>().text =
-                    zoom.ToString("F0") + "%";
+
+                text_message_worldspace.SetActive(true);
+                text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
                 //}
 
             }
@@ -679,7 +689,8 @@ public class Paintable : MonoBehaviour
             {
                 previousTouchEnded = true;
                 //main_camera.GetComponent<MobileTouchCamera>().enabled = false;
-                text_message_worldspace.GetComponent<TextMeshProUGUI>().text = "";
+                text_message_worldspace.SetActive(false);
+                //text_message_worldspace.GetComponent<TextMeshProUGUI>().text = "";
             }
 
         }
@@ -689,14 +700,7 @@ public class Paintable : MonoBehaviour
         #region Graph Pen
         if (graph_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            #region prevent unwanted touch on canvas
-            // prevent touch or click being registered on the canvas when a gui button is clicked
-            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
-            {
-                return;
-            }
-            #endregion
-
+            
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
                 // start drawing a new line
@@ -928,14 +932,7 @@ public class Paintable : MonoBehaviour
         #region Simplicial Pen
         if (simplicial_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            #region prevent unwanted touch on canvas
-            // prevent touch or click being registered on the canvas when a gui button is clicked
-            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
-            {
-                return;
-            }
-            #endregion
-
+            
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
                 // start drawing a new line
@@ -990,14 +987,7 @@ public class Paintable : MonoBehaviour
         #region hypergraph Pen
         if (hyper_pen_button.GetComponent<AllButtonsBehaviors>().selected)
         {
-            #region prevent unwanted touch on canvas
-            // prevent touch or click being registered on the canvas when a gui button is clicked
-            if (color_picker.activeSelf && color_picker.GetComponent<ColorPickerClickCheck>().pointer)
-            {
-                return;
-            }
-            #endregion
-
+            
             if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
             {
                 // start drawing a new line
@@ -3003,6 +2993,8 @@ public class Paintable : MonoBehaviour
                 Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);
                                 
                 int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+
+                text_message_worldspace.SetActive(true);
                 text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
             }
             if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
@@ -3011,6 +3003,8 @@ public class Paintable : MonoBehaviour
                 Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize + zoom_multiplier * difference, zoom_min, zoom_max);
 
                 int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+
+                text_message_worldspace.SetActive(true);
                 text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
             }
         }
@@ -3236,7 +3230,7 @@ public class Paintable : MonoBehaviour
                 temp_func_item.transform.parent = history_list_viewer.transform;
                 temp_func_item.transform.SetSiblingIndex(child_iter);
 
-                temp_func_item.GetComponent<TextMeshProUGUI>().text = child_iter.ToString() + ". " + history[j].name + ": " + "\n" +
+                temp_func_item.GetComponent<TextMeshProUGUI>().text = child_iter.ToString() + ". " + /*history[j].name + ": " + "\n" +*/
                     history[j].transform.GetChild(0).GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text;
                 temp_func_item.GetComponent<TextMeshProUGUI>().fontSize = 8;
                 //temp_func_item.transform.localScale = new Vector3(1f, 1f, 1f);
@@ -3305,6 +3299,8 @@ public class Paintable : MonoBehaviour
                     Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);
 
                     int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+
+                    text_message_worldspace.SetActive(true);
                     text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
                 }
                 if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
@@ -3312,7 +3308,9 @@ public class Paintable : MonoBehaviour
                     float difference = 100;
                     Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize + zoom_multiplier * difference, zoom_min, zoom_max);
 
-                    int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
+                    int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);                    
+
+                    text_message_worldspace.SetActive(true);
                     text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
                 }
             }

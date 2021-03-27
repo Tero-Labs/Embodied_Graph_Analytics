@@ -65,14 +65,14 @@ public class DropDownMenu : MonoBehaviour
     void Update()
     {
         // applyDetails();
-        if (EventSystem.current.IsPointerOverGameObject(0))
+        /*if (EventSystem.current.IsPointerOverGameObject(0))
         {
             isPointerOverDropDown = true;
         }
         else
         {
             isPointerOverDropDown = false;
-        }
+        }*/
     }
 
     public void ShowNodes(Toggle toggle)
