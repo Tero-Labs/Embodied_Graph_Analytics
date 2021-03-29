@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8829594746175238269}
   - component: {fileID: 8829594746175238271}
   - component: {fileID: 8829594746175238270}
+  - component: {fileID: 4513241820976542467}
   m_Layer: 5
   m_Name: topo_label
   m_TagString: Untagged
@@ -134,3 +135,16 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &4513241820976542467
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8829594746175238268}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f24385034f96ea4283c33426da34955, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tmptextlabel: {fileID: 8829594746175238270}

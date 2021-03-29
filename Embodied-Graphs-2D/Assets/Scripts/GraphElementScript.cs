@@ -1152,6 +1152,7 @@ public class GraphElementScript : MonoBehaviour
 
                 GameObject temp_label = Instantiate(topo_label);
                 temp_label.transform.SetParent(graph_Details.transform);
+                temp_label.GetComponent<topoLabelScript>().parent = child.gameObject;
 
                 temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
                     new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);

@@ -155,7 +155,7 @@ public class FunctionMenuScript : MonoBehaviour
                 if (TMP_TextUtilities.IsIntersectingRectTransform
                     (tmptextlabel.rectTransform, PenTouchInfo.penPosition, main_camera))
                 {
-                    paintable.GetComponent<Paintable>().dragged_arg_textbox = transform.gameObject;
+                    Paintable.dragged_arg_textbox = transform.gameObject;
 
                     /*if (!textbox_open && !eval_finished)
                     {
@@ -290,7 +290,7 @@ public class FunctionMenuScript : MonoBehaviour
 
             else if (PenTouchInfo.ReleasedThisFrame
                 && (dragged_arg_object != null ||
-                (paintable.GetComponent<Paintable>().dragged_arg_textbox != null && paintable.GetComponent<Paintable>().dragged_arg_textbox != transform.gameObject)))
+                (Paintable.dragged_arg_textbox != null && Paintable.dragged_arg_textbox != transform.gameObject)))
             {
                 if (drag_text_ui != null)
                 {
@@ -304,9 +304,9 @@ public class FunctionMenuScript : MonoBehaviour
                     var index = TMP_TextUtilities.FindNearestCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
                     //var index = TMP_TextUtilities.FindIntersectingCharacter(tmptextlabel, PenTouchInfo.penPosition, main_camera, false);
 
-                    if (dragged_arg_object == null && paintable.GetComponent<Paintable>().dragged_arg_textbox != null)
+                    if (dragged_arg_object == null && Paintable.dragged_arg_textbox != null)
                     {                        
-                        dragged_arg_object = paintable.GetComponent<Paintable>().dragged_arg_textbox;
+                        dragged_arg_object = Paintable.dragged_arg_textbox;
                     }
 
                     //Debug.Log("Found draaged object" + dragged_arg_object.name + " character at " + index.ToString());
@@ -365,11 +365,11 @@ public class FunctionMenuScript : MonoBehaviour
                                 }                                    
                             }
 
-                            else if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null &&
-                                paintable.GetComponent<Paintable>().dragged_arg_textbox.transform.GetComponent<FunctionMenuScript>().output_type != "scalar")
+                            else if (Paintable.dragged_arg_textbox != null &&
+                                Paintable.dragged_arg_textbox.transform.GetComponent<FunctionMenuScript>().output_type != "scalar")
                             {
                                 Debug.Log("here_in_arg_drag");
-                                temp = paintable.GetComponent<Paintable>().dragged_arg_textbox.transform;
+                                temp = Paintable.dragged_arg_textbox.transform;
                                 cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text;
                                 //argument_objects[index] = temp.parent.GetChild(1).gameObject;
                                 argument_objects[index] = temp.parent.gameObject;
@@ -422,9 +422,9 @@ public class FunctionMenuScript : MonoBehaviour
                         else if (cur_dict[index] == "string" || cur_dict[index] == "int")
                         {
                             // double check if the draaged object is not null
-                            if (paintable.GetComponent<Paintable>().dragged_arg_textbox != null && paintable.GetComponent<Paintable>().dragged_arg_textbox != transform.gameObject)
+                            if (Paintable.dragged_arg_textbox != null && Paintable.dragged_arg_textbox != transform.gameObject)
                             {
-                                temp = paintable.GetComponent<Paintable>().dragged_arg_textbox.transform;
+                                temp = Paintable.dragged_arg_textbox.transform;
                                 cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().message_box/*text_label*/.GetComponent<TextMeshProUGUI>().text;
                                 // argument obj referece update for calculation
                                 //TodO:add_for_int_arguments
@@ -999,8 +999,8 @@ public class FunctionMenuScript : MonoBehaviour
         perform_action.transform.gameObject.SetActive(false);
         input_option.SetActive(false);*/
 
-        if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
-            paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+        if (Paintable.dragged_arg_textbox == transform.gameObject)
+            Paintable.dragged_arg_textbox = null;
 
         // need modification when it is scalar output based on whether the slider was called or not
         if (output_type == "scalar")
@@ -1058,8 +1058,8 @@ public class FunctionMenuScript : MonoBehaviour
         if (input_option.activeSelf && paintable != null)
         {
             paintable.GetComponent<Paintable>().no_func_menu_open = true;
-            if (paintable.GetComponent<Paintable>().dragged_arg_textbox == transform.gameObject)
-                paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+            if (Paintable.dragged_arg_textbox == transform.gameObject)
+                Paintable.dragged_arg_textbox = null;
         } 
 
         if (textbox_open)
@@ -1169,7 +1169,7 @@ public class FunctionMenuScript : MonoBehaviour
     IEnumerator clearclickedobj()
     {
         yield return null;
-        paintable.GetComponent<Paintable>().dragged_arg_textbox = null;
+        Paintable.dragged_arg_textbox = null;
         dragged_arg_object = null;
     }
 }

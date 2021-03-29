@@ -170,18 +170,16 @@ public class Graphplot : MonoBehaviour
 
         if (PenTouchInfo.ReleasedThisFrame)
         {
-            if (paintable.GetComponent<Paintable>().dragged_arg_textbox == null)
+            if (Paintable.dragged_arg_textbox == null)
             {
                 return;
             }
 
-            Debug.Log("checking_drag");
-
-            var dragged_arg_object = paintable.GetComponent<Paintable>().dragged_arg_textbox;
+           
+            var dragged_arg_object = Paintable.dragged_arg_textbox;
 
             if (TMP_TextUtilities.IsIntersectingRectTransform(arg_1.rectTransform, PenTouchInfo.penPosition, null))
             {
-                Debug.Log("found_drag_with_arg_1");
                 if (dragged_arg_object.tag == "iconic")
                 {
                     arg_1.GetComponent<TextMeshProUGUI>().text =
@@ -195,7 +193,6 @@ public class Graphplot : MonoBehaviour
 
             else if (TMP_TextUtilities.IsIntersectingRectTransform(arg_2.rectTransform, PenTouchInfo.penPosition, null))
             {
-                Debug.Log("found_drag_with_arg_1");
                 if (dragged_arg_object.tag == "iconic")
                 {
                     arg_2.GetComponent<TextMeshProUGUI>().text =
@@ -209,7 +206,6 @@ public class Graphplot : MonoBehaviour
 
             else if (TMP_TextUtilities.IsIntersectingRectTransform(arg_3.rectTransform, PenTouchInfo.penPosition, null))
             {
-                Debug.Log("found_drag_with_arg_1");
                 if (dragged_arg_object.tag == "iconic")
                 {
                     arg_3.GetComponent<TextMeshProUGUI>().text =
@@ -220,8 +216,7 @@ public class Graphplot : MonoBehaviour
                 else
                     arg_3.GetComponent<TextMeshProUGUI>().text = "topo_label_or_func_label";
             }
-            else
-                Debug.Log("dafaq");
+            
         }
     }
 }

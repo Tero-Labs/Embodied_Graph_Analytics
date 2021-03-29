@@ -128,7 +128,7 @@ public class Paintable : MonoBehaviour
     public bool function_name_performed = true;
     public GameObject functionline;
     public static int function_count = 0;
-    public GameObject dragged_arg_textbox;
+    public static GameObject dragged_arg_textbox;
     public GameObject current_dragged_function;
     public GameObject potential_tapped_graph;    
 
