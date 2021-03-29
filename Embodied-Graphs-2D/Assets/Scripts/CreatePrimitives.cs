@@ -84,13 +84,16 @@ public class CreatePrimitives : MonoBehaviour
 
         paintable_object = GameObject.FindGameObjectWithTag("paintable_canvas_object");
 
-        colors = new Color[6];
-        colors[0] = Color.blue;
-        colors[1] = Color.magenta;
-        colors[2] = Color.red;
-        colors[3] = Color.cyan;
-        colors[4] = Color.yellow;
-        colors[5] = Color.gray;
+        colors = new Color[8];
+        //https://flatuicolors.com/palette/defo
+        colors[0] = new Color32(13, 134, 34, 1); //green_sea;
+        colors[1] = new Color32(255, 0, 0, 1); //pure_Red;
+        colors[2] = new Color32(155, 89, 182, 1);//amyesth;
+        colors[3] = new Color32(230, 126, 34, 1);//carrot;
+        colors[4] = new Color32(237, 76, 103, 1);//bara_red;
+        colors[5] = new Color32(217, 128, 250, 1);// lavender_tea;
+        colors[6] = new Color32(77, 77, 77, 1);// ash
+        colors[7] = new Color32(255, 140, 0, 1);// dark_orange
 
         // Predictive stroke
         // Load pre-made gestures
