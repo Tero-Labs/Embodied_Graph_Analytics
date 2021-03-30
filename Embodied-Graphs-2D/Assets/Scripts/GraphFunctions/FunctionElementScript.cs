@@ -431,20 +431,56 @@ public class FunctionElementScript : MonoBehaviour
         temp_graph.transform.SetSiblingIndex(1);
         temp_graph.SetActive(true);
 
+        Destroy(temp_graph.transform.GetChild(0).gameObject);
+        Destroy(temp_graph.transform.GetChild(1).gameObject);
+        Destroy(temp_graph.transform.GetChild(2).gameObject);
+        Destroy(temp_graph.transform.GetChild(3).gameObject);
+
+        GameObject tempnodeparent = new GameObject("node_parent");
+        tempnodeparent.tag = "node_parent";
+        tempnodeparent.transform.parent = temp_graph.transform;
+        tempnodeparent.transform.SetSiblingIndex(0);
+
+        GameObject tempedgeparent = new GameObject("edge_parent");
+        tempedgeparent.tag = "edge_parent";
+        tempedgeparent.transform.parent = temp_graph.transform;
+        tempedgeparent.transform.SetSiblingIndex(1);
+
+        GameObject tempsimplicialparent = new GameObject("simplicial_parent");
+        tempsimplicialparent.tag = "simplicial_parent";
+        tempsimplicialparent.transform.parent = temp_graph.transform;
+        tempsimplicialparent.transform.SetSiblingIndex(2);
+
+        GameObject temphyperparent = new GameObject("hyper_parent");
+        temphyperparent.tag = "hyper_parent";
+        temphyperparent.transform.parent = temp_graph.transform;
+        temphyperparent.transform.SetSiblingIndex(3);
+
         Paintable.graph_count++;
         temp_graph.name = "graph_" + Paintable.graph_count.ToString();
         temp_graph.tag = "graph";
         temp_graph.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
 
         temp_graph.GetComponent<GraphElementScript>().graph = new Graph();
-        temp_graph.GetComponent<GraphElementScript>().nodes_init();
-        nodeMaps = temp_graph.GetComponent<GraphElementScript>().nodeMaps;
+        temp_graph.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
+
+        //temp_graph.GetComponent<GraphElementScript>().nodes_init();
+        nodeMaps = new Dictionary<string, Transform>();
+        temp_graph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>(); 
 
         returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
         int index = 0;
         foreach (int current_node in returned_graph.nodes)
         {
+            Transform child = graph.GetComponent<GraphElementScript>().nodeMaps[current_node.ToString()];
+            GameObject temp_node = Instantiate(child.gameObject);
+            temp_node.transform.parent = tempnodeparent.transform;
+
+            temp_graph.GetComponent<GraphElementScript>().graph.nodes.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number);
+            temp_graph.GetComponent<GraphElementScript>().nodeMaps.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number.ToString(), temp_node.transform);
+            nodeMaps.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number.ToString(), temp_node.transform);
+
             index++;
             if (index == 1) continue;
 
@@ -707,8 +743,7 @@ public class FunctionElementScript : MonoBehaviour
     public void updateLassoPointsIconDrag()
     {
         // we don't want the function to change it's shape if it is a fused function
-        if (!fused_function && mesh_holder.GetComponent<MeshRenderer>().enabled /*&& 
-            !transform.GetChild(0).GetComponent<FunctionMenuScript>().instant_eval*/)
+        if (!fused_function && mesh_holder.activeSelf /*GetComponent<MeshRenderer>().enabled*/)
         {
             List<Vector3> hull_pts = new List<Vector3>();
             int center_count = 0;
