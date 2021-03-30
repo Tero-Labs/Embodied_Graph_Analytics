@@ -914,9 +914,8 @@ public class FunctionMenuScript : MonoBehaviour
     
     public void videohide()
     {
-        settings.transform.gameObject.SetActive(false);
-        perform_action.transform.gameObject.SetActive(false);
-        input_option.SetActive(false);
+        perform_action.transform.parent.gameObject.SetActive(false);
+        transform.gameObject.SetActive(false);
     }
 
     public void PostProcess(string output = null)
@@ -989,15 +988,20 @@ public class FunctionMenuScript : MonoBehaviour
             eval_finished = true;            
             transform.parent.GetComponent<FunctionElementScript>().mesh_holder.SetActive(false);
             transform.gameObject.SetActive(false);
+
+            settings.transform.gameObject.SetActive(false);
+            perform_action.transform.gameObject.SetActive(false);            
+            message_box.GetComponent<TextMeshProUGUI>().text = "";
+            text_label.GetComponent<TextMeshProUGUI>().text = "";
+
+            input_option.SetActive(false);
         }
         else
         {
             eval_finished = false;
         }                
         
-        /*settings.transform.gameObject.SetActive(false);
-        perform_action.transform.gameObject.SetActive(false);
-        input_option.SetActive(false);*/
+        
 
         if (Paintable.dragged_arg_textbox == transform.gameObject)
             Paintable.dragged_arg_textbox = null;
@@ -1007,8 +1011,7 @@ public class FunctionMenuScript : MonoBehaviour
         {
             message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text;
             text_label.GetComponent<TextMeshProUGUI>().text = output;
-        }            
-        
+        }    
 
     }
 

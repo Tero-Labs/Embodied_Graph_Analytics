@@ -131,9 +131,7 @@ public class FunctionElementScript : MonoBehaviour
             video_player.transform.GetComponent<VideoPlayer>().Play();
         }
 
-        /*if (video_player != null)
-            transform.GetChild(0).GetComponent<FunctionMenuScript>().videohide();*/
-
+        
         transform.GetChild(0).GetComponent<FunctionMenuScript>().UIsetafterEval(output);
 
         // restoring their inactiveness
@@ -143,7 +141,9 @@ public class FunctionElementScript : MonoBehaviour
                 transform.GetComponent<FunctionCaller>().selected_final_graphs[i].SetActive(false);
         }
 
-        
+        if (video_player != null)
+            transform.GetChild(0).GetComponent<FunctionMenuScript>().videohide();
+
         yield return null;
 
         // update history when execution done
@@ -359,6 +359,7 @@ public class FunctionElementScript : MonoBehaviour
                     GameObject temp_label = Instantiate(topo_label);
                     //temp_label.transform.SetParent(extra_objects.transform);
                     temp_label.transform.SetParent(child.transform);
+                    temp_label.name = "label";
 
                     temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
                         new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);

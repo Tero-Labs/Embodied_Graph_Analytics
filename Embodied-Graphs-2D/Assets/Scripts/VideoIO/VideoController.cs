@@ -280,7 +280,9 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     graph_holder.GetComponent<GraphElementScript>().graph.edges.Add(cur_edge);
                 }                
             }
-            graph_holder.GetComponent<GraphElementScript>().RequestRecalculationonValueChange(videoplayer.transform.gameObject);
+
+            if (videoplayer.frame % VideoPlayerChildrenAccess.time_slice == 0)
+                graph_holder.GetComponent<GraphElementScript>().RequestRecalculationonValueChange(videoplayer.transform.gameObject);
 
             //}
             /*else if (graph_holder != null)

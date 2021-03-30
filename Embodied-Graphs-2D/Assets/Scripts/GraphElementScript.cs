@@ -963,6 +963,7 @@ public class GraphElementScript : MonoBehaviour
                         transform.gameObject == function_argument)
                     {
                         video_player.transform.GetComponent<VideoPlayer>().Pause();
+                        cur_function.transform.GetChild(0).gameObject.SetActive(true);
                         cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().InitiateFunctionCallHelper(video_player);
                         yield return null;
                         break;

@@ -25,9 +25,15 @@ public class topoLabelScript : MonoBehaviour
             {
                 //Debug.Log("success");
                 draggable = true;
-                if (parent != null) Paintable.dragged_arg_textbox = parent;
-                else if (transform.parent.tag == "iconic")
-                    Paintable.dragged_arg_textbox = transform.parent.gameObject;
+
+                if (transform.parent.tag == "iconic" && transform.parent.parent.parent.parent.tag == "function")
+                {
+                    Paintable.dragged_arg_textbox = transform.parent.parent.parent.parent.gameObject;
+                    Paintable.dragged_icon_name = transform.parent.name;
+                }
+                    
+                else if (parent != null) Paintable.dragged_arg_textbox = parent;
+                
 
             }
         }

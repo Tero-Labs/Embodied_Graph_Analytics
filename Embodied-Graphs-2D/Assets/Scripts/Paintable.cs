@@ -140,6 +140,7 @@ public class Paintable : MonoBehaviour
 
     // needed for graph_analysis
     public bool no_analysis_menu_open;
+    public static string dragged_icon_name;
 
     // objects history
     public List<GameObject> history = new List<GameObject>();

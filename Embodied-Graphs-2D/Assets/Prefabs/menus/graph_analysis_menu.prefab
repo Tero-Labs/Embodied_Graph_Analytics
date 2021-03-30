@@ -1607,14 +1607,22 @@ MonoBehaviour:
   TotalPoints: 3
   show_graph: {fileID: 6289321095599697776}
   mainInputField: {fileID: 6289321094260326920}
+  img: {fileID: 6592199671823577037}
   arg_1: {fileID: 6289321094456451642}
   arg_2: {fileID: 6289321095762441763}
   arg_3: {fileID: 6289321094409487850}
   arg_1_obj: {fileID: 0}
   arg_2_obj: {fileID: 0}
   arg_3_obj: {fileID: 0}
+  arg_1_str: 
+  arg_2_str: 
+  arg_3_str: 
   first_arg: {fileID: 0}
   second_arg: {fileID: 0}
+  first_arg_str: 
+  second_arg_str: 
+  first_arg_tmp: {fileID: 0}
+  second_arg_tmp: {fileID: 0}
   graph_flag: 0
 --- !u!1 &6289321095599697679
 GameObject:
@@ -2214,12 +2222,12 @@ PrefabInstance:
     - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}
       propertyPath: mainDivisions.fontSize
-      value: 8
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}
       propertyPath: subDivisions.fontSize
-      value: 8
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}
@@ -2230,6 +2238,21 @@ PrefabInstance:
         type: 3}
       propertyPath: subDivisions.fractionDigits
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
+        type: 3}
+      propertyPath: mainDivisions.alignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
+        type: 3}
+      propertyPath: subDivisions.alignment
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
+        type: 3}
+      propertyPath: format
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8758682679046416893, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}

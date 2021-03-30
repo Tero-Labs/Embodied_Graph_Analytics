@@ -13,10 +13,13 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     public GameObject paintable;
 
     public InputField mainInputField;
+    public InputField WindowInputField;
     public Toggle node_radius, site_specific;
     public Toggle auto_track, manual_track;
 
     public float width, height;
+    public static int time_slice;
+
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +27,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         settings.onClick.AddListener(delegate { SettingsMenu(); });
         delete.onClick.AddListener(delegate { Delete(); });
         mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
+        WindowInputField.onValueChanged.AddListener(delegate { LockWindowInput(WindowInputField); });
 
         node_radius.onValueChanged.AddListener(delegate { GraphType(); });
         site_specific.onValueChanged.AddListener(delegate { GraphType(); });
@@ -38,6 +42,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         width = quad.transform.localScale.x;
         height = quad.transform.localScale.y;
 
+        time_slice = 5;
         UIlayout();
     }
 
@@ -86,6 +91,15 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
             float result = slider.GetComponent<VideoController>().node_radius;
             float.TryParse(input.text, out result);
             slider.GetComponent<VideoController>().node_radius = result;
+        }
+    }
+
+    void LockWindowInput(InputField input)
+    {
+        
+        if (input.text.Length > 0)
+        {
+            int.TryParse(input.text, out time_slice);
         }
     }
 
