@@ -64,16 +64,7 @@ public class CreatePrimitives : MonoBehaviour
 
     void Start()
     {
-        /*List<Dictionary<string, object>> data = CSVReader.Read("iris_multiclass");
-
-        foreach (var line in data)
-        {
-            foreach (var col in line)
-            {
-                print(col);
-            }
-        }*/
-
+        
     }
 
     // Start is called before the first frame update

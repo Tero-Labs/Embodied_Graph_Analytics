@@ -76,6 +76,22 @@ def unpackJson():
         
     return all_graphs
 
+def unpackWeightedJson():
+    
+    f = open("../../Resources/data.json",)
+    graph_dict = json.load(f) 
+    #print(graph_dict) 
+    
+     
+    for cur_graph in graph_dict['graphs']:
+        
+        G = nx.Graph()
+        G.add_nodes_from(cur_graph['nodes'])
+        
+        for cur_edge in cur_graph['edges']:
+            G.add_edge(cur_edge['edge_start'], cur_edge['edge_end'], weight=cur_edge['weight'])
+                  
+        return G
 
 def packGraphConversionJson(nodes, frozenedges, simplices, hyper):
     
@@ -184,14 +200,10 @@ def community_detection(all_graphs):
     with open("../../Resources/output.json", 'w') as json_file:
         json.dump(final_json, json_file)
 
-def find_shortest_path(all_graphs, source, target):    
-        
-    G = nx.Graph()
-    G.add_nodes_from(all_graphs[0]["node"])
-    G.add_edges_from(all_graphs[0]["edges"])
-    
+def find_shortest_path(G, source, target):    
+            
     try:
-        nodes = nx.shortest_path(G, source = source, target = target)
+        nodes = nx.shortest_path(G, source = source, target = target, weight='weight')
 
         graph = {"edges":[],"simplicials":[],"hyperedges":[],"nodes":nodes}
         print(graph)
@@ -564,7 +576,7 @@ if __name__ == '__main__':
             socket.send(("community").encode('ascii'))  
             
         elif "shortestpath" in message.decode('utf8'):
-            all_graphs = unpackJson()
+            all_graphs = unpackWeightedJson()
             args = message.decode('utf8').split("_")
             source, target =  args[1], args[-1]
             find_shortest_path(all_graphs, int(source), int(target))

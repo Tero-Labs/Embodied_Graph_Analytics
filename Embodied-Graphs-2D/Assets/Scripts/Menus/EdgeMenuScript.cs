@@ -42,6 +42,7 @@ public class EdgeMenuScript : MonoBehaviour
         {            
             weight = int.Parse(input.text);
             menu_parent.GetComponent<EdgeElementScript>().edge_weight = weight;
+            menu_parent.transform.parent.parent.GetComponent<GraphElementScript>().edges_init();
             Debug.Log("weight" + input.text + "has been updated for"+ menu_parent.name);
         }
     }

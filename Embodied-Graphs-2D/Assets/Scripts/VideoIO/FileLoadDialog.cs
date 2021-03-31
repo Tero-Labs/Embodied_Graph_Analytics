@@ -22,7 +22,8 @@ public class FileLoadDialog : MonoBehaviour
         // Set filters (optional)
         // It is sufficient to set the filters just once (instead of each time before showing the file browser dialog), 
         // if all the dialogs will be using the same filters
-        FileBrowser.SetFilters(true, new FileBrowser.Filter("Images", ".jpg", ".png"), new FileBrowser.Filter("Videos", ".mp4", ".avi"));
+        FileBrowser.SetFilters(true, new FileBrowser.Filter("Images", ".jpg", ".png"), new FileBrowser.Filter("Videos", ".mp4", ".avi"),
+                            new FileBrowser.Filter("Files", ".txt", ".csv"));
 
         // Set default filter that is selected when the dialog is shown (optional)
         // Returns true if the default filter is set successfully
@@ -89,13 +90,7 @@ public class FileLoadDialog : MonoBehaviour
                     temp.transform.GetChild(0).GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
                     temp.transform.GetChild(0).GetComponent<VideoPlayer>().Play();
                     GameObject slider = temp.transform.GetComponent<VideoPlayerChildrenAccess>().slider;
-                    /*temp.transform.GetComponent<VideoPlayerChildrenAccess>().canvas.renderMode = RenderMode.ScreenSpaceOverlay;*/
-
-                    /*transform.GetComponent<Paintable>().videoplayer.transform.parent.gameObject.SetActive(true);
-                    transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().url = FileBrowser.Result[i].ToString();
-                    transform.GetComponent<Paintable>().videoplayer.transform.GetComponent<VideoPlayer>().Play();
-                    GameObject slider = transform.GetComponent<Paintable>().videoplayer.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider;
-                    */
+                    /*temp.transform.GetComponent<VideoPlayerChildrenAccess>().canvas.renderMode = RenderMode.ScreenSpaceOverlay;*/                  
 
                     // load the annotate file as well
                     int trim_pos = FileBrowser.Result[i].IndexOf(".");                    
@@ -114,6 +109,23 @@ public class FileLoadDialog : MonoBehaviour
                 else if(FileBrowser.Result[i].EndsWith(".jpg") || FileBrowser.Result[i].EndsWith(".png"))
                 {
                     transform.GetComponent<Paintable>().createImageIcon(FileBrowser.Result[i]);
+                }
+                else if (FileBrowser.Result[i].EndsWith(".txt") || FileBrowser.Result[i].EndsWith(".csv"))
+                {
+                    int trim_pos = FileBrowser.Result[i].LastIndexOf("\\");                     
+                    string filepath = FileBrowser.Result[i].Substring(trim_pos + 1);
+
+                    int trim_pos_2 = filepath.IndexOf(".");
+                    // second argument basically dpicts the length of the array
+                    List<Dictionary<string, object>> data = CSVReader.Read(FileBrowser.Result[i].Substring(trim_pos+1, trim_pos_2));                    
+
+                    foreach (var line in data)
+                    {
+                        foreach (var col in line)
+                        {
+                            print(col);
+                        }
+                    }
                 }
 
                 yield return null;

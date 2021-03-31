@@ -366,6 +366,9 @@ public class FunctionElementScript : MonoBehaviour
 
                     index++;
                     temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
+                    temp_label.GetComponent<TextMeshProUGUI>().fontSize = Mathf.RoundToInt(Mathf.Lerp(25, 12, index / returned_graph.nodes.Count));
+                    temp_label.GetComponent<TextMeshProUGUI>().color = Color.Lerp(new Color32(102, 0, 102, 255),
+                                                                                 new Color32(255, 26, 255, 255), index/returned_graph.nodes.Count);
                 }
             }                                 
             
