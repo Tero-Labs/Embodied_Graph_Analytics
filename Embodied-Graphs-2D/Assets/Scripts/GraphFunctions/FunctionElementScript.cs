@@ -349,6 +349,7 @@ public class FunctionElementScript : MonoBehaviour
                         
             returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
             int index = 0;
+            int temp_cnt = returned_graph.nodes.Count;
 
             foreach (int current_node in returned_graph.nodes)
             {
@@ -366,9 +367,15 @@ public class FunctionElementScript : MonoBehaviour
 
                     index++;
                     temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
-                    temp_label.GetComponent<TextMeshProUGUI>().fontSize = Mathf.RoundToInt(Mathf.Lerp(25, 12, index / returned_graph.nodes.Count));
-                    temp_label.GetComponent<TextMeshProUGUI>().color = Color.Lerp(new Color32(102, 0, 102, 255),
-                                                                                 new Color32(255, 26, 255, 255), index/returned_graph.nodes.Count);
+
+                    int temp_size = (int)(Mathf.Lerp(26, 12, (index / (float)temp_cnt)));
+                    Color temp_color = Color.Lerp(new Color32(102, 0, 102, 255), new Color32(255, 26, 255, 255), (index / (float)temp_cnt));
+                    
+                    /*Debug.Log("index: " + index.ToString() + "temp_cnt: " + temp_cnt.ToString() + "percent: " + (index / (float)temp_cnt).ToString() +
+                        "temp_size: " + temp_size.ToString() + ", temp_color: " + temp_color.ToString());*/
+
+                    temp_label.GetComponent<TextMeshProUGUI>().fontSize = temp_size;
+                    temp_label.GetComponent<TextMeshProUGUI>().color = temp_color;
                 }
             }                                 
             
@@ -394,7 +401,11 @@ public class FunctionElementScript : MonoBehaviour
                     }
                     else
                     {
-                        position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+                        if(child.GetComponent<iconicElementScript>().image_icon)
+                            position += new Vector3(child.GetComponent<iconicElementScript>().radius, 0, 0);
+                        else
+                            position += new Vector3(2 * child.GetComponent<iconicElementScript>().radius, 0, 0);
+
                         Vector3 old_pos = child.position;
                         // we want the edge_position to project
                         Vector3 new_pos = child.InverseTransformDirection(position) -

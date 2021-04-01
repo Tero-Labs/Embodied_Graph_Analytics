@@ -11,6 +11,7 @@ public class EdgeElementScript : MonoBehaviour
     // Length, area, distance units
     public static float unitScale = 0.025f;
     public int edge_weight = 1;
+    public float edge_weight_multiplier = 0.5f;
 
     public GameObject dot_prefab;
 
@@ -59,8 +60,6 @@ public class EdgeElementScript : MonoBehaviour
     public SortedList<float, int> translation_sections_indices = new SortedList<float, int>();
     public int path_index = 0;
     public float eps_path_radius = 10f;
-    public bool has_continuous_path = true;
-    public float heightScale = 20, xScale = 100;
 
     // causal transformation parameters
     public float max_possible_scale = 2.0f;
@@ -73,13 +72,11 @@ public class EdgeElementScript : MonoBehaviour
     public bool apply_rotation = false;
     public bool apply_scale = false;
 
-    // other interaction variables
-    private Vector3 touchDelta = new Vector3();
 
     // pressure based line width
     public List<float> pressureValues = new List<float>();
     public AnimationCurve widthcurve = new AnimationCurve();
-    float totalLength = 0f;
+    public float totalLength = 0f;
     List<float> cumulativeLength = new List<float>();
     int movingWindow = 3;
     
@@ -190,165 +187,7 @@ public class EdgeElementScript : MonoBehaviour
                 .ToList();
     }
 
-    public void checkHitAndMove()
-    {
-        // TO CONSIDER: INSTEAD OF CHECKING TOUCH-MOVED, CAN WE CHECK TOUCH INIT, WAIT TILL TOUCH END, AND THEN MOVE OBJECT? WOULD THAT BE
-        // TOO CLUMSY? IT SURE WOULD BE FAST.
-        // assumes a touch has registered and pan mode is selected
-
-        if (Paintable.pan_button.GetComponent<AllButtonsBehaviors>().selected == true)
-        {
-            //currentPen = Pen.current;
-
-            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
-            {
-
-                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                RaycastHit Hit;
-
-                // check for a hit on the anchor object
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == transform.gameObject)
-                {
-                    draggable_now = true;
-                    Vector3 vec = Hit.point; //+ new Vector3(0, 0, -40); // Vector3.up * 0.1f;
-                                             //Debug.Log(vec);
-
-                    // enforce the same z coordinate as the rest of the points in the parent set object
-                    vec.z = -5f;
-
-                    touchDelta = transform.position - vec;
-
-                    GetComponent<TrailRenderer>().Clear();
-
-                }
-            }
-
-            if (PenTouchInfo.PressedNow)//currentPen.tip.isPressed)
-            {
-                //Debug.Log("penline touched");
-
-                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                RaycastHit Hit;
-
-                // check for a hit on the anchor object
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == this.gameObject)
-                {
-                    //Debug.Log(transform.name);
-
-                    draggable_now = true;
-
-                    Vector3 vec = Hit.point; //+ new Vector3(0, 0, -40); // Vector3.up * 0.1f;
-                                             //Debug.Log(vec);
-
-                    // enforce the same z coordinate as the rest of the points in the parent set object
-                    vec.z = -5f;
-
-                    Vector3 diff = vec - transform.position + touchDelta;
-                    diff.z = 0;
-
-                    // update the drawn object position.
-                    transform.position += diff;
-
-                    // update the previous_position variable: since user moved it by hand, not driven by a set or function
-                    previous_position = transform.position;
-
-                    // update the menu position if a menu is currently open/created
-                    /*GameObject menu_obj = GameObject.Find(menu_name);
-                    if (menu_obj != null)
-                    {
-                        menu_obj.transform.position = vec;
-                    }*/
-
-                    // record path UI
-                    if (record_path_enable)
-                    {
-                        recordPath();
-
-                        // enable trail renderer to show the drawn path
-                        GetComponent<TrailRenderer>().enabled = true;
-                        GetComponent<TrailRenderer>().material.color = new Color(110, 0, 0);
-                    }
-
-                    // experimental: update membership while being dragged
-                    // checkAndUpdateMembership();
-                }
-            }
-
-            else if (PenTouchInfo.ReleasedThisFrame)//currentPen.tip.wasReleasedThisFrame)
-            {
-                // important: touch can start and end when interacting with other UI elements like a set's slider.
-                // so, double check that this touch was still on top of the penline object, not, say, on a slider.
-                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
-                RaycastHit Hit;
-
-                if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject == this.gameObject)
-                {
-                    // if record path UI was on, then take care of the recorded path and return pen object to original position,
-                    // don't do any parent object containment checking in that case
-                    if (record_path_enable)
-                    {
-                        recordPath();
-
-                        transform.position = position_before_record;
-
-                        draggable_now = false;
-
-                        // Add a line renderer component and re-distribute the points across the line
-                        this.gameObject.AddComponent<LineRenderer>();
-
-                        // ToDo: bezier spline needs to be incorporated later again
-                        // UNIFORMLY DISTRIBUTE THE POINTS ALONG THE PATH
-                        /*GameObject spline = new GameObject("spline");
-                        spline.AddComponent<BezierSpline>();
-                        BezierSpline bs = spline.transform.GetComponent<BezierSpline>();
-                        bs.Initialize(recorded_path.Count);
-                        for (int ss = 0; ss < recorded_path.Count; ss++)
-                        {
-                            bs[ss].position = recorded_path[ss];
-                        }
-
-                        // Now sample 50 points across the spline with a [0, 1] parameter sweep
-                        recorded_path = new List<Vector3>(50);
-                        for (int i = 0; i < 50; i++)
-                        {
-                            recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, 49, i)));
-                        }
-
-                        Destroy(spline);*/
-
-                        record_path_enable = false;
-
-                        GetComponent<TrailRenderer>().enabled = false;
-
-                        // convert global recorded coordinates to local, wrt pen object
-                        for (int k = 0; k < recorded_path.Count; k++)
-                        {
-                            recorded_path[k] = transform.InverseTransformPoint(recorded_path[k]);
-                        }
-
-                        // calculate the actual (global) translation path
-                        // calculateTranslationPath();
-
-                        // (re)create param text and text box
-                        // createParamGUIText();
-
-                        // indicate what kind of path this penline has
-                        has_continuous_path = true;
-                        return;
-                    }
-
-                    draggable_now = false;
-
-                    // the object has been moved by hand. Recalculate the new translation path.
-                    // this does nothing if a translation path isn't defined yet
-                    // calculateTranslationPathIfAlreadyDefined();
-
-                    // checkAndUpdateMembership();
-                }
-            }
-        }
-    }
-
+    
     /*public void checkContinuousPathDefinitionInteraction()
     {
 
@@ -1305,6 +1144,7 @@ public class EdgeElementScript : MonoBehaviour
         else
             transform.GetComponent<LineRenderer>().material.SetColor("_Color", Color.gray);
 
+        edge_weight = 1;
     }
 
     // Update is called once per frame

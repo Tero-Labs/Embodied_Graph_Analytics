@@ -117,6 +117,7 @@ public class Paintable : MonoBehaviour
     float TouchTime; // Time elapsed between touch beginning and ending
     float StartTouchTime; // Time.realtimeSinceStartup at start of touch
     float EndTouchTime; // Time.realtimeSinceStartup at end of touch
+    float TraversedDistance; 
     public Vector2 startPos;
 
     // needed for dragging using mouse
@@ -170,6 +171,12 @@ public class Paintable : MonoBehaviour
         ["spring"] = 3,
         ["spectral"] = 4,
         ["fruchterman"] = 5
+    };
+
+    public static Dictionary<string, int> weight_dict = new Dictionary<string, int>()
+    {
+        ["auto"] = 0,
+        ["custom"] = 1
     };
 
     // Start is called before the first frame update
@@ -1296,7 +1303,7 @@ public class Paintable : MonoBehaviour
         if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
         {
             //Debug.Log("entered");
-            if (no_func_menu_open == false) return;
+            //if (no_func_menu_open == false) return;
             if (dragged_arg_textbox == null)
             {
                 OnGraphTap();
@@ -1519,6 +1526,17 @@ public class Paintable : MonoBehaviour
                 pen_dragged_obj = Hit.collider.gameObject;
                 Debug.Log("collided_with" + pen_dragged_obj.tag);
 
+                if (pen_dragged_obj.tag == "paintable_canvas_object")
+                {
+                    if (canvas_radial.transform.childCount > 0)
+                    {
+                        for (int i = 0; i < canvas_radial.transform.childCount; i++)
+                        {
+                            Destroy(canvas_radial.transform.GetChild(i).gameObject);
+                        }
+                    }
+                }
+
                 if (pen_dragged_obj.tag == "iconic")
                 {
                     pen_dragged_obj.transform.localScale = pen_dragged_obj.transform.localScale * 1.05f;
@@ -1565,6 +1583,7 @@ public class Paintable : MonoBehaviour
                 vec.z = -5f;
                 Vector3 diff = vec - pen_dragged_obj.transform.position + touchDelta;
                 diff.z = 0;
+
                 
                 if (pen_dragged_obj.tag == "paintable_canvas_object")
                 {
@@ -2435,7 +2454,7 @@ public class Paintable : MonoBehaviour
         RaycastHit2D hit2d;
 
         hit2d = Physics2D.GetRayIntersection(ray);
-        if (hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
+        if (!graphlocked && hit2d.collider != null && hit2d.collider.gameObject.tag == "edge")
         {
             Debug.Log("hit:" + hit2d.collider.gameObject.tag);
             Vector3 vec_radius_offset = new Vector3(0f, 10f, 0f);

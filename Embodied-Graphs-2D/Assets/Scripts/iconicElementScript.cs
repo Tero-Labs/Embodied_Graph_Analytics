@@ -484,6 +484,8 @@ public class iconicElementScript : MonoBehaviour
                     lineRenderer.enabled = true;
                     lineRenderer.positionCount = 2;
                     child.GetComponent<EdgeElementScript>().free_hand = false;
+                    child.GetComponent<EdgeElementScript>().edge_weight = 1;
+                    Prev_graph_parent.GetComponent<GraphElementScript>().edges_init();
                 }
 
                 if (splined_edge_flag)

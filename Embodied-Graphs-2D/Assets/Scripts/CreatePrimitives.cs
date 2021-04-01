@@ -426,7 +426,8 @@ public class CreatePrimitives : MonoBehaviour
         lineRenderer.enabled = false;        
 
         // set transform position
-        templine.transform.position = new Vector3(0, 0, 0); 
+        templine.transform.position = new Vector3(0, 0, 0);
+        templine.GetComponent<EdgeElementScript>().edge_weight = Mathf.RoundToInt(0.5f * templine.GetComponent<EdgeElementScript>().totalLength);
         return templine;
     }
 
