@@ -500,7 +500,7 @@ public class FunctionElementScript : MonoBehaviour
             Transform child = graph.GetComponent<GraphElementScript>().nodeMaps[current_node.ToString()];
             GameObject temp_node = Instantiate(child.gameObject);
             temp_node.transform.parent = tempnodeparent.transform;
-            temp_node.transform.localPosition = Vector3.zero;
+            temp_node.transform.position = child.transform.position;
 
             temp_graph.GetComponent<GraphElementScript>().graph.nodes.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number);
             temp_graph.GetComponent<GraphElementScript>().nodeMaps.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number.ToString(), temp_node.transform);
