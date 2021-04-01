@@ -138,7 +138,12 @@ public class FunctionElementScript : MonoBehaviour
         for (int i = 0; i < transform.GetComponent<FunctionCaller>().selected_final_graphs.Length; i++)
         {
             if (transform.GetComponent<FunctionCaller>().selected_final_graphs[i].name == "temp_graph")
-                transform.GetComponent<FunctionCaller>().selected_final_graphs[i].SetActive(false);
+            {
+                /*if (transform.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
+                    Destroy(transform.GetComponent<FunctionCaller>().selected_final_graphs[i]);
+                else*/
+                    transform.GetComponent<FunctionCaller>().selected_final_graphs[i].SetActive(false);
+            }                
         }
 
         if (video_player != null)
@@ -470,6 +475,11 @@ public class FunctionElementScript : MonoBehaviour
         temphyperparent.transform.parent = temp_graph.transform;
         temphyperparent.transform.SetSiblingIndex(3);
 
+        for (int i = 0; i < 4; i++)
+            temp_graph.transform.GetChild(i).transform.localPosition = Vector3.zero;
+
+        //StartCoroutine(set_correct_position(temp_graph));
+
         Paintable.graph_count++;
         temp_graph.name = "graph_" + Paintable.graph_count.ToString();
         temp_graph.tag = "graph";
@@ -490,6 +500,7 @@ public class FunctionElementScript : MonoBehaviour
             Transform child = graph.GetComponent<GraphElementScript>().nodeMaps[current_node.ToString()];
             GameObject temp_node = Instantiate(child.gameObject);
             temp_node.transform.parent = tempnodeparent.transform;
+            temp_node.transform.localPosition = Vector3.zero;
 
             temp_graph.GetComponent<GraphElementScript>().graph.nodes.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number);
             temp_graph.GetComponent<GraphElementScript>().nodeMaps.Add(temp_node.transform.GetComponent<iconicElementScript>().icon_number.ToString(), temp_node.transform);
@@ -514,6 +525,14 @@ public class FunctionElementScript : MonoBehaviour
         
         StartCoroutine(clear_files());
     }
+
+    IEnumerator set_correct_position(GameObject temp_graph)
+    {       
+        for (int i = 0; i < 4; i++)
+            temp_graph.transform.GetChild(i).transform.localPosition = Vector3.zero;
+        yield return null;
+    }
+
 
     IEnumerator material_update(GameObject edgeline)
     {

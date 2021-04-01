@@ -3274,16 +3274,16 @@ public class Paintable : MonoBehaviour
     {
         yield return null;
 
-        if (deleted_mode == "iconic")
+        if (temp != null && deleted_mode == "iconic")
             temp.transform.parent.GetComponent<GraphElementScript>().nodes_init();
 
-        else if (deleted_mode == "edge")
+        else if (temp != null && deleted_mode == "edge")
             temp.transform.parent.GetComponent<GraphElementScript>().edges_init();
 
-        else if (deleted_mode == "simplicial")
+        else if (temp != null && deleted_mode == "simplicial")
             temp.transform.parent.GetComponent<GraphElementScript>().simplicial_init();
 
-        else if (deleted_mode == "hyper")
+        else if (temp != null && deleted_mode == "hyper")
             temp.transform.parent.GetComponent<GraphElementScript>().hyperedges_init();
     }
 

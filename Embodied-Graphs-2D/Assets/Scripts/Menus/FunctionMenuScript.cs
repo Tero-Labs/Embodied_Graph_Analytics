@@ -522,7 +522,7 @@ public class FunctionMenuScript : MonoBehaviour
             //Debug.Log("partially inside lasso");
             
             GameObject temp_graph = Instantiate(graph);
-            temp_graph.transform.parent = graph.transform.parent;
+            temp_graph.transform.parent = paintable.GetComponent<Paintable>().Objects_parent.transform;
             temp_graph.name = "temp_graph";
 
             temp_graph.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
