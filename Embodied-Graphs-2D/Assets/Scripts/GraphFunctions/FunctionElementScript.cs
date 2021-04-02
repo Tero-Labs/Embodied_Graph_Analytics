@@ -490,7 +490,8 @@ public class FunctionElementScript : MonoBehaviour
 
         //temp_graph.GetComponent<GraphElementScript>().nodes_init();
         nodeMaps = new Dictionary<string, Transform>();
-        temp_graph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>(); 
+        temp_graph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
+        graph.GetComponent<GraphElementScript>().nodes_init();
 
         returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 

@@ -117,15 +117,9 @@ public class FileLoadDialog : MonoBehaviour
 
                     int trim_pos_2 = filepath.IndexOf(".");
                     // second argument basically dpicts the length of the array
-                    List<Dictionary<string, object>> data = CSVReader.Read(FileBrowser.Result[i].Substring(trim_pos+1, trim_pos_2));                    
+                    List<Dictionary<string, object>> data = CSVReader.Read(FileBrowser.Result[i].Substring(trim_pos+1, trim_pos_2));
 
-                    foreach (var line in data)
-                    {
-                        foreach (var col in line)
-                        {
-                            print(col);
-                        }
-                    }
+                    StartCoroutine(CreateGraphfromFile(data));
                 }
 
                 yield return null;
@@ -140,5 +134,59 @@ public class FileLoadDialog : MonoBehaviour
             /*string destinationPath = Path.Combine(Application.persistentDataPath, FileBrowserHelpers.GetFilename(FileBrowser.Result[0]));
             FileBrowserHelpers.CopyFile(FileBrowser.Result[0], destinationPath);*/
         }
+    }
+
+    IEnumerator CreateGraphfromFile(List<Dictionary<string, object>> data)
+    {
+        GameObject tempgraph = Instantiate(transform.GetComponent<Paintable>().GraphElement);
+        tempgraph.GetComponent<GraphElementScript>().abstraction_layer = "graph";
+        tempgraph.GetComponent<GraphElementScript>().paintable = transform.gameObject;
+        Paintable.graph_count++;
+        tempgraph.name = "graph_" + Paintable.graph_count.ToString();
+        tempgraph.tag = "graph";
+        tempgraph.transform.parent = transform.GetComponent<Paintable>().Objects_parent.transform;
+        tempgraph.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
+        tempgraph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
+
+        GameObject tempnodeparent = tempgraph.transform.GetChild(0).gameObject;
+        GameObject tempedgeparent = tempgraph.transform.GetChild(1).gameObject;
+
+        foreach (var line in data)
+        {
+            //int edge_start, edge_end;
+
+            List<string> nodes = new List<string>();
+
+            foreach (var col in line)
+            {
+                nodes.Add(col.Value.ToString());
+
+                /*if (col.Key == "start_node")
+                    edge_start = (int)col.Value;
+
+                else
+                    edge_end = (int)col.Value;
+
+                print(col.Key + " " + col.Value); */
+
+                if (tempgraph.GetComponent<GraphElementScript>().nodeMaps.ContainsKey(col.Value.ToString()))
+                {
+                    continue;
+                }
+                else
+                {
+                    GameObject child = transform.GetComponent<Paintable>().createImageIcon("Assets/Icons/" + "stick_figure_icon.png", (int)col.Value);
+                    yield return null;
+                    child.transform.parent = tempnodeparent.transform;
+                    tempgraph.GetComponent<GraphElementScript>().nodeMaps.Add(col.Value.ToString(), child.transform);
+                }                    
+            }
+
+            tempgraph.GetComponent<GraphElementScript>().EdgeCreation("edge", nodes.ToArray(), 1);
+            yield return null;
+        }
+
+        //tempgraph.GetComponent<GraphElementScript>().Graph_init();
+        tempgraph.GetComponent<GraphElementScript>().ChangeLayout("circular");
     }
 }

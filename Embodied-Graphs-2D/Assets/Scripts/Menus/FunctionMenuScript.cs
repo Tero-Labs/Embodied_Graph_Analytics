@@ -546,6 +546,7 @@ public class FunctionMenuScript : MonoBehaviour
                 }
             }
 
+            
             temp_graph.SetActive(false);
             return temp_graph.transform;
         }

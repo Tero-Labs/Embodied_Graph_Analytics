@@ -83,6 +83,8 @@ public class GraphElementScript : MonoBehaviour
 
         layout_layer = "manual";
 
+        nodeMaps = new Dictionary<string, Transform>();
+
         //splined_edge_flag = false;
     }
 
@@ -464,14 +466,49 @@ public class GraphElementScript : MonoBehaviour
         }
     }
 
+    public void ChangeLayout(string target_layout)
+    {
+                
+        if (target_layout == "manual")
+        {
+            layout_layer = target_layout;
+            return;
+        }
+
+        //Graph_as_Str();
+        Graph_init();
+        GetGraphJson();
+
+        bool flag = false;
+
+        flag = transform.GetComponent<HelloClient>().Call_Server("layout_" + target_layout, "layout_" + target_layout);
+
+        if (flag)
+        {
+            layout_layer = target_layout;
+            conversion_done = false;
+        }
+    }
+
     public void showLayout(string serverUpdate, string command)
     {
         Debug.Log("triggered for " + command);
         graphCordinate = JsonUtility.FromJson<GraphCordinate>(File.ReadAllText("Assets/Resources/" + "output.json"));
         Debug.Log(JsonUtility.ToJson(graphCordinate));
 
-        float rad_x = Mathf.Abs(edge_position.x - center_position.x);
-        float rad_y = Mathf.Abs(edge_position.y - center_position.y);
+        float rad_x, rad_y;
+
+        if (Vector3.Distance(center_position, edge_position) == 0)
+        {
+            rad_x = 200;
+            rad_y = 200;
+        }
+        else
+        {
+            rad_x = Mathf.Abs(edge_position.x - center_position.x);
+            rad_y = Mathf.Abs(edge_position.y - center_position.y);
+        }
+        
 
         foreach (single_node_cord cur_cord in graphCordinate.node_cord)
         {

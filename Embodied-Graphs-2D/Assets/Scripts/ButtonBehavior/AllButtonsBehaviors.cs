@@ -204,6 +204,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             //enablesimplicialColliders();
             //disable_menu_creation
             paint_canvas.GetComponent<Paintable>().panZoomLocked = true;
+            Paintable.dragged_arg_textbox = null;
 
             /*ColorPickerClickCheck.Rpointer = false;
             ColorPickerClickCheck.Gpointer = false;
@@ -231,8 +232,9 @@ public class AllButtonsBehaviors : MonoBehaviour
         else if (this.name == "AnalysisPen")
         {
             enableAllPenObjectColliders();
+            Paintable.dragged_arg_textbox = null;
 
-            if(!paint_canvas.GetComponent<Paintable>().no_analysis_menu_open)
+            if (!paint_canvas.GetComponent<Paintable>().no_analysis_menu_open)
             {
                 var analysis_menu = Instantiate(paint_canvas.GetComponent<Paintable>().analysis_radial_menu, transform.parent);
                 analysis_menu.GetComponent<Graphplot>().paintable = paint_canvas;

@@ -250,7 +250,8 @@ public class Paintable : MonoBehaviour
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) &&
-                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"
+                   || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
                 {                    
                     Vector3 vec = Hit.point + new Vector3(0, 0, -40); 
                     
@@ -284,7 +285,8 @@ public class Paintable : MonoBehaviour
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) &&
-                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"
+                    || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
                 {
 
                     Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
@@ -307,7 +309,8 @@ public class Paintable : MonoBehaviour
                 RaycastHit Hit;
 
                 if (Physics.Raycast(ray, out Hit) &&
-                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"
+                    || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
                 {
                     if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
                     {
@@ -1674,15 +1677,28 @@ public class Paintable : MonoBehaviour
     }
 
     // create iconic element from an image
-    public void createImageIcon(string FilePath)
+    public GameObject createImageIcon(string FilePath, int track = -1)
     {
         GameObject temp = Instantiate(ImageIconicElement, new Vector3(0,0,-5f), Quaternion.identity, Objects_parent.transform);
-        totalLines++;
-        temp.name = "iconic_" + totalLines.ToString();
         temp.tag = "iconic";
-        temp.GetComponent<iconicElementScript>().icon_number = totalLines;
+
+        if (track != -1)
+        {
+            temp.name = "iconic_" + track.ToString();
+            temp.GetComponent<iconicElementScript>().icon_number = track;
+            temp.GetComponent<iconicElementScript>().icon_name = "iconic_" + track.ToString();
+        }
+        else
+        {
+            totalLines++;
+            temp.name = "iconic_" + totalLines.ToString();
+            temp.GetComponent<iconicElementScript>().icon_number = totalLines;
+            temp.GetComponent<iconicElementScript>().icon_name = "iconic_" + totalLines.ToString();
+        }
+        
         temp.GetComponent<iconicElementScript>().image_icon = true;
-        temp.GetComponent<iconicElementScript>().LoadNewSprite(FilePath);        
+        temp.GetComponent<iconicElementScript>().LoadNewSprite(FilePath);
+        return temp;
     }
 
     void OnGraphAdditionInteractionOld()
