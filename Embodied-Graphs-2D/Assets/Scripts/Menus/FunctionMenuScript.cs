@@ -40,6 +40,8 @@ public class FunctionMenuScript : MonoBehaviour
     public GameObject message_box;
     public GameObject argument_text_box;
     public GameObject dragged_arg_object;
+    public GameObject video_temp_graph;
+
 
     // functions_list
     private Dictionary<int,string> addition_dict;
@@ -525,6 +527,9 @@ public class FunctionMenuScript : MonoBehaviour
             temp_graph.transform.parent = paintable.GetComponent<Paintable>().Objects_parent.transform;
             temp_graph.name = "temp_graph";
 
+            // store which graph it was subgraph of
+            temp_graph.GetComponent<GraphElementScript>().parent_graph = graph;
+
             temp_graph.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
             temp_graph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
 
@@ -837,6 +842,20 @@ public class FunctionMenuScript : MonoBehaviour
         passive_func_call = true;
         passive_func_call_root = true;
         transform.parent.GetComponent<FunctionElementScript>().video_player = video_player;
+
+        if (video_player != null)
+        {
+            //video_temp_graph = FindifInsideLasso(argument_objects[0]).gameObject;
+            for (int i = 0; i < argument_objects.Length; i++)
+            {
+                if (argument_objects[i].tag == "graph" && argument_objects[i].GetComponent<GraphElementScript>().video_graph)
+                {
+                    Transform temp_graph_transform = FindifInsideLasso(argument_objects[i]);
+                    argument_objects[i] = temp_graph_transform.gameObject;
+                }
+            }
+        }            
+
         StartCoroutine(CheckUnevaluatedFunctionArguments());
     }
     

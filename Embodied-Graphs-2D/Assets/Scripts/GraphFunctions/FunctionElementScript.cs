@@ -139,9 +139,15 @@ public class FunctionElementScript : MonoBehaviour
         {
             if (transform.GetComponent<FunctionCaller>().selected_final_graphs[i].name == "temp_graph")
             {
-                /*if (transform.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished)
+                // if the object is a temp video graph, restore the argument object for enabling recalculation
+                if (transform.GetComponent<FunctionCaller>().selected_final_graphs[i].GetComponent<GraphElementScript>().video_graph)
+                    transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects[i] =
+                        transform.GetComponent<FunctionCaller>().selected_final_graphs[i].GetComponent<GraphElementScript>().parent_graph;
+
+                if (transform.GetChild(0).GetComponent<FunctionMenuScript>().eval_finished || 
+                    transform.GetComponent<FunctionCaller>().selected_final_graphs[i].GetComponent<GraphElementScript>().video_graph)
                     Destroy(transform.GetComponent<FunctionCaller>().selected_final_graphs[i]);
-                else*/
+                else
                     transform.GetComponent<FunctionCaller>().selected_final_graphs[i].SetActive(false);
             }                
         }
@@ -196,8 +202,9 @@ public class FunctionElementScript : MonoBehaviour
         GameObject temphyperparent = tempgraph.transform.GetChild(3).gameObject;
 
         tempgraph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
-
         nodeMaps = new Dictionary<string, Transform>();
+
+        
         returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 
         tempgraph.GetComponent<GraphElementScript>().graph = new Graph();
@@ -218,6 +225,7 @@ public class FunctionElementScript : MonoBehaviour
                         nodeMaps.Add(current_node.ToString(), tempicon.transform);
                         tempgraph.GetComponent<GraphElementScript>().nodeMaps.Add(current_node.ToString(), tempicon.transform);
 
+                        //Debug.Log("creating " + current_node.ToString() + " node");
                         break;
                     }
                 }
@@ -491,7 +499,7 @@ public class FunctionElementScript : MonoBehaviour
         //temp_graph.GetComponent<GraphElementScript>().nodes_init();
         nodeMaps = new Dictionary<string, Transform>();
         temp_graph.GetComponent<GraphElementScript>().nodeMaps = new Dictionary<string, Transform>();
-        graph.GetComponent<GraphElementScript>().nodes_init();
+        //graph.GetComponent<GraphElementScript>().nodes_init();
 
         returned_graph = JsonUtility.FromJson<Graph>(File.ReadAllText("Assets/Resources/" + "output.json"));
 

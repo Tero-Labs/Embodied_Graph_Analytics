@@ -36,6 +36,9 @@ public class GraphElementScript : MonoBehaviour
     public GameObject canvas_radial;
     public GameObject paintable;
 
+    // to track the video parent which was the full graph 
+    public GameObject parent_graph;
+
     public bool graph_lock;
     public bool simplicial_lock;
     public bool hyper_edges_lock;
@@ -82,8 +85,7 @@ public class GraphElementScript : MonoBehaviour
         hyper_edges_drawn = false;
 
         layout_layer = "manual";
-
-        nodeMaps = new Dictionary<string, Transform>();
+              
 
         //splined_edge_flag = false;
     }
@@ -498,7 +500,7 @@ public class GraphElementScript : MonoBehaviour
 
         float rad_x, rad_y;
 
-        if (Vector3.Distance(center_position, edge_position) == 0)
+        /*if (Vector3.Distance(center_position, edge_position) == 0)
         {
             rad_x = 200;
             rad_y = 200;
@@ -507,8 +509,10 @@ public class GraphElementScript : MonoBehaviour
         {
             rad_x = Mathf.Abs(edge_position.x - center_position.x);
             rad_y = Mathf.Abs(edge_position.y - center_position.y);
-        }
-        
+        }*/
+
+        rad_x = 200;
+        rad_y = 200;
 
         foreach (single_node_cord cur_cord in graphCordinate.node_cord)
         {
