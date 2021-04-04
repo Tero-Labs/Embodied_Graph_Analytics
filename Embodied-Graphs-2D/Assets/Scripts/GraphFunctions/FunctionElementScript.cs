@@ -165,7 +165,7 @@ public class FunctionElementScript : MonoBehaviour
     public void InstantiateNameBox()
     {
         //Instantiate(name_label, new Vector3(maxx, maxy, -5), Quaternion.identity, transform);
-        GameObject temp = Instantiate(function_menu, new Vector3(maxx, maxy, -5), Quaternion.identity, transform);
+        GameObject temp = Instantiate(function_menu, new Vector3(maxx, maxy, -10), Quaternion.identity, transform);
         temp.transform.SetSiblingIndex(0);
         temp.GetComponent<FunctionMenuScript>().paintable = paintable_object;
 

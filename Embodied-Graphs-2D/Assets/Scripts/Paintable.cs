@@ -1443,7 +1443,7 @@ public class Paintable : MonoBehaviour
                     }
                 }
                 // interaction
-                else if (potential_tapped_graph != null && activeTouches.Count > 1)
+                else if (potential_tapped_graph != null && activeTouches.Count > 0)
                 {
                     
                     OnGraphAdditionInteraction();
@@ -2108,15 +2108,16 @@ public class Paintable : MonoBehaviour
 
     void OnGraphAdditionInteraction()
     {
-        int idx = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches.Count - 1;
+        /*int idx = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches.Count - 1;
 
-        var currentTouch = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches[idx];
+        var currentTouch = UnityEngine.InputSystem.EnhancedTouch.Touch.activeTouches[idx];*/
 
-        if (functionline == null &&
-            currentTouch.phase == UnityEngine.InputSystem.TouchPhase.Moved)
+        if (functionline == null && PenTouchInfo.PressedThisFrame
+           /* currentTouch.phase == UnityEngine.InputSystem.TouchPhase.Moved*/)
         {
             // start drawing a new line
-            var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
+            //var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
+            var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
             RaycastHit Hit;
 
            
@@ -2136,11 +2137,12 @@ public class Paintable : MonoBehaviour
             }
         }
 
-        else if (functionline != null &&
-            currentTouch.phase == UnityEngine.InputSystem.TouchPhase.Moved)
+        else if (functionline != null && PenTouchInfo.PressedNow
+            /*currentTouch.phase == UnityEngine.InputSystem.TouchPhase.Moved*/)
         {
             // add points to the last line
-            var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
+            //var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
+            var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
             RaycastHit Hit;
             if (Physics.Raycast(ray, out Hit) && Hit.collider.gameObject.name == "Paintable")
             {
@@ -2159,9 +2161,11 @@ public class Paintable : MonoBehaviour
             }
         }
 
-        else if (functionline != null && currentTouch.phase == UnityEngine.InputSystem.TouchPhase.Ended)
+        else if (functionline != null && PenTouchInfo.ReleasedThisFrame
+            /*currentTouch.phase == UnityEngine.InputSystem.TouchPhase.Ended*/)
         {
-            var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
+            //var ray = Camera.main.ScreenPointToRay(currentTouch.screenPosition);
+            var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
             RaycastHit Hit;
 
             // vertex_add_interaction            
@@ -2169,7 +2173,7 @@ public class Paintable : MonoBehaviour
             {
                 if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
                 {
-                    Debug.Log("finished_templine_with_tap");
+                    //Debug.Log("finished_templine_with_tap");
 
                     
                     if (vertex_add)
@@ -2209,7 +2213,7 @@ public class Paintable : MonoBehaviour
                                 new_child_icon.transform.parent = tempnodeparent.transform;
                             }
                             // if already in a graph, change parent of every siblings of it,but make sure not under the current graph
-                            else if (new_child_icon.transform.parent != potential_tapped_graph.transform)
+                            else if (new_child_icon.transform.parent.parent != potential_tapped_graph.transform)
                             {
                                 Transform Prev_node_parent = new_child_icon.transform.parent;
                                 Transform Prev_graph_parent = Prev_node_parent.parent;

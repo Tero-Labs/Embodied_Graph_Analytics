@@ -26,7 +26,7 @@ public class HyperEdgeElement : MonoBehaviour
     {
         spline_dist = UnityEngine.Random.Range(2, 4);
         float temp = UnityEngine.Random.Range(1f, 2f);
-        print("rand:" + temp.ToString());
+        //print("rand:" + temp.ToString());
         if (temp > 1.5f)
             spline_flag = 1;            
         else
@@ -57,15 +57,15 @@ public class HyperEdgeElement : MonoBehaviour
 
         Vector3 dir_vec = start - end;
         Vector2 unit_vec = new Vector2(-dir_vec.y, dir_vec.x);
-        Debug.Log("before normalized:" + unit_vec.ToString());
+        //Debug.Log("before normalized:" + unit_vec.ToString());
         unit_vec.Normalize();
-        Debug.Log("after normalized:" + unit_vec.ToString());
+        //Debug.Log("after normalized:" + unit_vec.ToString());
 
         Vector3 first_cpt = Vector3.Lerp(start, end, 0.3f);
         Vector3 second_pt = Vector3.Lerp(start, end, 0.6f);
         Vector3 third_pt = Vector3.Lerp(start, end, 0.75f);
         Vector3 fourth_pt = Vector3.Lerp(start, end, 0.9f);
-        
+                
         float approx_dist;
 
         approx_dist = Vector3.Distance(start, end) / 3;
@@ -89,46 +89,56 @@ public class HyperEdgeElement : MonoBehaviour
         }
 
 
-        LineRenderer l = transform.GetComponent<LineRenderer>();        
+        LineRenderer l = transform.GetComponent<LineRenderer>();
 
-        # region spline
+        #region spline
+
+        int pts = 5;
+        List<Vector3> recorded_path = new List<Vector3>(pts);
 
         GameObject spline = new GameObject("spline");
         spline.AddComponent<BezierSpline>();
         BezierSpline bs = spline.transform.GetComponent<BezierSpline>();
 
         // free handle mode and set the control point so that we get a eclipse like shape even with only two points! 
-        bs.Initialize(4);
+        bs.Initialize(2);
         bs[0].position = start;
         bs[0].handleMode = BezierPoint.HandleMode.Free;
-        bs[0].followingControlPointPosition = first_cpt;
+        bs[0].followingControlPointPosition = first_cpt;               
 
         bs[1].position = second_pt;
         bs[1].handleMode = BezierPoint.HandleMode.Free;
         bs[1].precedingControlPointPosition = first_cpt;
-        bs[1].followingControlPointPosition = third_pt;
-
-        bs[2].position = fourth_pt;
-        bs[2].handleMode = BezierPoint.HandleMode.Free;
-        bs[2].precedingControlPointPosition = third_pt;
-        bs[2].followingControlPointPosition = end;
-
-        bs[3].position = end;
-        bs[3].handleMode = BezierPoint.HandleMode.Free;
-        bs[3].precedingControlPointPosition = fourth_pt;
-
-        int pts = 10;
-        List<Vector3>  recorded_path = new List<Vector3>(pts);
+        
+        
         for (int i = 0; i < pts; i++)
         {
             recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, pts-1, i)));
+        }
+
+        bs = spline.transform.GetComponent<BezierSpline>();
+
+        // free handle mode and set the control point so that we get a eclipse like shape even with only two points! 
+        bs.Initialize(2);
+        bs[0].position = second_pt;
+        bs[0].handleMode = BezierPoint.HandleMode.Free;
+        bs[0].followingControlPointPosition = third_pt;
+
+        bs[1].position = end;
+        bs[1].handleMode = BezierPoint.HandleMode.Free;
+        bs[1].precedingControlPointPosition = third_pt;
+        
+
+        for (int i = 0; i < pts; i++)
+        {
+            recorded_path.Add(bs.GetPoint(Mathf.InverseLerp(0, pts - 1, i)));
         }
 
         Destroy(spline);
 
         # endregion
 
-        Debug.Log("my_spline:" + recorded_path.Count.ToString());
+        //Debug.Log("my_spline:" + recorded_path.Count.ToString());
 
         l.positionCount = recorded_path.Count;
         l.SetPositions(recorded_path.ToArray());
@@ -183,7 +193,7 @@ public class HyperEdgeElement : MonoBehaviour
 
         Destroy(spline);
 
-        Debug.Log("my_spline:" + recorded_path.Count.ToString());
+        //Debug.Log("my_spline:" + recorded_path.Count.ToString());
 
         l.positionCount = recorded_path.Count;
         l.SetPositions(recorded_path.ToArray());
