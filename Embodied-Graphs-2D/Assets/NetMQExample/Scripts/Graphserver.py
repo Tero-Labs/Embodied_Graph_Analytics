@@ -560,15 +560,15 @@ if __name__ == '__main__':
             else:            
                 socket.send(("impossible").encode('ascii'))
                 
-        elif message.decode('utf8') == "topological":
+        elif message.decode('utf8') == "topologicalsort":
             all_graphs = unpackJson()
             topological_sort(all_graphs)
-            socket.send(("topological").encode('ascii'))
+            socket.send(("topologicalsort").encode('ascii'))
             
-        elif message.decode('utf8') == "degree_measure":
+        elif message.decode('utf8') == "degreesort":
             all_graphs = unpackJson()
             degree_centrality(all_graphs)
-            socket.send(("degree_measure").encode('ascii')) 
+            socket.send(("degreesort").encode('ascii')) 
             
         elif message.decode('utf8') == "community":
             all_graphs = unpackJson()

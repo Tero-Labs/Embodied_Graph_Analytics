@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -2.894989, y: -1.7450027}
-  m_SizeDelta: {x: -20.030016, y: 1.4700084}
+  m_AnchoredPosition: {x: -7.1900024, y: -0.43999863}
+  m_SizeDelta: {x: 2.4200032, y: -3.2399988}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4414120255827368570
 CanvasRenderer:
@@ -110,7 +110,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 124.21, y: -166.4}
-  m_SizeDelta: {x: 250, y: 128.6}
+  m_SizeDelta: {x: 180, y: 128.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2705701216753092343
 CanvasRenderer:
@@ -1048,7 +1048,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.2627451, g: 0.2627451, b: 0.2627451, a: 1}
+  m_Color: {r: 0.08627451, g: 0.08627451, b: 0.09411765, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1759,7 +1759,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.24705882, g: 0.24705882, b: 0.25490198, a: 1}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2149,7 +2149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.43529412, g: 0.11764706, b: 0.31764707, a: 0.3254902}
+  m_Color: {r: 0.5647059, g: 0.16470589, b: 0.41568628, a: 0.3254902}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -2334,6 +2334,16 @@ PrefabInstance:
       propertyPath: subDivisions.total
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
+        type: 3}
+      propertyPath: mainDivisions.textSeperation
+      value: -32.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 8758682679046416892, guid: 1776b334cbc36b744a42673dbf62b028,
+        type: 3}
+      propertyPath: subDivisions.textSeperation
+      value: -32.3
+      objectReference: {fileID: 0}
     - target: {fileID: 8758682679046416893, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}
       propertyPath: mainDivisions.material
@@ -2379,12 +2389,12 @@ PrefabInstance:
     - target: {fileID: 8758682679046416893, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}
       propertyPath: mainDivisions.textSeperation
-      value: -43.5
+      value: -48.43
       objectReference: {fileID: 0}
     - target: {fileID: 8758682679046416893, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}
       propertyPath: subDivisions.textSeperation
-      value: -43.5
+      value: -48.43
       objectReference: {fileID: 0}
     - target: {fileID: 8758682679046416893, guid: 1776b334cbc36b744a42673dbf62b028,
         type: 3}

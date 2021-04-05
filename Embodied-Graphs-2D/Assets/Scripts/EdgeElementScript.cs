@@ -1337,7 +1337,7 @@ public class EdgeElementScript : MonoBehaviour
             if (directed_edge && x == 1)
             {
                 temp.GetComponent<SpriteRenderer>().sprite = directed_edge_sprite;
-                Vector3 direction = l.GetPosition(idx) - l.GetPosition(0);
+                Vector3 direction = /*l.GetPosition(idx)*/points_arr[points_arr.Length-1] - /*l.GetPosition(idx-2)*/points_arr[(int)(3f*points_arr.Length/4f)];
                 temp.transform.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(direction.y, direction.x) * 180 / Mathf.PI);
             }
             else if (directed_edge && x == 0)

@@ -118,6 +118,7 @@ public class GraphSliderMenu : MonoBehaviour
         // wait until current conversion is done
         while (true)
         {
+            Debug.Log("Conversion Waiting");
             yield return null;
             if (this.parent.GetComponent<GraphElementScript>().conversion_done)
             {
@@ -126,6 +127,6 @@ public class GraphSliderMenu : MonoBehaviour
             }
         }
 
-        this.parent.GetComponent<GraphElementScript>().StartConversion(cur_layer);
+        this.parent.GetComponent<GraphElementScript>().StartConversion(cur_layer, transform.parent.gameObject);
     }
 }

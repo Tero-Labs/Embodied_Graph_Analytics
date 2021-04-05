@@ -446,7 +446,21 @@ public class iconicElementScript : MonoBehaviour
 
         return edge_position;
     }
-    
+
+    public void getImagepts()
+    {
+        points.Clear();
+        points.Add(edge_position + new Vector3(-bounds_center.x, 0, 0));
+        points.Add(edge_position + new Vector3(0, bounds_center.y, 0));
+        points.Add(edge_position + new Vector3(bounds_center.x, 0, 0));
+        points.Add(edge_position + new Vector3(0, -bounds_center.y, 0));
+
+        maxx = edge_position.x + bounds_center.x;
+        maxy = edge_position.y + bounds_center.y; 
+        minx = edge_position.x - bounds_center.x;
+        miny = edge_position.y - bounds_center.y;
+    }
+
     void OnDestroy()
     {
         Transform node_parent = transform.parent;
@@ -553,7 +567,7 @@ public class iconicElementScript : MonoBehaviour
                     continue;
                 }
 
-                if (cur_function.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().enabled == false) continue;
+                if (cur_function.GetComponent<FunctionElementScript>().mesh_holder.activeSelf == false) continue;
 
                 // check if any function argument has been assigned
                 if (cur_function.transform.GetChild(0).GetComponent<FunctionMenuScript>().argument_objects == null) continue;

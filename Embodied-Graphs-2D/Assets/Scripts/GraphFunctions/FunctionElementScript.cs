@@ -376,7 +376,7 @@ public class FunctionElementScript : MonoBehaviour
                     temp_label.name = "label";
 
                     temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
-                        new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
+                        new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 8, 0);
 
                     index++;
                     temp_label.GetComponent<TextMeshProUGUI>().text = index.ToString();
@@ -995,7 +995,7 @@ public class FunctionElementScript : MonoBehaviour
         joint_centroid = joint_centroid / center_count;
 
         var hullAPI = new HullAPI();
-        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 15000 });
+        var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 1500 });
 
         Vector3[] vertices = hull.vertices;
         //Array.Sort(vertices);

@@ -669,7 +669,7 @@ public class GraphElementScript : MonoBehaviour
         abstract_lock = graph_lock;
     }
 
-    public void StartConversion(string target_layer)
+    public void StartConversion(string target_layer, GameObject menu_parent = null)
     {
         
         // already at the target abstraction layer, so no change is needed
@@ -680,8 +680,19 @@ public class GraphElementScript : MonoBehaviour
         {            
             transform.GetChild(4).position = new Vector3(edge_position.x, edge_position.y, -5f);
             transform.GetChild(4).gameObject.SetActive(true);
-            transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
-                             
+
+            if (menu_parent == null)
+                transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text = graph_name;
+            else
+            {
+                transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().text =
+                    transform.parent.GetChild(0).GetComponent<FunctionMenuScript>().tmptextlabel.GetComponent<TextMeshProUGUI>().text;
+
+                transform.GetChild(4).GetChild(0).GetComponent<TextMeshProUGUI>().fontSize = 8;
+                transform.GetChild(4).localScale = new Vector3(2f, 2f, 2f);
+            }
+
+
             abstraction_layer = target_layer;
             for (int i = 0; i < 4; i++)
             {
@@ -1197,7 +1208,7 @@ public class GraphElementScript : MonoBehaviour
                 temp_label.GetComponent<topoLabelScript>().parent = child.gameObject;
 
                 temp_label.transform.position = child.GetComponent<iconicElementScript>().edge_position +
-                    new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 5, 0);
+                    new Vector3(child.GetComponent<iconicElementScript>().radius, child.GetComponent<iconicElementScript>().radius + 8, 0);
 
                 var icon_name = child.GetComponent<iconicElementScript>().icon_name;
                 if (string.IsNullOrWhiteSpace(icon_name))

@@ -172,6 +172,13 @@ public class DropDownMenu : MonoBehaviour
         {
             cur_vp.transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
             cur_vp.GetComponent<MeshRenderer>().enabled = toggle.isOn;
+
+            /*GameObject slider = cur_vp.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider;
+
+            if (slider.GetComponent<VideoController>().graph_holder != null)
+            {
+                slider.GetComponent<VideoController>().graph_holder.SetActive(toggle.isOn);
+            }*/
         }
     }
 

@@ -754,7 +754,7 @@ public class FunctionMenuScript : MonoBehaviour
                 output_type = "graph";
             }
 
-            else if (input.text.ToLower().Equals("topological") || input.text.ToLower().Equals("degree_measure"))
+            else if (input.text.ToLower().Equals("topologicalsort") || input.text.ToLower().Equals("degreesort"))
             {
                 match_found = true;
                 cur_dict = topologicalsort_dict;
@@ -941,7 +941,7 @@ public class FunctionMenuScript : MonoBehaviour
     public void PostProcess(string output = null)
     {
         
-        if (mainInputField.text.ToLower().Equals("topological") || mainInputField.text.ToLower().Equals("degree_measure"))
+        if (mainInputField.text.ToLower().Equals("topologicalsort") || mainInputField.text.ToLower().Equals("degreesort"))
         {
             transform.parent.GetComponent<FunctionElementScript>().InstantiateTopoGraph();
         }
@@ -1010,9 +1010,10 @@ public class FunctionMenuScript : MonoBehaviour
             transform.gameObject.SetActive(false);
 
             settings.transform.gameObject.SetActive(false);
+            perform_action.transform.parent.gameObject.SetActive(false);            
             perform_action.transform.gameObject.SetActive(false);            
-            message_box.GetComponent<TextMeshProUGUI>().text = "";
-            text_label.GetComponent<TextMeshProUGUI>().text = "";
+            /*message_box.GetComponent<TextMeshProUGUI>().text = "";
+            text_label.GetComponent<TextMeshProUGUI>().text = "";*/
 
             input_option.SetActive(false);
         }

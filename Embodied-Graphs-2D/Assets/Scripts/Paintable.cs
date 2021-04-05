@@ -1491,17 +1491,42 @@ public class Paintable : MonoBehaviour
         fused_function_lasso.name = "function_line_" + function_count.ToString();
         function_count++;
 
-        var meshFilter = fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>();
+        StartCoroutine(FusedRepresentation(fused_obj, fused_function_lasso));
 
-        fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().sharedMaterial = fused_obj.transform.GetComponent<MeshRenderer>().sharedMaterial;
+        
+    }
 
-        Mesh mesh = fused_obj.GetComponent<MeshFilter>().sharedMesh;
-        meshFilter.sharedMesh = mesh;
+    IEnumerator FusedRepresentation(GameObject fused_obj, GameObject fused_function_lasso)
+    {
+        if (fused_obj.GetComponent<MeshFilter>() != null)
+        {
+            var meshFilter = fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>();
+
+            fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>().sharedMaterial = fused_obj.transform.GetComponent<MeshRenderer>().sharedMaterial;
+
+            Mesh mesh = fused_obj.GetComponent<MeshFilter>().sharedMesh;
+            meshFilter.sharedMesh = mesh;
+            fused_function_lasso.GetComponent<FunctionElementScript>().edge_position = fused_obj.GetComponent<MeshFilter>().sharedMesh.bounds.center;
+        }
+        else
+        {
+            Destroy(fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshFilter>());
+            Destroy(fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.GetComponent<MeshRenderer>());
+
+            yield return null;
+
+            var sr = fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.AddComponent<SpriteRenderer>();
+            sr.sprite = fused_obj.GetComponent<iconicElementScript>().recognized_sprite;
+            fused_function_lasso.GetComponent<FunctionElementScript>().mesh_holder.transform.localScale = new Vector3(30f, 30f, 1f);
+
+            fused_obj.GetComponent<iconicElementScript>().getImagepts();
+            fused_function_lasso.GetComponent<FunctionElementScript>().edge_position = fused_obj.transform.GetComponent<SpriteRenderer>().bounds.extents;
+            fused_function_lasso.GetComponent<FunctionElementScript>().edge_position.z = -5f;
+        }
+
 
         fused_function_lasso.GetComponent<TrailRenderer>().enabled = false;
         fused_function_lasso.GetComponent<LineRenderer>().enabled = false;
-
-        fused_function_lasso.GetComponent<FunctionElementScript>().edge_position = fused_obj.GetComponent<MeshFilter>().sharedMesh.bounds.center;
 
         fused_function_lasso.GetComponent<FunctionElementScript>().points = fused_obj.GetComponent<iconicElementScript>().points;
 
@@ -1514,6 +1539,7 @@ public class Paintable : MonoBehaviour
         fused_function_lasso.GetComponent<FunctionElementScript>().fused_function = true;
 
         //StartCoroutine(HistoryModify(fused_function_lasso));
+        yield return null;
         Destroy(fused_obj);
     }
 
@@ -2902,6 +2928,7 @@ public class Paintable : MonoBehaviour
                 GameObject tempcyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 tempcyl.tag = "temp_edge_primitive";
                 tempcyl.transform.position = penobjs[i].GetComponent<iconicElementScript>().edge_position + new Vector3(0f, 0f, 20f);
+                //tempcyl.transform.localScale = new Vector3(5f, 5f, 5f);
                 tempcyl.transform.localScale = new Vector3(20f, 20f, 20f);
                 tempcyl.transform.Rotate(new Vector3(90f, 0f, 0f));
                 tempcyl.transform.parent = penobjs[i].transform;
