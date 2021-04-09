@@ -368,6 +368,7 @@ public class FunctionMenuScript : MonoBehaviour
                             }
 
                             else if (Paintable.dragged_arg_textbox != null &&
+                                Paintable.dragged_arg_textbox.GetComponent<FunctionMenuScript>() != null &&
                                 Paintable.dragged_arg_textbox.transform.GetComponent<FunctionMenuScript>().output_type != "scalar")
                             {
                                 Debug.Log("here_in_arg_drag");
@@ -424,7 +425,9 @@ public class FunctionMenuScript : MonoBehaviour
                         else if (cur_dict[index] == "string" || cur_dict[index] == "int")
                         {
                             // double check if the draaged object is not null
-                            if (Paintable.dragged_arg_textbox != null && Paintable.dragged_arg_textbox != transform.gameObject)
+                            if (Paintable.dragged_arg_textbox != null &&
+                                Paintable.dragged_arg_textbox.GetComponent<FunctionMenuScript>() != null &&
+                                Paintable.dragged_arg_textbox != transform.gameObject)
                             {
                                 temp = Paintable.dragged_arg_textbox.transform;
                                 cur_arg_Str[index] = temp.GetComponent<FunctionMenuScript>().message_box/*text_label*/.GetComponent<TextMeshProUGUI>().text;
@@ -772,6 +775,16 @@ public class FunctionMenuScript : MonoBehaviour
                 output_type = "graph";
             }
 
+            else if (input.text.ToLower().Equals("shortestpathlength"))
+            {
+                match_found = true;
+                cur_dict = shortestpath_dict;
+                //cur_order_dict = dummy_order_dict;
+
+                output_type = "scalar";
+            }
+
+
             else if (input.text.ToLower().Equals("community"))
             {
                 match_found = true;
@@ -825,12 +838,12 @@ public class FunctionMenuScript : MonoBehaviour
         {
             //transform.parent.GetComponent<FunctionElementScript>().updateLassoPoints();
                         
-            if (output_type != "scalar")
-            {
+            /*if (output_type != "scalar")
+            {*/
                 passive_func_call = false;
                 StartCoroutine(CheckUnevaluatedFunctionArguments(transform.gameObject));
                 //transform.parent.GetComponent<FunctionCaller>().GetGraphJson(argument_objects, mainInputField.text.ToLower());                
-            }
+            //}
 
             input_option.SetActive(false);
             paintable.GetComponent<Paintable>().no_func_menu_open = true;            
@@ -957,6 +970,10 @@ public class FunctionMenuScript : MonoBehaviour
         else
         {
             if (output_type == "graph") transform.parent.GetComponent<FunctionElementScript>().InstantiateGraph(); //(output);
+            else
+            {
+                transform.parent.GetComponent<FunctionElementScript>().InstantiateScalarOutput(output);
+            }
         }
 
         // moved to functionelementscript because the coroutine can not run if i hide the object 

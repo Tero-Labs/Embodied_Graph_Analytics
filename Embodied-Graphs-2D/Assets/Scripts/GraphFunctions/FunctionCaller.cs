@@ -129,7 +129,7 @@ public class FunctionCaller : MonoBehaviour
 
     public bool Function_Caller(string function_name)
     {
-        if (function_name == "shortestpath")
+        if (function_name == "shortestpath" || function_name == "shortestpathlength")
         {
             function_name += "_" + selected_final_graphs[1].GetComponent<iconicElementScript>().icon_number.ToString();
             function_name += "_" + selected_final_graphs[2].GetComponent<iconicElementScript>().icon_number.ToString();

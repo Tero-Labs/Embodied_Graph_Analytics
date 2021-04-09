@@ -372,14 +372,19 @@ MonoBehaviour:
   is_this_double_function_operand: 0
   global_details_on_path: 1
   fused_function: 0
+  graph_generation_done: 0
   function_menu: {fileID: 8904246517432354550, guid: abec833af9871414e885d49a5f5982b4,
     type: 3}
+  video_player: {fileID: 0}
   mainInputField: {fileID: 0}
   grapharray: []
   graph_prefab: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
     type: 3}
   topo_label: {fileID: 8829594746175238268, guid: 90daaffd0430cf343975d4c68cff4c1d,
     type: 3}
+  scalar_label: {fileID: 8829594746175238268, guid: 3b932d4f22cc7d4428377e04db0ebb9e,
+    type: 3}
+  output: 
 --- !u!114 &1267191338032718980
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -404,6 +409,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 554fbe55b1e40d0459b5e741ef8baaaa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  selected_final_graphs: []
 --- !u!1 &6922715211382546587
 GameObject:
   m_ObjectHideFlags: 0

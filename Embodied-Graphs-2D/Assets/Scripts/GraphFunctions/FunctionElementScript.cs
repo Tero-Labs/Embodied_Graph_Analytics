@@ -111,6 +111,7 @@ public class FunctionElementScript : MonoBehaviour
     // prefabs
     public GameObject graph_prefab;
     public GameObject topo_label;
+    public GameObject scalar_label;
 
     // server output store
     Graphs returned_graphs;
@@ -181,6 +182,21 @@ public class FunctionElementScript : MonoBehaviour
         Destroy(transform.GetChild(1).gameObject);
         
         transform.GetChild(0).GetComponent<FunctionMenuScript>().PostProcess(graph_as_Str);
+    }
+
+    public void InstantiateScalarOutput(string output)
+    {
+        GameObject temp_label = Instantiate(scalar_label, new Vector3(maxx, maxy, -10), Quaternion.identity, transform);
+        temp_label.transform.SetSiblingIndex(1);
+        temp_label.name = "label";
+
+        temp_label.GetComponent<topoLabelScript>().tmptextlabel.text = output;
+
+        temp_label.GetComponent<topoLabelScript>().functiontextlabel.text = 
+            transform.GetChild(0).GetComponent<FunctionMenuScript>().text_label.GetComponent<TextMeshProUGUI>().text;
+
+        //temp_label.GetComponent<TextMeshProUGUI>().fontSize = 26;
+        StartCoroutine(clear_files());
     }
 
     public void InstantiateGraph()
@@ -541,8 +557,7 @@ public class FunctionElementScript : MonoBehaviour
             temp_graph.transform.GetChild(i).transform.localPosition = Vector3.zero;
         yield return null;
     }
-
-
+    
     IEnumerator material_update(GameObject edgeline)
     {
         yield return null;

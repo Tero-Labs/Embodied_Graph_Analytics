@@ -1238,7 +1238,7 @@ public class GraphElementScript : MonoBehaviour
                 temp_label.GetComponent<TextMeshProUGUI>().text = child.GetComponent<EdgeElementScript>().edge_weight.ToString();
             }
         }
-
+        
 
         var hullAPI = new HullAPI();
         var hull = hullAPI.Hull2D(new Hull2DParameters() { Points = hull_pts.ToArray(), Concavity = 30000 });

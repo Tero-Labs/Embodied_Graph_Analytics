@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   edge_weight: 1
+  edge_weight_multiplier: 0.5
   dot_prefab: {fileID: 1095668249245509096, guid: 204ec1cd6757fe64595bd9cb3c06035b,
     type: 3}
   node_obj: []
@@ -168,6 +169,7 @@ MonoBehaviour:
   directed_edge: 0
   directed_edge_sprite: {fileID: 21300000, guid: 70187cb4def0f0644be93719911a0829,
     type: 3}
+  free_hand: 0
   icon_elem_material: {fileID: 2100000, guid: 2ff2322fd857a21468c0478b0dd3ccb5, type: 2}
   paintable_object: {fileID: 0}
   current_attribute: 0
@@ -179,9 +181,6 @@ MonoBehaviour:
   translation_path: []
   path_index: 0
   eps_path_radius: 10
-  has_continuous_path: 1
-  heightScale: 20
-  xScale: 100
   max_possible_scale: 2
   max_possible_rotation: 360
   rotation_angle: 0
@@ -199,6 +198,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  totalLength: 0
   is_this_double_function_operand: 0
   details_dropdown: {fileID: 0}
   global_details_on_path: 1

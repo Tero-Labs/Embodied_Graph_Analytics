@@ -214,6 +214,16 @@ def find_shortest_path(G, source, target):
 
     with open("../../Resources/output.json", 'w') as json_file:
         json.dump(graph, json_file)
+        
+        
+def find_shortest_path_length(G, source, target):    
+            
+    try:
+        length = nx.shortest_path_length(G, source = source, target = target, weight='weight')
+        return length
+        
+    except:
+        return -1
 
 def topological_sort(all_graphs):
         
@@ -574,6 +584,13 @@ if __name__ == '__main__':
             all_graphs = unpackJson()
             community_detection(all_graphs)
             socket.send(("community").encode('ascii'))  
+            
+        elif "shortestpathlength" in message.decode('utf8'):
+            all_graphs = unpackWeightedJson()
+            args = message.decode('utf8').split("_")
+            source, target =  args[1], args[-1]
+            path_length = find_shortest_path_length(all_graphs, int(source), int(target))
+            socket.send(str(path_length).encode('ascii'))
             
         elif "shortestpath" in message.decode('utf8'):
             all_graphs = unpackWeightedJson()

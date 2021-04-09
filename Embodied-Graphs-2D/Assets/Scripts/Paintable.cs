@@ -1705,14 +1705,14 @@ public class Paintable : MonoBehaviour
     // create iconic element from an image
     public GameObject createImageIcon(string FilePath, int track = -1)
     {
-        GameObject temp = Instantiate(ImageIconicElement, new Vector3(0,0,-5f), Quaternion.identity, Objects_parent.transform);
+        GameObject temp = Instantiate(ImageIconicElement, new Vector3(0,0,-40f), Quaternion.identity, Objects_parent.transform);
         temp.tag = "iconic";
 
         if (track != -1)
         {
             temp.name = "iconic_" + track.ToString();
             temp.GetComponent<iconicElementScript>().icon_number = track;
-            temp.GetComponent<iconicElementScript>().icon_name = "iconic_" + track.ToString();
+            temp.GetComponent<iconicElementScript>().icon_name = "person_" + track.ToString();
         }
         else
         {
@@ -2928,7 +2928,7 @@ public class Paintable : MonoBehaviour
                 GameObject tempcyl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
                 tempcyl.tag = "temp_edge_primitive";
                 tempcyl.transform.position = penobjs[i].GetComponent<iconicElementScript>().edge_position + new Vector3(0f, 0f, 20f);
-                //tempcyl.transform.localScale = new Vector3(5f, 5f, 5f);
+                //tempcyl.transform.localScale = new Vector3(10f, 10f, 10f);
                 tempcyl.transform.localScale = new Vector3(20f, 20f, 20f);
                 tempcyl.transform.Rotate(new Vector3(90f, 0f, 0f));
                 tempcyl.transform.parent = penobjs[i].transform;
@@ -3535,6 +3535,10 @@ public class Paintable : MonoBehaviour
         }
 
         click_on_inputfield = false;
+
+        /*if (PenTouchInfo.ReleasedThisFrame)
+            dragged_arg_textbox = null;*/
+
         yield return null;
     }
 
