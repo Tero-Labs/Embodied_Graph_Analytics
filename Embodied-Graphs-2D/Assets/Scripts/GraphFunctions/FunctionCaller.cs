@@ -134,6 +134,11 @@ public class FunctionCaller : MonoBehaviour
             function_name += "_" + selected_final_graphs[1].GetComponent<iconicElementScript>().icon_number.ToString();
             function_name += "_" + selected_final_graphs[2].GetComponent<iconicElementScript>().icon_number.ToString();
         }
+        else if (function_name == "egograph" || function_name == "neighborgraph")
+        {
+            function_name += "_" + selected_final_graphs[1].GetComponent<iconicElementScript>().icon_number.ToString();
+            function_name += "_" + transform.GetChild(0).GetComponent<FunctionMenuScript>().cur_arg_Str[2].ToString();
+        }
 
         if (_helloRequester != null)
         {

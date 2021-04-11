@@ -256,6 +256,18 @@ public class iconicElementScript : MonoBehaviour
         return NewSprite;
     }
 
+    public Sprite LoadSprite(Texture2D SpriteTexture, /*float x, float y, float width, float height,*/ float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
+    {
+
+        // Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
+
+        Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height),//(x, y, width, height), 
+            new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
+        recognized_sprite = NewSprite;
+        SpriteToRender();
+        return NewSprite;
+    }
+
     public Texture2D LoadTexture(string FilePath)
     {
 

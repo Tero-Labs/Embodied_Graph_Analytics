@@ -60,7 +60,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
     // Update is called once per frame
     void Update()
-    {
+    {        
+
         if (videoplayer.frameCount > 0)
         {
             mainSlider.value = (float)videoplayer.frame / (float)videoplayer.frameCount;
@@ -71,49 +72,50 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             /*if (videoplayer.frame % frequency == 0 || videoplayer.frame == 5)
             {*/
                 prev_frame = videoplayer.frame;
-                Debug.Log("current_frame: " + videoplayer.frame.ToString());
+                //Debug.Log("current_frame: " + videoplayer.frame.ToString());
+
                 if (graph_holder != null)
-                {
-                    /*Destroy(temp_parent);
-                    temp_parent = null;*/                 
+                    {
+                        /*Destroy(temp_parent);
+                        temp_parent = null;*/                 
                     
 
-                    if (frames_annotation.node_type != "static")
-                    {
-                        GameObject nodepar = graph_holder.transform.GetChild(0).gameObject;
-                        Destroy(nodepar);
-                        GameObject tempnodeparent = new GameObject("node_parent_1");
-                        tempnodeparent.tag = "node_parent";
-                        tempnodeparent.transform.parent = graph_holder.transform;
-                        tempnodeparent.transform.SetSiblingIndex(0);
+                        if (frames_annotation.node_type != "static")
+                        {
+                            GameObject nodepar = graph_holder.transform.GetChild(0).gameObject;
+                            Destroy(nodepar);
+                            GameObject tempnodeparent = new GameObject("node_parent_1");
+                            tempnodeparent.tag = "node_parent";
+                            tempnodeparent.transform.parent = graph_holder.transform;
+                            tempnodeparent.transform.SetSiblingIndex(0);
 
-                        GameObject edgepar = graph_holder.transform.GetChild(1).gameObject;
-                        GameObject simplicialpar = graph_holder.transform.GetChild(2).gameObject;
-                        GameObject hyperpar = graph_holder.transform.GetChild(3).gameObject;
+                            GameObject edgepar = graph_holder.transform.GetChild(1).gameObject;
+                            GameObject simplicialpar = graph_holder.transform.GetChild(2).gameObject;
+                            GameObject hyperpar = graph_holder.transform.GetChild(3).gameObject;
 
-                        Destroy(edgepar);
-                        Destroy(simplicialpar);
-                        Destroy(hyperpar);
+                            Destroy(edgepar);
+                            Destroy(simplicialpar);
+                            Destroy(hyperpar);
 
-                        GameObject tempedgeparent = new GameObject("edge_parent_1");
-                        tempedgeparent.tag = "edge_parent";
-                        tempedgeparent.transform.parent = graph_holder.transform;
-                        tempedgeparent.transform.SetSiblingIndex(1);
+                            GameObject tempedgeparent = new GameObject("edge_parent_1");
+                            tempedgeparent.tag = "edge_parent";
+                            tempedgeparent.transform.parent = graph_holder.transform;
+                            tempedgeparent.transform.SetSiblingIndex(1);
 
-                        GameObject tempsimplicialparent = new GameObject("simplicial_parent_1");
-                        tempsimplicialparent.tag = "simplicial_parent";
-                        tempsimplicialparent.transform.parent = graph_holder.transform;
-                        tempsimplicialparent.transform.SetSiblingIndex(2);
+                            GameObject tempsimplicialparent = new GameObject("simplicial_parent_1");
+                            tempsimplicialparent.tag = "simplicial_parent";
+                            tempsimplicialparent.transform.parent = graph_holder.transform;
+                            tempsimplicialparent.transform.SetSiblingIndex(2);
 
-                        GameObject temphyperparent = new GameObject("hyper_parent_1");
-                        temphyperparent.tag = "hyper_parent";
-                        temphyperparent.transform.parent = graph_holder.transform;
-                        temphyperparent.transform.SetSiblingIndex(3);
-                    }                
+                            GameObject temphyperparent = new GameObject("hyper_parent_1");
+                            temphyperparent.tag = "hyper_parent";
+                            temphyperparent.transform.parent = graph_holder.transform;
+                            temphyperparent.transform.SetSiblingIndex(3);
+                        }                
                                       
 
 
-                }
+                    }
                 else
                 {
                     graph_holder = Instantiate(graph_prefab);
@@ -368,8 +370,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             */
         }
     }
-       
 
+    
     public void OnSliderValueChanged(PointerEventData eventData)
     {
         Vector2 localpoint;
@@ -394,5 +396,30 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     {
         OnSliderValueChanged(eventData);
         //throw new System.NotImplementedException();
+    }
+
+    //  DumpRenderTexture(videoplayer.targetTexture, "Assets/Resources/" + "dump.png");
+    //  https://gist.github.com/AlexanderDzhoganov/d795b897005389071e2a
+    public Texture2D DumpRenderTexture(/*RenderTexture rt, string pngOutPath*/)
+    {
+        RenderTexture rt = videoplayer.targetTexture;
+
+        var oldRT = RenderTexture.active;
+
+        var tex = new Texture2D(rt.width, rt.height);
+        //var tex_small = new Texture2D((int)width, (int)height);
+
+        RenderTexture.active = rt;
+        tex.ReadPixels(new Rect(0, 0, rt.width, rt.height), 0, 0);
+        tex.Apply();
+
+        /*tex_small.SetPixels(0, 0, (int)width, (int)height, tex.GetPixels());
+        tex_small.Apply();*/
+
+        //File.WriteAllBytes(pngOutPath, tex.EncodeToPNG());
+        RenderTexture.active = oldRT;
+
+        //Destroy(tex);
+        return tex;
     }
 }

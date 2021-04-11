@@ -45,7 +45,7 @@ public class FunctionMenuScript : MonoBehaviour
 
     // functions_list
     private Dictionary<int,string> addition_dict;
-    //private Dictionary<int, int> addition_order_dict;
+    private Dictionary<int, string> ego_graph_dict;
 
     private Dictionary<int, string> topologicalsort_dict;
     private Dictionary<int, string> shortestpath_dict;
@@ -107,11 +107,12 @@ public class FunctionMenuScript : MonoBehaviour
             {1, "graph"},
         };
 
-        /*addition_order_dict = new Dictionary<int, int>()
+        ego_graph_dict = new Dictionary<int, string>()
         {
-            {0, 0},
-            {1, 1},
-        };*/
+            {0, "graph"},
+            {1, "iconic"},
+            {2, "int"},
+        };
 
         topologicalsort_dict = new Dictionary<int, string>()
         {
@@ -436,6 +437,15 @@ public class FunctionMenuScript : MonoBehaviour
                                 //argument_objects[cur_order_dict[index]] = temp.gameObject;
                                 argument_objects[index] = temp.gameObject;
                             }
+
+                            else if (Paintable.dragged_arg_textbox != null &&
+                                Paintable.dragged_arg_textbox.GetComponent<topoLabelScript>() != null)
+                            {
+                                temp = Paintable.dragged_arg_textbox.transform;
+                                cur_arg_Str[index] = temp.GetComponent<topoLabelScript>().tmptextlabel.text;
+                                
+                                argument_objects[index] = temp.gameObject;
+                            }
                         }
 
 
@@ -757,6 +767,15 @@ public class FunctionMenuScript : MonoBehaviour
                 output_type = "graph";
             }
 
+            else if (input.text.ToLower().Equals("egograph") || input.text.ToLower().Equals("neighborgraph"))
+            {
+                match_found = true;
+                cur_dict = ego_graph_dict;
+
+                output_type = "graph";
+            }
+
+
             else if (input.text.ToLower().Equals("topologicalsort") || input.text.ToLower().Equals("degreesort"))
             {
                 match_found = true;
@@ -783,8 +802,7 @@ public class FunctionMenuScript : MonoBehaviour
 
                 output_type = "scalar";
             }
-
-
+            
             else if (input.text.ToLower().Equals("community"))
             {
                 match_found = true;
@@ -793,8 +811,7 @@ public class FunctionMenuScript : MonoBehaviour
 
                 output_type = "graph";
             }
-
-
+            
             else if (input.text.ToLower().Equals("dummy"))
             {
                 match_found = true;
@@ -988,7 +1005,7 @@ public class FunctionMenuScript : MonoBehaviour
             foreach (GameObject child_graph in argument_objects)
             {
                 if (child_graph.tag == "graph")
-                {                    
+                {
                     // if it is under a function, hide that as well 
                     if (child_graph.transform.parent.name.Contains("function_line_"))
                     {
@@ -1014,6 +1031,9 @@ public class FunctionMenuScript : MonoBehaviour
                     // not sure about the following line
                     child_graph.SetActive(false);
                 }
+
+                else if (child_graph.tag == "Untagged")
+                    child_graph.SetActive(false);
             }
         }
 
@@ -1045,11 +1065,11 @@ public class FunctionMenuScript : MonoBehaviour
             Paintable.dragged_arg_textbox = null;
 
         // need modification when it is scalar output based on whether the slider was called or not
-        if (output_type == "scalar")
+        /*if (output_type == "scalar")
         {
             message_box.GetComponent<TextMeshProUGUI>().text = "<color=\"black\">" + text_label.GetComponent<TextMeshProUGUI>().text;
             text_label.GetComponent<TextMeshProUGUI>().text = output;
-        }    
+        }    */
 
     }
 

@@ -259,6 +259,20 @@ def graph_addition(all_graphs):
     #plt.subplot(121)
     #nx.draw(G_new, with_labels=True, font_weight='bold')
     return G
+
+def ego_graph(all_graphs, node, rad):    
+        
+    G = nx.Graph()
+    G.add_nodes_from(all_graphs[0]["node"])
+    G.add_edges_from(all_graphs[0]["edges"])
+    
+    try:
+        H = nx.ego_graph(G, n=node, radius=rad)
+        return H
+        
+    except:
+        return G    
+    
     
 def Graph_getLayout(all_graphs, layout_type):
     
@@ -584,6 +598,15 @@ if __name__ == '__main__':
             all_graphs = unpackJson()
             community_detection(all_graphs)
             socket.send(("community").encode('ascii'))  
+            
+        elif ("egograph" in message.decode('utf8') or "neighborgraph" in message.decode('utf8')):
+            args = message.decode('utf8').split("_")
+            node, rad =  args[1], args[-1]
+            all_graphs = unpackJson() 
+            G = ego_graph(all_graphs, int(node), int(rad))
+            #print("ego_evaluation_done")
+            packJson(G)
+            socket.send(("egograph").encode('ascii'))  
             
         elif "shortestpathlength" in message.decode('utf8'):
             all_graphs = unpackWeightedJson()

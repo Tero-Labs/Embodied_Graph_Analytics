@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Video;
 
 public class VideoPlayerChildrenAccess : MonoBehaviour
 {
@@ -153,5 +154,5 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         }
             
     }
-
+        
 }

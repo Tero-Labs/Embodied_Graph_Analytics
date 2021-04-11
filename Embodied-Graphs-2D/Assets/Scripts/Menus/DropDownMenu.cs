@@ -12,6 +12,9 @@ public class DropDownMenu : MonoBehaviour
     public bool nodes_visibility;
     public static bool isPointerOverDropDown = false;
 
+    //  prefabs
+    public GameObject ImageIconicElement, Objects_parent;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -167,11 +170,12 @@ public class DropDownMenu : MonoBehaviour
     public void ShowVideoPlayer(Toggle toggle)
     {
         GameObject[] vps = GameObject.FindGameObjectsWithTag("video_player");
+        int idx = 0;
 
         foreach (GameObject cur_vp in vps)
         {
             cur_vp.transform.parent.GetChild(1).gameObject.SetActive(toggle.isOn);
-            cur_vp.GetComponent<MeshRenderer>().enabled = toggle.isOn;
+            cur_vp.GetComponent<MeshRenderer>().enabled = toggle.isOn;            
 
             /*GameObject slider = cur_vp.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider;
 
@@ -179,6 +183,17 @@ public class DropDownMenu : MonoBehaviour
             {
                 slider.GetComponent<VideoController>().graph_holder.SetActive(toggle.isOn);
             }*/
+
+            idx++;
+
+            /*Texture2D tex = cur_vp.transform.parent.GetComponent<VideoPlayerChildrenAccess>().slider.
+                GetComponent<VideoController>().DumpRenderTexture();
+
+            GameObject temp = Instantiate(ImageIconicElement, new Vector3(0, 0, -40f), Quaternion.identity, Objects_parent.transform);
+            temp.tag = "iconic";
+
+            temp.GetComponent<iconicElementScript>().image_icon = true;
+            temp.GetComponent<iconicElementScript>().LoadSprite(tex);*/
         }
     }
 
