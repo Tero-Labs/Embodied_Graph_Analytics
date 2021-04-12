@@ -88,7 +88,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.red;
         }
 
-        else if (this.name == "StaticPen")
+        else if (this.name == "Annotation")
         {
             // allow drawing over existing pen/set etc. objects without interfering
             disableAllPenObjectColliders();
@@ -281,7 +281,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 		transform.localScale = new Vector3(1f, 1f, 1f);
 
         // when a new button is selected, a templine might still exist. We need to destroy that as well.
-        if (this.name == "IconicPen" || this.name == "StaticPen")
+        if (this.name == "IconicPen" || this.name == "Annotation")
         {
             if (paint_canvas.GetComponent<Paintable>().templine != null)
             {
