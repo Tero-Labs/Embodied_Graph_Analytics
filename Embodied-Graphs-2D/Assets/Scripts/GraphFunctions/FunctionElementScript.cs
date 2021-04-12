@@ -1992,7 +1992,7 @@ public class FunctionElementScript : MonoBehaviour
     {
         //Debug.Log("vector_"+p.ToString()+"_own_"+this.transform.position.ToString());
         int j = points.Count - 1;
-        int interval = Mathf.Max(1, (int)Math.Floor((float)(points.Count / 40)));
+        int interval = 1; //Mathf.Max(1, (int)Math.Floor((float)(points.Count / 40)));
 
         bool inside = false;
         for (int i = 0; i < points.Count; i = i + interval)
