@@ -12,7 +12,9 @@ public class AllButtonsBehaviors : MonoBehaviour
 	public bool selected = false;
     public float width, height;
 
-    public static bool isPointerOverStaticPen = false;
+    public Sprite record;
+
+    /*public static bool isPointerOverStaticPen = false;
     public static bool isPointerOverIconicPen = false;
     public static bool isPointerOverGraphPen = false;
 	public static bool isPointerOverSimplicialPen = false;
@@ -24,7 +26,9 @@ public class AllButtonsBehaviors : MonoBehaviour
 	public static bool isPointerOverFuse = false;
 	public static bool isPointerOverFunction = false;
 	public static bool isPointerOverAnalysis = false;
-	public static bool isPointerOverLoad = false;
+	public static bool isPointerOverLoad = false;*/
+
+
 
 	GameObject[] buttons;
     GameObject paint_canvas;
@@ -248,6 +252,11 @@ public class AllButtonsBehaviors : MonoBehaviour
             ColorPickerClickCheck.previewpointer = false;*/
 
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
+        }
+
+        else if (this.name == "MacroRecord")
+        {
+            transform.GetComponent<Image>().sprite = record;
         }
 
 

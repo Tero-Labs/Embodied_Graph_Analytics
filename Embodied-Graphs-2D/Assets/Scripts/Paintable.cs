@@ -3360,7 +3360,7 @@ public class Paintable : MonoBehaviour
                 {
                     Camera.main.transform.position += Vector3.down * speed /** Time.deltaTime*/;
                 }
-                if (Input.GetKeyUp(KeyCode.Plus) || Input.GetKeyUp(KeyCode.KeypadPlus))
+                if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
                 {
                     float difference = 100;
                     Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);

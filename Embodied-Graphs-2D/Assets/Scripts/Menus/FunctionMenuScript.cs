@@ -235,8 +235,8 @@ public class FunctionMenuScript : MonoBehaviour
                         {
                             cur_arg_Str[index] = str_arg;
                             string arg_Str = get_arguments_string();
-                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.Substring(0, 1).ToUpper() +
-                                                    mainInputField.text.Substring(1).ToLower() + arg_Str;
+                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text/*.Substring(0, 1).ToUpper() +
+                                                    mainInputField.text.Substring(1).ToLower()*/ + arg_Str;
                             cur_iter++;
                             argument_objects[index] = text_label;
                         }
@@ -453,8 +453,8 @@ public class FunctionMenuScript : MonoBehaviour
                         {
                             // argument string update for display
                             string arg_Str = get_arguments_string();
-                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text.Substring(0, 1).ToUpper() +
-                                                    mainInputField.text.Substring(1).ToLower() + arg_Str;
+                            text_label.GetComponent<TextMeshProUGUI>().text = mainInputField.text/*.Substring(0, 1).ToUpper() +
+                                                    mainInputField.text.Substring(1).ToLower()*/ + arg_Str;
                             cur_iter++;
                         }
                         else
@@ -765,6 +765,7 @@ public class FunctionMenuScript : MonoBehaviour
                 //cur_order_dict = addition_order_dict;
                 
                 output_type = "graph";
+                input.text = "Addition";
             }
 
             else if (input.text.ToLower().Equals("egograph") || input.text.ToLower().Equals("neighborgraph"))
@@ -773,6 +774,15 @@ public class FunctionMenuScript : MonoBehaviour
                 cur_dict = ego_graph_dict;
 
                 output_type = "graph";
+
+                if (input.text.ToLower().Equals("egograph"))
+                {
+                    input.text = "EgoGraph";
+                }
+                else 
+                {
+                    input.text = "NeighborGraph";
+                }
             }
 
 
@@ -783,6 +793,15 @@ public class FunctionMenuScript : MonoBehaviour
                 //cur_order_dict = dummy_order_dict;
 
                 output_type = "graph";
+
+                if (input.text.ToLower().Equals("topologicalsort"))
+                {
+                    input.text = "TopologicalSort";
+                }
+                else
+                {
+                    input.text = "DegreeSort";
+                }
             }
 
             else if (input.text.ToLower().Equals("shortestpath"))
@@ -792,6 +811,7 @@ public class FunctionMenuScript : MonoBehaviour
                 //cur_order_dict = dummy_order_dict;
 
                 output_type = "graph";
+                input.text = "ShortestPath";
             }
 
             else if (input.text.ToLower().Equals("shortestpathlength"))
@@ -801,6 +821,7 @@ public class FunctionMenuScript : MonoBehaviour
                 //cur_order_dict = dummy_order_dict;
 
                 output_type = "scalar";
+                input.text = "ShortestPathLength";
             }
             
             else if (input.text.ToLower().Equals("community"))
@@ -810,6 +831,7 @@ public class FunctionMenuScript : MonoBehaviour
                 //cur_order_dict = dummy_order_dict;
 
                 output_type = "graph";
+                input.text = "Community";
             }
             
             else if (input.text.ToLower().Equals("dummy"))
@@ -839,8 +861,8 @@ public class FunctionMenuScript : MonoBehaviour
 
                 string argument_str = get_arguments_string();
 
-                text_label.GetComponent<TextMeshProUGUI>().text = input.text.Substring(0,1).ToUpper() +
-                                                    input.text.Substring(1).ToLower() + argument_str;
+                text_label.GetComponent<TextMeshProUGUI>().text = input.text/*.Substring(0,1).ToUpper() +
+                                                    input.text.Substring(1).ToLower()*/ + argument_str;
 
                 //paintable.GetComponent<Paintable>().no_func_menu_open = false;
             }

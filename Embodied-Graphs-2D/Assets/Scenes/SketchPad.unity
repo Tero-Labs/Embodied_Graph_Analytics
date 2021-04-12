@@ -825,6 +825,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &115281506
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1053,6 +1054,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!222 &123946924
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1394,6 +1396,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &390004303
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2937,6 +2940,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &730513243
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3113,6 +3117,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &791365219
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3414,7 +3419,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 302240324}
   m_HandleRect: {fileID: 302240323}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -3503,6 +3508,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &820316996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4256,6 +4262,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!1 &1001635989
 GameObject:
   m_ObjectHideFlags: 0
@@ -4498,6 +4505,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &1061117261
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4959,7 +4967,7 @@ GameObject:
   - component: {fileID: 1208214223}
   - component: {fileID: 1208214222}
   m_Layer: 5
-  m_Name: Record
+  m_Name: MacroRecord
   m_TagString: canvas_mode_button
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4999,6 +5007,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 21300000, guid: 2f5f8ed349cc9aa46b0dd998dc534603, type: 3}
 --- !u!114 &1208214223
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5732,6 +5741,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &1276264335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5877,6 +5887,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &1287915448
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6052,6 +6063,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &1365284142
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6937,6 +6949,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &1875705484
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23740,6 +23753,7 @@ MonoBehaviour:
   selected: 0
   width: 0
   height: 0
+  record: {fileID: 0}
 --- !u!114 &1975881591
 MonoBehaviour:
   m_ObjectHideFlags: 0

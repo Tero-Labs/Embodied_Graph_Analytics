@@ -408,6 +408,9 @@ public class CreatePrimitives : MonoBehaviour
         var meshFilter = templine.AddComponent<MeshFilter>();
         var meshRenderer = templine.AddComponent<MeshRenderer>();
 
+        lineRenderer.widthMultiplier = 3f;
+        templine.GetComponent<TrailRenderer>().widthMultiplier = 3f;
+
         Mesh mesh = new Mesh();
         lineRenderer.BakeMesh(mesh, true);
 

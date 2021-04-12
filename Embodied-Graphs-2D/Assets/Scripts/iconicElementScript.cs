@@ -502,13 +502,17 @@ public class iconicElementScript : MonoBehaviour
         {            
             if (child.tag == "edge")
             {
-                if (child.GetComponent<EdgeElementScript>().free_hand)
+                if (child.GetComponent<EdgeElementScript>().free_hand
+                    && (child.GetComponent<EdgeElementScript>().edge_start == transform.gameObject ||
+                    child.GetComponent<EdgeElementScript>().edge_end == transform.gameObject))
                 {
                     Destroy(child.GetComponent<MeshRenderer>());
                     Destroy(child.GetComponent<MeshFilter>());
                     var lineRenderer = child.GetComponent<LineRenderer>();
                     lineRenderer.enabled = true;
                     lineRenderer.positionCount = 2;
+                    lineRenderer.widthMultiplier = 1f;
+
                     child.GetComponent<EdgeElementScript>().free_hand = false;
                     child.GetComponent<EdgeElementScript>().edge_weight = 1;
                     Prev_graph_parent.GetComponent<GraphElementScript>().edges_init();
