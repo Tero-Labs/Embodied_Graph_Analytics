@@ -53,6 +53,11 @@ public class GraphElementScript : MonoBehaviour
 
     public Graph graph;
 
+    // for layout
+    public GraphCordinate graphCordinate;
+    public GraphCordinate manual_graphCordinate;
+    float rad_x, rad_y;
+
     public Dictionary<string, Transform> nodeMaps;
 
     public List<Vector3> points = new List<Vector3>();
@@ -64,7 +69,6 @@ public class GraphElementScript : MonoBehaviour
     public GameObject graph_Details;
     public GameObject topo_label;
 
-    public GraphCordinate graphCordinate;
 
     //MENU
     InputField mainInputField;
@@ -443,29 +447,9 @@ public class GraphElementScript : MonoBehaviour
     }
 
     void ChangeLayout(TMP_Dropdown dropdown)
-    {
-        
+    {        
         string target_layout = dropdown.captionText.text;
-
-        if (target_layout == "manual")
-        {
-            layout_layer = target_layout;
-            return;
-        }
-
-        //Graph_as_Str();
-        Graph_init();
-        GetGraphJson();
-
-        bool flag = false;
-
-        flag = transform.GetComponent<HelloClient>().Call_Server("layout_" + target_layout, "layout_" + target_layout);
-
-        if (flag)
-        {
-            layout_layer = target_layout;
-            conversion_done = false;
-        }
+        ChangeLayout(target_layout);
     }
 
     public void ChangeLayout(string target_layout)
@@ -474,7 +458,105 @@ public class GraphElementScript : MonoBehaviour
         if (target_layout == "manual")
         {
             layout_layer = target_layout;
+
+            // show the last saved arrangements
+            rad_x = 200;
+            rad_y = 200;
+
+            foreach (single_node_cord cur_cord in manual_graphCordinate.node_cord)
+            {
+                if (nodeMaps.ContainsKey(cur_cord.node_id.ToString()))
+                {
+                    Transform child = nodeMaps[cur_cord.node_id.ToString()];
+
+                    float x = 0.5f;
+                    float.TryParse(cur_cord.x, out x);
+                    float y = 0.5f;
+                    float.TryParse(cur_cord.y, out y);
+
+                    Vector3 position = new Vector3(center_position.x + (x * rad_x),
+                        center_position.y + (y * rad_y), center_position.z);
+
+                    Vector3 new_pos = child.InverseTransformDirection(position) -
+                                child.InverseTransformDirection(child.GetComponent<iconicElementScript>().bounds_center);
+
+                    child.position = new Vector3(new_pos.x, new_pos.y, -40f);
+                    child.GetComponent<iconicElementScript>().edge_position = position;
+
+                    //Debug.Log("now modify positions: " + new_pos.ToString());                
+                }
+            }
+
+            Transform[] allChildrenedge = transform.GetChild(1).GetComponentsInChildren<Transform>();
+            foreach (Transform child in allChildrenedge)
+            {
+                if (child.tag == "edge")
+                {
+                    if (splined_edge_flag)
+                        child.GetComponent<EdgeElementScript>().updateSplineEndPoint();
+                    else
+                        child.GetComponent<EdgeElementScript>().updateEndPoint();
+                }
+
+            }
+
+            Transform[] simplicials = transform.GetChild(2).GetComponentsInChildren<Transform>();
+            foreach (Transform each_simplicial in simplicials)
+            {
+                if (each_simplicial.tag != "simplicial")
+                    continue;
+
+                if (each_simplicial.GetComponent<SimplicialElementScript>() != null)
+                {
+                    each_simplicial.GetComponent<SimplicialElementScript>().UpdateVertices();
+                    //each_simplicial.GetComponent<SimplicialElementScript>().updatePolygon();
+                }
+                else
+                {
+                    each_simplicial.GetComponent<EdgeElementScript>().updateEndPoint();
+                }
+            }
+
+            Transform[] hyper_edges = transform.GetChild(3).GetComponentsInChildren<Transform>();
+            foreach (Transform child in hyper_edges)
+            {
+                if (child.tag == "hyper")
+                {
+                    //child.transform.position += diff;
+                    child.GetComponent<HyperElementScript>().UpdateChildren();
+                }
+
+            }
+
             return;
+        }
+
+        // save the last manual arrangement before changing it 
+        if (layout_layer == "manual")
+        {
+            rad_x = 200;
+            rad_y = 200;
+
+            manual_graphCordinate = new GraphCordinate();
+            manual_graphCordinate.node_cord = new List<single_node_cord>();
+
+            Transform node_parent = transform.GetChild(0);
+            for (int i = 0; i < node_parent.childCount; i++)
+            {
+                Transform child = node_parent.GetChild(i);
+                if (child != null && child.tag == "iconic")
+                {
+                    single_node_cord single_Node = new single_node_cord();
+                    single_Node.node_id = child.GetComponent<iconicElementScript>().icon_number;
+                    Vector3 current_position = child.GetComponent<iconicElementScript>().edge_position;
+
+                    // reverting the formula to get normalize values within [-1,1]
+                    single_Node.x = ((current_position.x - center_position.x) / (float)rad_x).ToString();
+                    single_Node.y = ((current_position.y - center_position.y) / (float)rad_y).ToString();
+
+                    manual_graphCordinate.node_cord.Add(single_Node);                    
+                }
+            }
         }
 
         //Graph_as_Str();
@@ -497,9 +579,7 @@ public class GraphElementScript : MonoBehaviour
         Debug.Log("triggered for " + command);
         graphCordinate = JsonUtility.FromJson<GraphCordinate>(File.ReadAllText("Assets/Resources/" + "output.json"));
         Debug.Log(JsonUtility.ToJson(graphCordinate));
-
-        float rad_x, rad_y;
-
+        
         /*if (Vector3.Distance(center_position, edge_position) == 0)
         {
             rad_x = 200;
