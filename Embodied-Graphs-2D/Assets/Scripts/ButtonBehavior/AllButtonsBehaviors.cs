@@ -103,7 +103,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.red;
         }
 
-        else if (this.name == "GraphPen")
+        else if (this.name == "EdgeBrush")
         {
             enableAllPenObjectColliders();
             disablesimplicialColliders();
@@ -133,7 +133,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker_script.color = new Color(0f, 0f, 1f, 0.3f); 
         }
 
-        else if (this.name == "HyperPen")
+        else if (this.name == "HyperGraphPen")
         {
             enableAllPenObjectColliders();
             //enablesimplicialColliders();
@@ -189,7 +189,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
-        else if (this.name == "Fused")
+        else if (this.name == "FunctionConversion")
         {
             enableAllPenObjectColliders();
             disablesimplicialColliders();
@@ -202,7 +202,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().color_picker.SetActive(false);
         }
 
-        else if (this.name == "FunctionPen")
+        else if (this.name == "FunctionBrush")
         {
             enableAllPenObjectColliders();
             //enablesimplicialColliders();
@@ -293,7 +293,7 @@ public class AllButtonsBehaviors : MonoBehaviour
         }
 
         // incase any temp cylinder is left, we will clear them up 
-        else if (this.name == "GraphPen")
+        else if (this.name == "EdgeBrush")
         {
             paint_canvas.GetComponent<Paintable>().DeleteEmptyEdgeObjects();
 
@@ -320,7 +320,7 @@ public class AllButtonsBehaviors : MonoBehaviour
             paint_canvas.GetComponent<Paintable>().Simplicialnodes.Clear();
             paint_canvas.GetComponent<Paintable>().DeleteEmptyEdgeObjects();
         }
-        else if (this.name == "HyperPen")
+        else if (this.name == "HyperGraphPen")
         {
             paint_canvas.GetComponent<Paintable>().hyperVertices.Clear();
             paint_canvas.GetComponent<Paintable>().hypernodes.Clear();
@@ -334,7 +334,7 @@ public class AllButtonsBehaviors : MonoBehaviour
                 paint_canvas.GetComponent<Paintable>().setline = null;
             }
         }
-        else if (this.name == "FunctionPen")
+        else if (this.name == "FunctionBrush")
         {           
             if (paint_canvas.GetComponent<Paintable>().functionline != null)
             {
