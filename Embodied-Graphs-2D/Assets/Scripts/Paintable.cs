@@ -148,6 +148,7 @@ public class Paintable : MonoBehaviour
     public List<GameObject> new_drawn_icons = new List<GameObject>();
     public List<GameObject> new_drawn_edges = new List<GameObject>();
     public List<GameObject> new_drawn_function_lines = new List<GameObject>();
+    public static List<GameObject> video_players = new List<GameObject>();
 
     // extra check for inputfields
     public static bool click_on_inputfield;
@@ -210,7 +211,7 @@ public class Paintable : MonoBehaviour
     void Update()
     {
         #region prevent unwanted touch on canvas
-        if (EventSystem.current.IsPointerOverGameObject(-1))
+        if (EventSystem.current.IsPointerOverGameObject(0))
         {
             Debug.Log("detected_touch_over_UI");
             return;
@@ -497,9 +498,12 @@ public class Paintable : MonoBehaviour
 
                 text_message_worldspace.SetActive(true);
                 text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+
+                VideoMenuResetOnZoom();
                 //}
 
             }
+            
             /*else if (Input.touchCount == 2 && !panZoomLocked) // && pan_button.GetComponent<PanButtonBehavior>().selected)
             {
                 //Debug.Log("double_finger_tap");
@@ -1543,6 +1547,7 @@ public class Paintable : MonoBehaviour
         Destroy(fused_obj);
     }
 
+    // drag interaction
     public void DragorMenuCreateOnClick()
     {
         if (PenTouchInfo.PressedThisFrame)
@@ -1700,6 +1705,18 @@ public class Paintable : MonoBehaviour
             pen_dragged_obj = null;
         }
                 
+    }
+
+    public void VideoMenuResetOnZoom()
+    {
+        foreach(GameObject video_parent in video_players)
+        {
+            Debug.Log("changing with zoom");
+            if (video_parent != null)
+                video_parent.GetComponent<VideoPlayerChildrenAccess>().UIlayout();
+            else
+                video_players.Remove(video_parent);
+        }
     }
 
     // create iconic element from an image
@@ -3029,209 +3046,7 @@ public class Paintable : MonoBehaviour
         }
                 
     }
-
-    void handleKeyInteractions()
-    {
-        if (click_on_inputfield) return;
-        Debug.Log("click_on_inputfield: " + click_on_inputfield.ToString());
-
-        //we don't want any redundant operation when a function name is being typed
-        if (pan_button.GetComponent<AllButtonsBehaviors>().selected)
-        {
-            if (Input.GetKeyUp(KeyCode.RightArrow))
-            {
-                Camera.main.transform.position += Vector3.right * speed /** Time.deltaTime*/;
-            }
-            if (Input.GetKeyUp(KeyCode.LeftArrow))
-            {
-                Camera.main.transform.position += Vector3.left * speed /** Time.deltaTime*/;
-            }
-            if (Input.GetKeyUp(KeyCode.UpArrow))
-            {
-                Camera.main.transform.position += Vector3.up * speed /** Time.deltaTime*/;
-            }
-            if (Input.GetKeyUp(KeyCode.DownArrow))
-            {
-                Camera.main.transform.position += Vector3.down * speed /** Time.deltaTime*/;
-            }
-            if (Input.GetKeyUp(KeyCode.Plus) || Input.GetKeyUp(KeyCode.KeypadPlus))
-            {
-                float difference = 100;
-                Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize - zoom_multiplier * difference, zoom_min, zoom_max);
-                                
-                int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
-
-                text_message_worldspace.SetActive(true);
-                text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
-            }
-            if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
-            {
-                float difference = 100;
-                Camera.main.orthographicSize = Mathf.Clamp(Camera.main.orthographicSize + zoom_multiplier * difference, zoom_min, zoom_max);
-
-                int zoom = (int)((1f - ((main_camera.orthographicSize - zoom_min) / zoom_max)) * 100f);
-
-                text_message_worldspace.SetActive(true);
-                text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
-            }
-        }
-
-        if (function_brush_button.GetComponent<AllButtonsBehaviors>().selected)
-        {
-            return;
-        }
-        if (AnalysisPen_button.GetComponent<AllButtonsBehaviors>().selected)
-        {
-            return;
-        }
-
-        if (Input.GetKeyUp(KeyCode.L))
-        {
-            panZoomLocked = !panZoomLocked;
-            Debug.Log("panning_value_change"+ panZoomLocked.ToString());
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("panning: " + panZoomLocked.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.F))
-        {
-            free_hand_edge = !free_hand_edge;
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("free hand drawing: " + free_hand_edge.ToString());
-            Debug.Log("NOT WORKING?");
-        }
-
-
-        if (Input.GetKeyUp(KeyCode.Escape))
-        {
-            //cleanUpRadialCanvas();
-        }
-
-        if (Input.GetKeyUp(KeyCode.F10))
-        {
-            allowOpacity = !allowOpacity;
-            Debug.Log("allow opacity: " + allowOpacity.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.Delete))
-        {
-            // delete game objects from history, starting with the latest
-            if (history.Count > 0)
-            {
-                Destroy(history[history.Count - 1]);
-                history.RemoveAt(history.Count - 1);
-            }
-        }
-
-        // test thumbnail
-        if (Input.GetKeyUp(KeyCode.T))
-        {
-            /*
-			if (gameObject.transform.childCount > 0)
-			{
-				RuntimePreviewGenerator.PreviewDirection = new Vector3(0, 0, 1);
-				RuntimePreviewGenerator.BackgroundColor = new Color(0.3f, 0.3f, 0.3f, 0f);
-				RuntimePreviewGenerator.OrthographicMode = true;
-
-				Sprite action = Sprite.Create(RuntimePreviewGenerator.GenerateModelPreview(gameObject.transform.GetChild(0), 128, 128)
-					, new Rect(0, 0, 128, 128), new Vector2(0.5f, 0.5f), 20f);
-				GameObject.Find("Action").GetComponent<Image>().sprite = action;
-			}
-			*/
-        }
-
-        // test adding to action history from one template
-        if (Input.GetKeyUp(KeyCode.M))
-        {
-            // This test works
-            /*
-			GameObject actionhist = GameObject.Find("ActionHistory");
-			GameObject listtocopy = actionhist.transform.GetChild(0).GetChild(0).GetChild(1).gameObject;
-			GameObject newitem = Instantiate(listtocopy, listtocopy.transform.parent);
-			*/
-
-            ActionHistoryEnabled = !ActionHistoryEnabled;
-
-            history_view.gameObject.SetActive(ActionHistoryEnabled);
-
-            if (ActionHistoryEnabled)
-            {
-                StartCoroutine(HistoryShow());
-            }
-        }
-
-        //Graph
-        if (Input.GetKeyUp(KeyCode.G))
-        {            
-            graphlocked = !graphlocked;
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("graph lock: " + graphlocked.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.D))
-        {
-            directed_edge = !directed_edge;
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("directed edge: " + directed_edge.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.Alpha1) || Input.GetKeyUp(KeyCode.Keypad1))
-        {
-            vertex_add = !vertex_add;
-            if (vertex_add)
-            {
-                vertex_del = false;
-                edge_add = false;
-                edge_del = false;
-            }
-
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("vertex addition: " + vertex_add.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.Alpha2) || Input.GetKeyUp(KeyCode.Keypad2))
-        {
-            vertex_del = !vertex_del;
-            if (vertex_del)
-            {
-                vertex_add = false;
-                edge_add = false;
-                edge_del = false;
-            }
-
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("vertex deletion: " + vertex_del.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.Alpha3) || Input.GetKeyUp(KeyCode.Keypad3))
-        {
-            edge_add = !edge_add;
-            if (edge_add)
-            {
-                vertex_add = false;
-                vertex_del = false;
-                edge_del = false;
-            }
-
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("edge addition: " + edge_add.ToString());
-        }
-
-        if (Input.GetKeyUp(KeyCode.Alpha4) || Input.GetKeyUp(KeyCode.Keypad4))
-        {
-            edge_del = !edge_del;
-            if (edge_del)
-            {
-                vertex_add = false;
-                vertex_del = false;
-                edge_add = false;
-            }
-
-            GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
-            temp_stat.GetComponent<Status_label_text>().ChangeLabel("edge deletion: " + edge_del.ToString());
-        }
-    }
-
+       
     void deleteTempLineIfDoubleFinger()
     {
         // Should only be called when necessary -- to get rid of incomplete lines when a double finger is detected and we are not in the pan mode.
@@ -3347,18 +3162,22 @@ public class Paintable : MonoBehaviour
                 if (Input.GetKeyUp(KeyCode.RightArrow))
                 {
                     Camera.main.transform.position += Vector3.right * speed /** Time.deltaTime*/;
+                    VideoMenuResetOnZoom();
                 }
                 if (Input.GetKeyUp(KeyCode.LeftArrow))
                 {
                     Camera.main.transform.position += Vector3.left * speed /** Time.deltaTime*/;
+                    VideoMenuResetOnZoom();
                 }
                 if (Input.GetKeyUp(KeyCode.UpArrow))
                 {
                     Camera.main.transform.position += Vector3.up * speed /** Time.deltaTime*/;
+                    VideoMenuResetOnZoom();
                 }
                 if (Input.GetKeyUp(KeyCode.DownArrow))
                 {
                     Camera.main.transform.position += Vector3.down * speed /** Time.deltaTime*/;
+                    VideoMenuResetOnZoom();
                 }
                 if (Input.GetKeyUp(KeyCode.Equals) || Input.GetKeyUp(KeyCode.KeypadPlus))
                 {
@@ -3369,6 +3188,8 @@ public class Paintable : MonoBehaviour
 
                     text_message_worldspace.SetActive(true);
                     text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+
+                    VideoMenuResetOnZoom();
                 }
                 if (Input.GetKeyUp(KeyCode.Minus) || Input.GetKeyUp(KeyCode.KeypadMinus))
                 {
@@ -3379,6 +3200,8 @@ public class Paintable : MonoBehaviour
 
                     text_message_worldspace.SetActive(true);
                     text_message_worldspace.GetComponent<TextMeshProUGUI>().text = zoom.ToString("F0") + "%";
+
+                    VideoMenuResetOnZoom();
                 }
             }
 

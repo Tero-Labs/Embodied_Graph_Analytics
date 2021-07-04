@@ -11,8 +11,9 @@ public class AllButtonsBehaviors : MonoBehaviour
 
 	public bool selected = false;
     public float width, height;
+    public int macro_state_cnt;
 
-    public Sprite record;
+    public Sprite record, play, normal;
 
     /*public static bool isPointerOverStaticPen = false;
     public static bool isPointerOverIconicPen = false;
@@ -32,7 +33,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 
 	GameObject[] buttons;
     GameObject paint_canvas;
-
+        
     public void whenSelected()
 	{
 		selected = true;
@@ -256,7 +257,22 @@ public class AllButtonsBehaviors : MonoBehaviour
 
         else if (this.name == "MacroRecord")
         {
-            transform.GetComponent<Image>().sprite = record;
+            if (macro_state_cnt == 0)
+            {
+                transform.GetComponent<Image>().sprite = record;
+                macro_state_cnt++;
+            }
+            else if (macro_state_cnt == 1)
+            {
+                transform.GetComponent<Image>().sprite = play;
+                macro_state_cnt++;
+            }
+            else
+            {
+                macro_state_cnt = 0;
+                transform.GetComponent<Image>().sprite = normal;
+            }                
+
         }
 
 
@@ -422,7 +438,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 
         width = transform.GetComponent<RectTransform>().sizeDelta.x * transform.GetComponent<RectTransform>().localScale.x;
         height = transform.GetComponent<RectTransform>().sizeDelta.y * transform.GetComponent<RectTransform>().localScale.y;
-
+        macro_state_cnt = 0;
     }
 
     // Update is called once per frame

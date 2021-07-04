@@ -44,9 +44,14 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         height = quad.transform.localScale.y;
 
         time_slice = 5;
+
+        //global_scope
+        //control_menu.GetComponentInParent<Canvas>().worldCamera = Camera.main;
+
         UIlayout();
     }
 
+    
     public void UIlayout()
     {
         //http://www.robotmonkeybrain.com/convert-unity-ui-screen-space-position-to-world-position/
@@ -78,6 +83,37 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 
         settings_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try_2;
     }
+
+    /*
+    public void UIlayoutWorldSpace()
+    {
+        //http://www.robotmonkeybrain.com/convert-unity-ui-screen-space-position-to-world-position/
+        //https://forum.unity.com/threads/world-position-to-local-recttransform-position.445256/
+        //https://forum.unity.com/threads/world-position-to-local-recttransform-position.445256/
+        //https://stackoverflow.com/a/43736203
+
+        Vector3 temp_pos = new Vector3(quad.transform.position.x - (width / 2),
+                                                    quad.transform.position.y - (height / 2) - 45,
+                                                    -5f);
+
+        Debug.Log("temp_pos:" + temp_pos.ToString());
+               
+        //control_menu.GetComponent<RectTransform>().anchoredPosition = temp_pos;
+        control_menu.transform.position = temp_pos;
+
+        Vector3 temp_pos_2 = new Vector3(quad.transform.position.x + (width / 2) + 72,
+                                                   quad.transform.position.y,
+                                                   0f);
+
+        Vector3 screen_temp_pos_2 = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos_2);
+
+        Vector2 rect_Try_2;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(settings_menu.transform.parent.GetComponent<RectTransform>(),
+                    screen_temp_pos_2, null, out rect_Try_2);
+
+        settings_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try_2;
+    }
+    */
 
     void LockInput(InputField input)
     {
@@ -145,8 +181,10 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     public void checkHitAndMove(Vector3 diff)
     {
         transform.position += diff;
-        control_menu.transform.position += diff;
-        settings_menu.transform.position += diff;
+        UIlayout();
+        /*control_menu.transform.position += diff;
+        settings_menu.transform.position += diff;*/
+
         if (slider.GetComponent<VideoController>().graph_holder != null)
         {
             slider.GetComponent<VideoController>().graph_holder.transform.position += diff;
