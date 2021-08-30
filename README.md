@@ -1,4 +1,4 @@
-# Embodied Graph Analytics#
+# Embodied Graph Analytics
 
 Graph and network analytics are mostly performed using a combination of symbolic expressions, code, and graph visualizations. 
 These different representations enable graph-oriented conceptualization, analytics, and presentation of relationships in networks.
