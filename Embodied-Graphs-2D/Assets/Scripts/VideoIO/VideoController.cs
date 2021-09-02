@@ -80,6 +80,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         temp_parent = null;*/                 
                     
 
+                        // when the nodes are moving we destroy all the nodes, edges and redraw them in each frame
                         if (frames_annotation.node_type != "static")
                         {
                             GameObject nodepar = graph_holder.transform.GetChild(0).gameObject;
@@ -157,7 +158,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     num++;
                     temp.tag = "iconic";
-                    temp.name = "iconic_" + /*num*/cur_obj.name;
+                    temp.name = "iconic_" + /*num*/cur_obj.name; // setting the id with labelled value so that we can track over time 
                     temp.GetComponent<iconicElementScript>().icon_number = /*num*/cur_obj.id;
                     temp.GetComponent<iconicElementScript>().video_icon = true;
                     all_icons.Add(temp);
@@ -181,6 +182,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         points.Add(pos_vec);
                     }
 
+                    float bound_box_avg_size = (Vector3.Distance(points[0], points[1]) + Vector3.Distance(points[1], points[2])) / 2;
+                    temp.GetComponent<iconicElementScript>().visual_variable = bound_box_avg_size;
+                    //Debug.Log("size: " + bound_box_avg_size.ToString());
+
 
                     // connect the end and statr position as well
                     /*LineRenderer l = temp.GetComponent<LineRenderer>();
@@ -192,12 +197,14 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     l.positionCount = points.Count;
                     l.SetPositions(points.ToArray());*/
 
+                    // getting the center of the bounding box
                     edge_pos = edge_pos / points.Count;
                     temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
                     temp.GetComponent<iconicElementScript>().bounds_center = edge_pos;
 
                     // to save compute resource, we store all points in graph instead
                     temp.GetComponent<iconicElementScript>().points = points;
+                    // will be used for community detection
                     graph_points.AddRange(points);
 
                     temp.GetComponent<iconicElementScript>().centroid = edge_pos;
@@ -229,6 +236,15 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             {
                 for (int i = 0; i < all_icons.Count; i++)
                 {
+                    // the node can not make edges if it is greater than the max or smaller than the min in visual variables  
+                    if (all_icons[i].GetComponent<iconicElementScript>().visual_variable < 5f || all_icons[i].GetComponent<iconicElementScript>().visual_variable > 19f)
+                    {
+                        //Debug.Log("discarding for edge creation");
+                        continue;
+                    }
+
+                    //Debug.Log("passed for edge creation" + all_icons[i].GetComponent<iconicElementScript>().visual_variable.ToString());
+
                     for (int j = (i + 1); j < all_icons.Count; j++)
                     {
                         if (Vector3.Distance(all_icons[i].GetComponent<iconicElementScript>().edge_position,

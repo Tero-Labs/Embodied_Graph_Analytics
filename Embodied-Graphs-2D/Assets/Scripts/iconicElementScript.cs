@@ -104,6 +104,9 @@ public class iconicElementScript : MonoBehaviour
 
     public Sprite recognized_sprite;
 
+    // visual variable for video
+    public float visual_variable;
+
     public void computeCentroid()
     {
         float totalx = 0, totaly = 0, totalz = 0;
