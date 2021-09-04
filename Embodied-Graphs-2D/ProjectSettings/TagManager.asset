@@ -21,6 +21,7 @@ TagManager:
   - function
   - video_player
   - static
+  - image_player
   layers:
   - Default
   - TransparentFX

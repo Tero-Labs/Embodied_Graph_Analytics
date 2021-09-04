@@ -111,7 +111,7 @@ public class FileLoadDialog : MonoBehaviour
                 }
                 else if(FileBrowser.Result[i].EndsWith(".jpg") || FileBrowser.Result[i].EndsWith(".png"))
                 {
-                    transform.GetComponent<Paintable>().createImageIcon(FileBrowser.Result[i]);
+                    transform.GetComponent<Paintable>().ImageLoaderHAndler(FileBrowser.Result[i]);
                 }
                 else if (FileBrowser.Result[i].EndsWith(".txt") || FileBrowser.Result[i].EndsWith(".csv"))
                 {

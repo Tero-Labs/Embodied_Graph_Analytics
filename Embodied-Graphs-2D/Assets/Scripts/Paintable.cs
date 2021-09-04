@@ -29,6 +29,9 @@ public class Paintable : MonoBehaviour
     public Vector2 moveTouchStart;
     public bool previousTouchEnded;
     public GameObject curtouched_obj = null;
+
+
+    // booleans for keyboard handling
     public bool okayToPan = true;
 	public bool panZoomLocked = false;
     public bool graphlocked;
@@ -39,19 +42,21 @@ public class Paintable : MonoBehaviour
     public bool edge_add = false;
     public bool edge_del = false;
     public bool free_hand_edge = false;
+    public bool image_CV_operation = false;
 
     private Vector2 prev_move_pos;
     public Vector3 touchDelta;
 
     // Prefabs
     public GameObject IconicElement;
-    public GameObject ImageIconicElement;
+    public GameObject ImageIconicElement; // the same as iconic element, but does not have the mesh renderer and line renderer attached to it for resolving an error
     public GameObject EdgeElement;
     public GameObject SimplicialEdgeElement;
     public GameObject hyperEdgeElement;
     public GameObject CombineLineElement;
     public GameObject FunctionLineElement;
     public GameObject GraphElement;
+    public GameObject ImagePlayer;
 
     // Canvas buttons
     public GameObject staticElementButton;
@@ -206,7 +211,6 @@ public class Paintable : MonoBehaviour
 
         vertex_add = true;
 
-        gameObject.GetComponent<ContourandRotatedRectDetection>().FindAngles();
     }
 
     // Update is called once per frame
@@ -1721,7 +1725,24 @@ public class Paintable : MonoBehaviour
         }
     }
 
-    // create iconic element from an image
+    public void ImageLoaderHAndler(string FilePath, int track = -1)
+    {
+        // initialize as canvas module
+        if (image_CV_operation)
+            createImagePlayerIcon(FilePath);
+        // else create an image icon
+        else
+            createImageIcon(FilePath, track);
+    }
+
+    public void createImagePlayerIcon(string FilePath)
+    {
+        GameObject temp = Instantiate(ImagePlayer, new Vector3(0, 0, -2f), Quaternion.identity
+                        /*transform.GetComponent<Paintable>().canvas_radial.transform*/);
+        temp.GetComponent<ImageCVDetectionandController>().LoadNewSprite(FilePath);
+    }
+
+   // create iconic element from an image
     public GameObject createImageIcon(string FilePath, int track = -1)
     {
         GameObject temp = Instantiate(ImageIconicElement, new Vector3(0,0,-40f), Quaternion.identity, Objects_parent.transform);
@@ -3221,13 +3242,12 @@ public class Paintable : MonoBehaviour
                 free_hand_edge = !free_hand_edge;
                 GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
                 temp_stat.GetComponent<Status_label_text>().ChangeLabel("free hand drawing: " + free_hand_edge.ToString());
-                Debug.Log("NOT WORKING?");
             }
 
 
-            if (Input.GetKeyUp(KeyCode.Escape))
+            if (Input.GetKeyUp(KeyCode.C))
             {
-                //cleanUpRadialCanvas();
+                image_CV_operation = !image_CV_operation;
             }
 
             if (Input.GetKeyUp(KeyCode.F10))
