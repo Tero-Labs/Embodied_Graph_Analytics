@@ -205,6 +205,8 @@ public class Paintable : MonoBehaviour
         potential_tapped_graph = null;
 
         vertex_add = true;
+
+        gameObject.GetComponent<ContourandRotatedRectDetection>().FindAngles();
     }
 
     // Update is called once per frame
