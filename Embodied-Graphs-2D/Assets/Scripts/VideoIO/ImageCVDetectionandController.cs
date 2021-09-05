@@ -214,13 +214,12 @@ public class ImageCVDetectionandController : MonoBehaviour
         // testing CV 
         gameObject.AddComponent<ContourandRotatedRectDetection>();
 
-
         SpriteTexture = LoadTexture(FilePath);
         Sprite NewSprite = Sprite.Create(SpriteTexture, new UnityEngine.Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
         recognized_sprite = NewSprite;
         SpriteToRender();
 
-        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindAnglesFromTexture(SpriteTexture);
+        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture);
 
         StartCoroutine(GraphCreation());
 
