@@ -541,7 +541,7 @@ GameObject:
   - component: {fileID: 2040663511566986983}
   m_Layer: 0
   m_Name: Quad
-  m_TagString: video_player
+  m_TagString: image_player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -622,12 +622,19 @@ MonoBehaviour:
   node_radius_val: 0
   graph_type: 
   auto_track_val: 0
-  icon_prefab: {fileID: 0}
-  edge_prefab: {fileID: 0}
-  graph_prefab: {fileID: 0}
+  icon_prefab: {fileID: 6047713414169321321, guid: 75286930b4830af4f8d0baa900a8fd61,
+    type: 3}
+  edge_prefab: {fileID: 6047713414169321321, guid: 089af731c42adfe4093e7ac9a860921d,
+    type: 3}
+  graph_prefab: {fileID: 5773500409374943976, guid: 51852dfbfc00a71498452c965534bc85,
+    type: 3}
   paintable: {fileID: 0}
   graph_holder: {fileID: 0}
   recognized_sprite: {fileID: 0}
+  all_bounding_rects: []
+  visual_var_val: 0
+  min_visual_var: 0
+  max_visual_var: 0
 --- !u!1 &2040663511566986979
 GameObject:
   m_ObjectHideFlags: 0

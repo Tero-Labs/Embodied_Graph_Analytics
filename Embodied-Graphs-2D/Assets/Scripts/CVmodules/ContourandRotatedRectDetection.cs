@@ -67,9 +67,11 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         Utils.setDebugMode(false);
     }
 
-    public void FindAnglesFromTexture(Texture2D imgTexture)
+    public List<RotatedRect> FindAnglesFromTexture(Texture2D imgTexture)
     {
         Utils.setDebugMode(true);
+
+        List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
 
         Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
 
@@ -82,7 +84,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         Imgproc.findContours(imgMat, contours, hierarchy, 1/*Imgproc.CV_RETR_LIST*/, 1/*Imgproc.CV_CHAIN_APPROX_NONE*/);
         Debug.Log("no of contours (from texture):" + contours.Count.ToString());
         // visualization purpose
-        //Imgproc.drawContours(outImgMat, contours, -1, new Scalar(0, 255, 0), 2);
+        //Imgproc.drawContours(imgMat, contours, -1, new Scalar(0, 255, 0), 2);
 
         // trying out rotatedrect
         // https://docs.opencv.org/3.4/de/d62/tutorial_bounding_rotated_ellipses.html
@@ -93,19 +95,23 @@ public class ContourandRotatedRectDetection : MonoBehaviour
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
             Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
 
+            all_bounding_rects.Add(minRect);
+
             // visualization purpose
             /*Point[] rect_points = new Point[4];
             minRect.points(rect_points);
 
             for (int j = 0; j < 4; j++)
             {
-                Imgproc.line(outImgMat, rect_points[j], rect_points[(j + 1) % 4], new Scalar(255, 0, 0));
+                Imgproc.line(imgMat, rect_points[j], rect_points[(j + 1) % 4], new Scalar(255, 0, 0));
             }*/
 
         }
 
 
         Utils.setDebugMode(false);
+
+        return all_bounding_rects;
     }
 
 }

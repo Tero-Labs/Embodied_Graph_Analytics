@@ -185,6 +185,12 @@ public class Paintable : MonoBehaviour
         ["custom"] = 1
     };
 
+    public static Dictionary<string, int> visual_variable_dict = new Dictionary<string, int>()
+    {
+        ["size"] = 0,
+        ["angle"] = 1
+    };
+
     // Start is called before the first frame update
     void Start()
 	{
@@ -1657,6 +1663,10 @@ public class Paintable : MonoBehaviour
                 {
                     pen_dragged_obj.transform.parent.GetComponent<VideoPlayerChildrenAccess>().checkHitAndMove(diff);
                 }
+                else if (pen_dragged_obj.tag == "image_player")
+                {
+                    pen_dragged_obj.transform.parent.GetComponent<ImageCVDetectionandController>().checkHitAndMove(diff);
+                }
                 else if (pen_dragged_obj.tag == "hyper")
                 {
                     pen_dragged_obj.transform.position += diff;
@@ -1740,6 +1750,7 @@ public class Paintable : MonoBehaviour
         GameObject temp = Instantiate(ImagePlayer, new Vector3(0, 0, -2f), Quaternion.identity
                         /*transform.GetComponent<Paintable>().canvas_radial.transform*/);
         temp.GetComponent<ImageCVDetectionandController>().LoadNewSprite(FilePath);
+        temp.GetComponent<ImageCVDetectionandController>().paintable = transform.gameObject;
     }
 
    // create iconic element from an image

@@ -84,19 +84,20 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         if (frames_annotation.node_type != "static")
                         {
                             GameObject nodepar = graph_holder.transform.GetChild(0).gameObject;
-                            Destroy(nodepar);
-                            GameObject tempnodeparent = new GameObject("node_parent_1");
-                            tempnodeparent.tag = "node_parent";
-                            tempnodeparent.transform.parent = graph_holder.transform;
-                            tempnodeparent.transform.SetSiblingIndex(0);
-
                             GameObject edgepar = graph_holder.transform.GetChild(1).gameObject;
                             GameObject simplicialpar = graph_holder.transform.GetChild(2).gameObject;
                             GameObject hyperpar = graph_holder.transform.GetChild(3).gameObject;
 
+                            Destroy(nodepar);
                             Destroy(edgepar);
                             Destroy(simplicialpar);
                             Destroy(hyperpar);
+
+
+                            GameObject tempnodeparent = new GameObject("node_parent_1");
+                            tempnodeparent.tag = "node_parent";
+                            tempnodeparent.transform.parent = graph_holder.transform;
+                            tempnodeparent.transform.SetSiblingIndex(0);
 
                             GameObject tempedgeparent = new GameObject("edge_parent_1");
                             tempedgeparent.tag = "edge_parent";
@@ -113,10 +114,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                             temphyperparent.transform.parent = graph_holder.transform;
                             temphyperparent.transform.SetSiblingIndex(3);
                         }                
-                                      
-
+                                    
 
                     }
+
                 else
                 {
                     graph_holder = Instantiate(graph_prefab);
@@ -182,8 +183,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         points.Add(pos_vec);
                     }
 
-                    float bound_box_avg_size = (Vector3.Distance(points[0], points[1]) + Vector3.Distance(points[1], points[2])) / 2;
-                    temp.GetComponent<iconicElementScript>().visual_variable = bound_box_avg_size;
+                    /*float bound_box_avg_size = (Vector3.Distance(points[0], points[1]) + Vector3.Distance(points[1], points[2])) / 2;
+                    temp.GetComponent<iconicElementScript>().visual_variable = bound_box_avg_size;*/
                     //Debug.Log("size: " + bound_box_avg_size.ToString());
 
 
@@ -237,11 +238,11 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 for (int i = 0; i < all_icons.Count; i++)
                 {
                     // the node can not make edges if it is greater than the max or smaller than the min in visual variables  
-                    if (all_icons[i].GetComponent<iconicElementScript>().visual_variable < 5f || all_icons[i].GetComponent<iconicElementScript>().visual_variable > 19f)
+                    /*if (all_icons[i].GetComponent<iconicElementScript>().visual_variable < 5f || all_icons[i].GetComponent<iconicElementScript>().visual_variable > 19f)
                     {
                         //Debug.Log("discarding for edge creation");
                         continue;
-                    }
+                    }*/
 
                     //Debug.Log("passed for edge creation" + all_icons[i].GetComponent<iconicElementScript>().visual_variable.ToString());
 
