@@ -27,6 +27,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     long prev_frame;
 
     public GameObject icon_prefab;
+    public GameObject image_icon_prefab;
     public GameObject edge_prefab;
     public GameObject graph_prefab;
     public GameObject paintable;
@@ -37,6 +38,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     public float node_radius;
     public string graph_type;
     public bool auto_track;
+    public bool copy_graph;
 
     // CV related variables
     Texture2D cur_texture;
@@ -53,6 +55,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         visual_var_val = 1;
         min_visual_var = 0f;
         max_visual_var = 60f;
+
+        copy_graph = true;
     }
 
     public void loadAnnotation(string filename)
@@ -173,7 +177,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 {
                     //if (cur_texture == null)
                     cur_texture = DumpRenderTexture(/*"Assets/Resources/dump" + videoplayer.frame.ToString() + ".png"*/);
-                    all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture);
+                    all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture, copy_graph: copy_graph);
                     node_radius = 550f;// float.MaxValue;
                 }
 
@@ -257,11 +261,12 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                         BoxCollider box_cl = temp.AddComponent<BoxCollider>();
                         box_cl.center = edge_pos;//Vector3.zero;
-                        box_cl.size = size;
+                        box_cl.size = size*10;
                     }
                 }
                 else if (videoplayer.frame % frequency == 0 || videoplayer.frame == 5)
                 {
+                    int cur_rect_iter = 0;
                     foreach (RotatedRect cur_obj in all_rects)
                     {
                         Vector3 edge_pos = Vector3.zero;
@@ -271,26 +276,50 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         temp.tag = "iconic";
                         temp.GetComponent<iconicElementScript>().icon_number = num;
                         temp.GetComponent<iconicElementScript>().video_icon = true;
-                        all_icons.Add(temp);
+                        
 
                         graph_holder.GetComponent<GraphElementScript>().graph.nodes.Add(num);
                         graph_holder.GetComponent<GraphElementScript>().nodeMaps.Add(num.ToString(), temp.transform);
 
-                        temp.GetComponent<TrailRenderer>().enabled = false;
-                        temp.GetComponent<MeshRenderer>().enabled = false;
+                        try
+                        {
+                            temp.GetComponent<TrailRenderer>().enabled = false;
+                            temp.GetComponent<MeshRenderer>().enabled = false;
+                        }
+                        catch (Exception exc)
+                        {
+                            //Debug.Log("no renderer attached");
+                        }
 
                         List<Vector3> points = new List<Vector3>();
 
-                        /*foreach (bounds first_obj in cur_obj.bounds)
-                        {*/
-                            float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, cur_texture.width, (float)cur_obj.center.x));
-                            float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, cur_texture.height, (float)cur_obj.center.y));
+                        float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, cur_texture.width, (float)cur_obj.center.x));
+                        float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, cur_texture.height, (float)cur_obj.center.y));
 
-                            Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
-                            edge_pos += pos_vec;
+                        Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
+                        edge_pos += pos_vec;
+                        points.Add(pos_vec);
 
-                            points.Add(pos_vec);
-                        //}
+                        /*temp.GetComponent<iconicElementScript>().image_icon = true;
+                        int bottom_x, bottom_y, rect_width, rect_height;
+                        bottom_x = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].x;
+                        bottom_y = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].y; 
+                        rect_width = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].width;
+                        rect_height = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].height;
+
+                        lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), 
+                            Mathf.InverseLerp(1, cur_texture.width, bottom_x));
+                        lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), 
+                            Mathf.InverseLerp(1, cur_texture.height, bottom_y + rect_height));                                               
+
+                        Texture2D target_Tex = CropRenderTexture(cur_texture, bottom_x, bottom_y, rect_width, rect_height);
+
+                        temp.GetComponent<iconicElementScript>().LoadNewSprite("FilePath", input_texture: target_Tex);
+                        // ToDo: not correctly positioned
+                        temp.transform.position = new Vector3(lerped_x, lerped_y, -40f); //edge_pos; 
+                        */
+
+                        all_icons.Add(temp);        
 
                         // size
                         if (visual_var_val == 0)
@@ -299,7 +328,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                             temp.GetComponent<iconicElementScript>().visual_variable = (float)cur_obj.angle;
 
                         // getting the center of the bounding box
-                        edge_pos = edge_pos / points.Count;
+                        edge_pos = edge_pos / points.Count;                        
                         temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
                         temp.GetComponent<iconicElementScript>().bounds_center = edge_pos;
 
@@ -321,7 +350,9 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                         BoxCollider box_cl = temp.AddComponent<BoxCollider>();
                         box_cl.center = edge_pos;//Vector3.zero;
-                        box_cl.size = size;
+                        box_cl.size = size*10;
+
+                        cur_rect_iter++;
                     }
 
                 }
@@ -409,7 +440,14 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         }
     }
 
-    
+    public void Copy()
+    {
+        Vector3 target_pos = new Vector3(width, 0f, 0f);
+        GameObject cp = Instantiate(graph_holder, graph_holder.transform.position + target_pos, Quaternion.identity, graph_holder.transform.parent.transform);
+        cp.GetComponent<GraphElementScript>().video_graph = false;
+        cp.GetComponent<GraphElementScript>().checkHitAndMove(target_pos);
+    }
+
     public void OnSliderValueChanged(PointerEventData eventData)
     {
         Vector2 localpoint;
@@ -441,23 +479,26 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     public Texture2D DumpRenderTexture(/*RenderTexture rt, string pngOutPath*/)
     {
         RenderTexture rt = videoplayer.targetTexture;
-
         var oldRT = RenderTexture.active;
-
-        var tex = new Texture2D(rt.width, rt.height);
-        //var tex_small = new Texture2D((int)width, (int)height);
+        var tex = new Texture2D(rt.width, rt.height);        
 
         RenderTexture.active = rt;
         tex.ReadPixels(new UnityEngine.Rect(0, 0, rt.width, rt.height), 0, 0);
-        tex.Apply();
+        tex.Apply();               
 
-        /*tex_small.SetPixels(0, 0, (int)width, (int)height, tex.GetPixels());
-        tex_small.Apply();*/
-
-        //File.WriteAllBytes(pngOutPath, tex.EncodeToPNG());
+        //File.WriteAllBytes("Assets/Resources/" + "dump.png", tex_small.EncodeToPNG());
         RenderTexture.active = oldRT;
 
         //Destroy(tex);
         return tex;
+    }
+
+    public Texture2D CropRenderTexture(Texture2D InputTex, int bottom_x, int bottom_y, int width, int height)
+    {
+        Debug.Log(" bottom_x: " + bottom_x.ToString() + " bottom_y: " + bottom_y.ToString() + " width: " + width.ToString() + " height: " + height.ToString());
+        var tex_small = new Texture2D((int)width, (int)height);
+        tex_small.SetPixels(InputTex.GetPixels((int)bottom_x, (int)bottom_y, (int)width, (int)height));
+        tex_small.Apply();
+        return tex_small;
     }
 }

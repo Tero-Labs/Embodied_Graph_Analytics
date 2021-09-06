@@ -8,7 +8,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 {
     public GameObject slider, PlayorPause, quad;
     public Canvas canvas;
-    public Button settings, delete;
+    public Button settings, delete, copy;
     public GameObject settings_menu;
     public GameObject control_menu;
     public GameObject paintable;
@@ -27,6 +27,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
     {
         settings.onClick.AddListener(delegate { SettingsMenu(); });
         delete.onClick.AddListener(delegate { Delete(); });
+        copy.onClick.AddListener(delegate { Copy(); });
         mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
         WindowInputField.onValueChanged.AddListener(delegate { LockWindowInput(WindowInputField); });
 
@@ -166,6 +167,11 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         }
 
         Destroy(transform.gameObject);
+    }
+
+    void Copy()
+    {
+        slider.GetComponent<VideoController>().Copy();
     }
 
     // Update is called once per frame

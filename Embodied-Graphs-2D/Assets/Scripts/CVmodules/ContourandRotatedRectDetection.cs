@@ -12,6 +12,8 @@ using System.Linq;
 
 public class ContourandRotatedRectDetection : MonoBehaviour
 {
+    public List<OpenCVForUnity.CoreModule.Rect> all_horizontal_rects;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -70,20 +72,20 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
     public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture)
     {
-        Utils.setDebugMode(true);
+        Utils.setDebugMode(false);
 
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
 
         Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
 
         Utils.texture2DToMat(imgTexture, imgMat);
-        Debug.Log("imgMat.ToString() " + imgMat.ToString());
+        // Debug.Log("imgMat.ToString() " + imgMat.ToString());
 
         // trying out contours
         List<MatOfPoint> contours = new List<MatOfPoint>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(imgMat, contours, hierarchy, 1/*Imgproc.CV_RETR_LIST*/, 1/*Imgproc.CV_CHAIN_APPROX_NONE*/);
-        Debug.Log("no of contours (from texture):" + contours.Count.ToString());
+        // Debug.Log("no of contours (from texture):" + contours.Count.ToString());
         // visualization purpose
         //Imgproc.drawContours(imgMat, contours, -1, new Scalar(0, 255, 0), 2);
 
@@ -94,7 +96,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
             // IMPORTANT: THE MatOfPoint CAN NOT BE DIRECTLY CASTED TO MatOfPoint2f HENCE WE GOT THE POINT ARRAY FROM MatOfPoint
             MatOfPoint2f cur_points = new MatOfPoint2f(contour.toArray());
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
-            Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
+            // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
 
             all_bounding_rects.Add(minRect);
 
@@ -115,22 +117,23 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         return all_bounding_rects;
     }
 
-    public List<RotatedRect> FindResultFromVideoTexture(Texture2D vidTexture, int contour_count = 7)
+    public List<RotatedRect> FindResultFromVideoTexture(Texture2D vidTexture, int contour_count = 7, bool copy_graph = false)
     {
-        Utils.setDebugMode(true);
+        Utils.setDebugMode(false);
 
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
+        if (copy_graph) all_horizontal_rects = new List<OpenCVForUnity.CoreModule.Rect>();
 
         Mat vidMat = new Mat(vidTexture.height, vidTexture.width, CvType.CV_8UC1);
 
         Utils.texture2DToMat(vidTexture, vidMat);
-        Debug.Log("vidMat.ToString() " + vidMat.ToString());
+        // Debug.Log("vidMat.ToString() " + vidMat.ToString());
 
         // trying out contours
         List<MatOfPoint> contours = new List<MatOfPoint>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(vidMat, contours, hierarchy, 1/*Imgproc.CV_RETR_LIST*/, 1/*Imgproc.CV_CHAIN_APPROX_NONE*/);
-        Debug.Log("no of contours (from texture):" + contours.Count.ToString());
+        // Debug.Log("no of contours (from texture):" + contours.Count.ToString());
         // visualization purpose
         //Imgproc.drawContours(vidMat, contours, -1, new Scalar(0, 255, 0), 2);
         // sorting by length
@@ -144,9 +147,11 @@ public class ContourandRotatedRectDetection : MonoBehaviour
             // IMPORTANT: THE MatOfPoint CAN NOT BE DIRECTLY CASTED TO MatOfPoint2f HENCE WE GOT THE POINT ARRAY FROM MatOfPoint
             MatOfPoint2f cur_points = new MatOfPoint2f(contour.toArray());
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
-            Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
+            // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
 
             all_bounding_rects.Add(minRect);
+
+            if (copy_graph) all_horizontal_rects.Add(Imgproc.boundingRect(cur_points));
 
             // visualization purpose
             /*Point[] rect_points = new Point[4];
@@ -165,7 +170,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
 
         Utils.setDebugMode(false);
-        Debug.Log("no of min rects (from texture):" + all_bounding_rects.Count.ToString());
+        // Debug.Log("no of min rects (from texture):" + all_bounding_rects.Count.ToString());
         return all_bounding_rects;
     }
 

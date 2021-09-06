@@ -247,12 +247,18 @@ public class iconicElementScript : MonoBehaviour
     
     // load a new image and convert to sprite 
     // https://forum.unity.com/threads/generating-sprites-dynamically-from-png-or-jpeg-files-in-c.343735/ (the solution by Freznosis#5)        
-    public Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight)
+    public Sprite LoadNewSprite(string FilePath, float PixelsPerUnit = 100.0f, SpriteMeshType spriteType = SpriteMeshType.Tight, Texture2D input_texture = null)
     {
 
         // Load a PNG or JPG image from disk to a Texture2D, assign this texture to a new sprite and return its reference
         
-        Texture2D SpriteTexture = LoadTexture(FilePath);
+        Texture2D SpriteTexture;
+
+        if (input_texture == null)
+            SpriteTexture = LoadTexture(FilePath);
+        else
+            SpriteTexture = input_texture;
+
         Sprite NewSprite = Sprite.Create(SpriteTexture, new Rect(0, 0, SpriteTexture.width, SpriteTexture.height), new Vector2(0, 0), PixelsPerUnit, 0, spriteType);
         recognized_sprite = NewSprite;
         SpriteToRender();

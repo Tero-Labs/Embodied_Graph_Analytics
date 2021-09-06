@@ -13,7 +13,7 @@ public class ImageCVDetectionandController : MonoBehaviour
 {
     public GameObject quad;
     public Canvas canvas;
-    public Button settings, delete;
+    public Button settings, delete, copy;
     public GameObject settings_menu;
     public GameObject control_menu;
 
@@ -47,6 +47,7 @@ public class ImageCVDetectionandController : MonoBehaviour
     {
         settings.onClick.AddListener(delegate { SettingsMenu(); });
         delete.onClick.AddListener(delegate { Delete(); });
+        copy.onClick.AddListener(delegate { Copy(); });
         mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
 
         node_radius.onValueChanged.AddListener(delegate { GraphType(); });
@@ -477,5 +478,12 @@ public class ImageCVDetectionandController : MonoBehaviour
                 
     }
 
+    public void Copy()
+    {
+        Vector3 target_pos = new Vector3(SpriteTexture.width, 0f, 0f);
+        GameObject cp = Instantiate(graph_holder, graph_holder.transform.position + target_pos, Quaternion.identity, graph_holder.transform.parent.transform);
+        cp.GetComponent<GraphElementScript>().video_graph = false;
+        cp.GetComponent<GraphElementScript>().checkHitAndMove(target_pos);
 
+    }
 }
