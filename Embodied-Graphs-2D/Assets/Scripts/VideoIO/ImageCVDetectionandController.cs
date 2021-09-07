@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-
+using TMPro;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.ImgprocModule;
@@ -19,8 +19,15 @@ public class ImageCVDetectionandController : MonoBehaviour
 
     public InputField mainInputField;
     public InputField WindowInputField;
-    public Toggle node_radius, site_specific;
+    public Toggle node_radius, site_specific, none;
     public Toggle auto_track, manual_track;
+
+    // visual Variable UI
+    public TMP_Dropdown visual_var_type;
+    public InputField max_limit, min_limit;
+    public TMP_InputField contour_obj_count;
+    public FlexibleColorPicker color_picker_script;
+    public Slider blobsizeSlider;
 
     public float width, height;
 
@@ -41,7 +48,8 @@ public class ImageCVDetectionandController : MonoBehaviour
     //visual variable related things
     public List<RotatedRect> all_bounding_rects;
     public int visual_var_val;
-    public float min_visual_var, max_visual_var;
+    public float min_visual_var, max_visual_var, contour_size;
+    public int contour_cnt;
 
     void Start()
     {
@@ -50,11 +58,19 @@ public class ImageCVDetectionandController : MonoBehaviour
         copy.onClick.AddListener(delegate { Copy(); });
         mainInputField.onValueChanged.AddListener(delegate { LockInput(mainInputField); });
 
+        none.onValueChanged.AddListener(delegate { GraphType(); });
         node_radius.onValueChanged.AddListener(delegate { GraphType(); });
         site_specific.onValueChanged.AddListener(delegate { GraphType(); });
 
         auto_track.onValueChanged.AddListener(delegate { TrackType(auto_track); });
         manual_track.onValueChanged.AddListener(delegate { TrackType(manual_track); });
+
+        // visual variable setup
+        visual_var_type.onValueChanged.AddListener(delegate { ChangeVisualVariable(visual_var_type); });
+        max_limit.onValueChanged.AddListener(delegate { TrackVisualInputField(max_limit); });
+        min_limit.onValueChanged.AddListener(delegate { TrackVisualInputField(min_limit); });
+        contour_obj_count.onValueChanged.AddListener(delegate { TrackVisualInputField(contour_obj_count); });
+        blobsizeSlider.onValueChanged.AddListener(delegate { SliderValueChanged(blobsizeSlider); });
 
         // to setup initial values
         GraphType();
@@ -69,6 +85,7 @@ public class ImageCVDetectionandController : MonoBehaviour
         visual_var_val = 1;
         min_visual_var = -360f;
         max_visual_var = 360f;
+
 
         UIlayout();
     }
@@ -136,6 +153,47 @@ public class ImageCVDetectionandController : MonoBehaviour
         settings_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try_2;
     }
     */
+
+    void ChangeVisualVariable(TMP_Dropdown dropdown)
+    {
+        visual_var_val = dropdown.value;
+    }
+
+    void TrackVisualInputField(InputField inputField)
+    {
+        Paintable.click_on_inputfield = true;
+
+        if (inputField.name == "minInputField" && inputField.text.Length > 0)
+        {
+            float.TryParse(inputField.text, out min_visual_var);
+        }
+
+        if (inputField.name == "maxInputField" && inputField.text.Length > 0)
+        {
+            float.TryParse(inputField.text, out max_visual_var);
+        }
+
+        if (inputField.name == "contourInputField" && inputField.text.Length > 0)
+        {
+            int.TryParse(inputField.text, out contour_cnt);
+        }
+    }
+
+    void TrackVisualInputField(TMP_InputField inputField)
+    {
+        Paintable.click_on_inputfield = true;
+
+        if (inputField.name == "contourInputField" && inputField.text.Length > 0)
+        {
+            int.TryParse(inputField.text, out contour_cnt);
+        }
+    }
+
+    void SliderValueChanged(Slider slider)
+    {
+        contour_size = slider.value;
+    }
+
 
     void LockInput(InputField input)
     {

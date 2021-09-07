@@ -3259,6 +3259,8 @@ public class Paintable : MonoBehaviour
             if (Input.GetKeyUp(KeyCode.C))
             {
                 image_CV_operation = !image_CV_operation;
+                GameObject temp_stat = Instantiate(status_label_obj, canvas_radial.transform);
+                temp_stat.GetComponent<Status_label_text>().ChangeLabel("Image Processing: " + image_CV_operation.ToString());                
             }
 
             if (Input.GetKeyUp(KeyCode.F10))

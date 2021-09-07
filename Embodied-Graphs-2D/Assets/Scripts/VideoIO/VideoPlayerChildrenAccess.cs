@@ -15,12 +15,11 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 
     public InputField mainInputField;
     public InputField WindowInputField;
-    public Toggle node_radius, site_specific;
+    public Toggle node_radius, site_specific, none;
     public Toggle auto_track, manual_track;
-
+        
     public float width, height;
     public static int time_slice;
-
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +32,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 
         node_radius.onValueChanged.AddListener(delegate { GraphType(); });
         site_specific.onValueChanged.AddListener(delegate { GraphType(); });
+        none.onValueChanged.AddListener(delegate { GraphType(); });
 
         auto_track.onValueChanged.AddListener(delegate { TrackType(auto_track); });
         manual_track.onValueChanged.AddListener(delegate { TrackType(manual_track); });

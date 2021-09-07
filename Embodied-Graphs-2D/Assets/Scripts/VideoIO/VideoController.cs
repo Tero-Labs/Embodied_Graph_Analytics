@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.Video;
 using System.IO;
 using System;
-
+using TMPro;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.Features2dModule;
 using OpenCVForUnity.UnityUtils;
@@ -33,6 +33,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     public GameObject paintable;
     public GameObject graph_holder;
 
+    // visual Variable UI
+    public TMP_Dropdown visual_var_type;
+    public InputField max_limit, min_limit;
+    public TMP_InputField contour_obj_count;
+    public FlexibleColorPicker color_picker_script;
+    public Slider blobsizeSlider;
+
     public List<GameObject> all_icons;
 
     public float node_radius;
@@ -43,7 +50,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     // CV related variables
     Texture2D cur_texture;
     public int visual_var_val;
-    public float min_visual_var, max_visual_var;
+    public float min_visual_var, max_visual_var, contour_size;
+    public int contour_cnt;
 
     // Start is called before the first frame update
     void Start()
@@ -57,6 +65,53 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         max_visual_var = 60f;
 
         copy_graph = true;
+
+        // visual variable setup
+        visual_var_type.onValueChanged.AddListener(delegate { ChangeVisualVariable(visual_var_type); });
+        max_limit.onValueChanged.AddListener(delegate { TrackVisualInputField(max_limit); });
+        min_limit.onValueChanged.AddListener(delegate { TrackVisualInputField(min_limit); });
+        contour_obj_count.onValueChanged.AddListener(delegate { TrackVisualInputField(contour_obj_count); });
+        blobsizeSlider.onValueChanged.AddListener(delegate { SliderValueChanged(blobsizeSlider); });
+    }
+
+    void ChangeVisualVariable(TMP_Dropdown dropdown)
+    {
+        visual_var_val = dropdown.value;
+    }
+
+    void TrackVisualInputField(InputField inputField)
+    {
+        Paintable.click_on_inputfield = true;
+
+        if (inputField.name == "minInputField" && inputField.text.Length > 0)
+        {
+            float.TryParse(inputField.text, out min_visual_var);
+        }
+
+        if (inputField.name == "maxInputField" && inputField.text.Length > 0)
+        {
+            float.TryParse(inputField.text, out max_visual_var);
+        }
+
+        if (inputField.name == "contourInputField" && inputField.text.Length > 0)
+        {
+            int.TryParse(inputField.text, out contour_cnt);
+        }
+    }
+
+    void TrackVisualInputField(TMP_InputField inputField)
+    {
+        Paintable.click_on_inputfield = true;
+        
+        if (inputField.name == "contourInputField" && inputField.text.Length > 0)
+        {
+            int.TryParse(inputField.text, out contour_cnt);
+        }
+    }
+    
+    void SliderValueChanged(Slider slider)
+    {
+        contour_size = slider.value;
     }
 
     public void loadAnnotation(string filename)
