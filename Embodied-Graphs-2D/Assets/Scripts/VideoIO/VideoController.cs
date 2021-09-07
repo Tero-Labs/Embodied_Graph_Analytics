@@ -398,6 +398,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     float rad = temp.GetComponent<iconicElementScript>().radius;
                     Vector3 size = new Vector3(rad, rad, rad);
 
+                    // size
+                    if (visual_var_val == 1)
+                        temp.GetComponent<iconicElementScript>().visual_variable = rad;
+                    // angle
+                    else if (visual_var_val == 2)
+                        temp.GetComponent<iconicElementScript>().visual_variable = 0f;
+
                     BoxCollider box_cl = temp.AddComponent<BoxCollider>();
                     box_cl.center = edge_pos;//Vector3.zero;
                     box_cl.size = size * 10;
