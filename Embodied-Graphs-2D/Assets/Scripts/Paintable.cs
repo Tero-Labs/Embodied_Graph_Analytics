@@ -2164,18 +2164,9 @@ public class Paintable : MonoBehaviour
             edgeline.transform.parent = Prev_graph_parent.GetChild(1);
             Prev_graph_parent.GetComponent<GraphElementScript>().edges_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().edges_as_Str();
-
-            if (edge_start.transform.parent.transform.parent.GetComponent<GraphElementScript>().video_graph)
-            {
-                try
-                {
-                    GameObject temp_new = edge_start.transform.parent.transform.parent.GetComponent<GraphElementScript>().Video_graph_Copy();
-                    //temp_new.GetComponent<GraphElementScript>().Graph_init();
-                }
-                catch (Exception e)
-                {                    
-                }
-            }
+                        
+            Transform temp = edge_start.transform.parent;
+            StartCoroutine(CopyGraphData(temp.gameObject));
 
             return;
         }
@@ -2307,6 +2298,10 @@ public class Paintable : MonoBehaviour
             simplicialline.transform.parent = Prev_graph_parent.GetChild(2);
             Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().simplicial_as_Str();
+
+            Transform temp = Simplicialnodes[0].transform.parent;
+            StartCoroutine(CopyGraphData(temp.gameObject));
+
             return;
         }
 
@@ -2422,6 +2417,9 @@ public class Paintable : MonoBehaviour
             hyperline.transform.parent = Prev_graph_parent.GetChild(3);
             Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().hyperedges_as_Str();
+
+            Transform temp = hypernodes[0].transform.parent;
+            StartCoroutine(CopyGraphData(temp.gameObject));
             return;
         }
 
@@ -2728,9 +2726,17 @@ public class Paintable : MonoBehaviour
         else if (temp != null && deleted_mode == "hyper")
             temp.transform.parent.GetComponent<GraphElementScript>().hyperedges_init();
 
-        yield return null;
+        StartCoroutine(CopyGraphData(temp.gameObject));
 
-        if (temp.transform.parent.GetComponent<GraphElementScript>().video_graph)
+    }
+
+    public IEnumerator CopyGraphData(GameObject temp)
+    {
+        yield return null;
+        yield return null;
+        yield return null;
+        Debug.Log(temp.name);
+        if (temp != null && temp.transform.parent.GetComponent<GraphElementScript>().video_graph)
         {
             try
             {
