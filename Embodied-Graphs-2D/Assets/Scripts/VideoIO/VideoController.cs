@@ -66,6 +66,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         max_visual_var = 60f;
 
         copy_graph = false;
+        contour_cnt = 7;
 
         // visual variable setup
         visual_var_type.onValueChanged.AddListener(delegate { ChangeVisualVariable(visual_var_type); });
