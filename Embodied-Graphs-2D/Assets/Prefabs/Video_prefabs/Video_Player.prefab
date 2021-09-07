@@ -908,6 +908,7 @@ MonoBehaviour:
     type: 3}
   paintable: {fileID: 0}
   graph_holder: {fileID: 0}
+  none: {fileID: 3549049381083694310}
   visual_var_type: {fileID: 828951320438424243}
   max_limit: {fileID: 7027117292558018245}
   min_limit: {fileID: 4175009555862778884}
@@ -2230,7 +2231,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 1
+  m_IsOn: 0
 --- !u!1 &3534686573354472470
 GameObject:
   m_ObjectHideFlags: 0
@@ -2314,7 +2315,7 @@ MonoBehaviour:
   onValueChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_IsOn: 0
+  m_IsOn: 1
 --- !u!1 &3618034007099052202
 GameObject:
   m_ObjectHideFlags: 0

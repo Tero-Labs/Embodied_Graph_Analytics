@@ -82,11 +82,11 @@ public class ImageCVDetectionandController : MonoBehaviour
 
         //global_scope
         //control_menu.GetComponentInParent<Canvas>().worldCamera = Camera.main;
-        visual_var_val = 1;
+        visual_var_val = visual_var_type.value; 
         min_visual_var = -360f;
         max_visual_var = 360f;
 
-
+        node_radius_val = 20f;
         UIlayout();
     }
     

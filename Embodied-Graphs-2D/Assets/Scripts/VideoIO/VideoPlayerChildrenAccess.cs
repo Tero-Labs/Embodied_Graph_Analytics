@@ -38,7 +38,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         manual_track.onValueChanged.AddListener(delegate { TrackType(manual_track); });
 
         // to setup initial values
-        GraphType();
+        GraphType(flag: false);
         TrackType(auto_track);
 
         width = quad.transform.localScale.x;
@@ -82,7 +82,7 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(settings_menu.transform.parent.GetComponent<RectTransform>(),
                     screen_temp_pos_2, null, out rect_Try_2);
 
-        settings_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try_2;
+        settings_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try_2;                
     }
 
     /*
@@ -126,9 +126,10 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
 
         if (input.text.Length > 0)
         {            
-            float result = slider.GetComponent<VideoController>().node_radius;
+            float result = slider.GetComponent<VideoController>().node_radius_val;
             float.TryParse(input.text, out result);
-            slider.GetComponent<VideoController>().node_radius = result;
+            slider.GetComponent<VideoController>().node_radius_val = result;
+            slider.GetComponent<VideoController>().GraphCreation();
         }
     }
 
@@ -141,12 +142,13 @@ public class VideoPlayerChildrenAccess : MonoBehaviour
         }
     }
 
-    public void GraphType()
+    public void GraphType(bool flag = true)
     {        
         if (site_specific.isOn) slider.GetComponent<VideoController>().graph_type = "SiteSpecific";
         else slider.GetComponent<VideoController>().graph_type = "NodeRadius";
 
         mainInputField.interactable = node_radius.isOn;
+        if (flag) slider.GetComponent<VideoController>().GraphCreation();
     }
 
     void TrackType(Toggle toggle)
