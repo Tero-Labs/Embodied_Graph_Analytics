@@ -2164,6 +2164,19 @@ public class Paintable : MonoBehaviour
             edgeline.transform.parent = Prev_graph_parent.GetChild(1);
             Prev_graph_parent.GetComponent<GraphElementScript>().edges_init();
             //Prev_graph_parent.GetComponent<GraphElementScript>().edges_as_Str();
+
+            if (edge_start.transform.parent.transform.parent.GetComponent<GraphElementScript>().video_graph)
+            {
+                try
+                {
+                    GameObject temp_new = edge_start.transform.parent.transform.parent.GetComponent<GraphElementScript>().Video_graph_Copy();
+                    //temp_new.GetComponent<GraphElementScript>().Graph_init();
+                }
+                catch (Exception e)
+                {                    
+                }
+            }
+
             return;
         }
 
@@ -2701,7 +2714,7 @@ public class Paintable : MonoBehaviour
     // call graph_init in coroutine, after the destory has been taken care of
     public IEnumerator ClearGraphData(string deleted_mode, GameObject temp)
     {
-        yield return null;
+        yield return null;        
 
         if (temp != null && deleted_mode == "iconic")
             temp.transform.parent.GetComponent<GraphElementScript>().nodes_init();
@@ -2714,6 +2727,20 @@ public class Paintable : MonoBehaviour
 
         else if (temp != null && deleted_mode == "hyper")
             temp.transform.parent.GetComponent<GraphElementScript>().hyperedges_init();
+
+        yield return null;
+
+        if (temp.transform.parent.GetComponent<GraphElementScript>().video_graph)
+        {
+            try
+            {
+                GameObject temp_new = temp.transform.parent.GetComponent<GraphElementScript>().Video_graph_Copy();
+                //temp_new.GetComponent<GraphElementScript>().Graph_init();
+            }
+            catch (Exception e)
+            {
+            }
+        }
     }
 
     public IEnumerator HandleKeyboardInput()

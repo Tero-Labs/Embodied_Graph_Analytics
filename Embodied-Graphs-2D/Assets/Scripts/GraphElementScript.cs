@@ -35,6 +35,7 @@ public class GraphElementScript : MonoBehaviour
     public GameObject graph_radial_menu;
     public GameObject canvas_radial;
     public GameObject paintable;
+    public GameObject parent_video_or_image;
 
     // to track the video parent which was the full graph 
     public GameObject parent_graph;
@@ -99,6 +100,24 @@ public class GraphElementScript : MonoBehaviour
     {
         if (mainInputField != null && mainInputField.isFocused)
             Paintable.click_on_inputfield = true;
+    }
+
+    public GameObject Video_graph_Copy()
+    {
+        GameObject cp = Instantiate(transform.gameObject, transform.position, Quaternion.identity, transform.parent.transform);
+        cp.GetComponent<GraphElementScript>().video_graph = false;
+        Paintable.graph_count++;
+        cp.name = "graph_" + Paintable.graph_count.ToString();
+        cp.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
+
+        // to make them moveable
+        Transform node_parent = cp.transform.GetChild(0);
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            node_parent.GetChild(i).GetComponent<iconicElementScript>().video_icon = false;
+        }
+
+        return cp;
     }
 
     void DeleteChildren(Transform trans)
@@ -230,6 +249,7 @@ public class GraphElementScript : MonoBehaviour
 
         nodeMaps = new Dictionary<string, Transform>();
         int icon_count = 0;
+        int extra_icon_count = 0;
 
         //Transform[] allChildrennode = node_parent.GetComponentsInChildren<Transform>();
         //foreach (Transform child in allChildrennode)
@@ -240,6 +260,13 @@ public class GraphElementScript : MonoBehaviour
             if (child != null && child.tag == "iconic")
             {
                 icon_count++;
+                // extra checking for corner case when there are duplicate icons with same icon_number 
+                if (nodeMaps.ContainsKey(child.GetComponent<iconicElementScript>().icon_number.ToString()))
+                {
+                    extra_icon_count++;
+                    child.GetComponent<iconicElementScript>().icon_number = node_parent.childCount + extra_icon_count;
+                }
+
                 graph.nodes.Add(child.GetComponent<iconicElementScript>().icon_number);
                 nodeMaps.Add(child.GetComponent<iconicElementScript>().icon_number.ToString(), child);
 

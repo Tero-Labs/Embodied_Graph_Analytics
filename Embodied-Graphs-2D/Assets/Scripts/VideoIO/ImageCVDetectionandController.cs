@@ -411,6 +411,7 @@ public class ImageCVDetectionandController : MonoBehaviour
             Paintable.graph_count++;
             graph_holder.name = "graph_" + Paintable.graph_count.ToString();
             graph_holder.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
+            graph_holder.GetComponent<GraphElementScript>().parent_video_or_image = transform.gameObject;
         }
 
         graph_holder.SetActive(true);
@@ -443,6 +444,7 @@ public class ImageCVDetectionandController : MonoBehaviour
             graph_holder.GetComponent<GraphElementScript>().nodeMaps.Add(num.ToString(), temp.transform);
 
             temp.GetComponent<TrailRenderer>().enabled = false;
+            temp.GetComponent<LineRenderer>().enabled = false;
             temp.GetComponent<MeshRenderer>().enabled = false;
 
             List<Vector3> points = new List<Vector3>();
@@ -505,7 +507,7 @@ public class ImageCVDetectionandController : MonoBehaviour
 
             BoxCollider box_cl = temp.AddComponent<BoxCollider>();
             box_cl.center = edge_pos;//Vector3.zero;
-            box_cl.size = size;
+            box_cl.size = size * 5;
 
             cur_rect_iter++;
         }
@@ -566,12 +568,23 @@ public class ImageCVDetectionandController : MonoBehaviour
                 
     }
 
-    public void Copy()
+    public GameObject Copy()
     {
-        Vector3 target_pos = new Vector3(SpriteTexture.width, 0f, 0f);
+        Vector3 target_pos = new Vector3(width + 20f, 0f, 0f);
         GameObject cp = Instantiate(graph_holder, graph_holder.transform.position + target_pos, Quaternion.identity, graph_holder.transform.parent.transform);
         cp.GetComponent<GraphElementScript>().video_graph = false;
         cp.GetComponent<GraphElementScript>().checkHitAndMove(target_pos);
+        Paintable.graph_count++;
+        cp.name = "graph_" + Paintable.graph_count.ToString();
+        cp.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
 
+        // to make them moveable
+        Transform node_parent = cp.transform.GetChild(0);
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            node_parent.GetChild(i).GetComponent<iconicElementScript>().video_icon = false;
+        }
+
+        return cp;
     }
 }

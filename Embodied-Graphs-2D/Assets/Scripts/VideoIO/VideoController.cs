@@ -173,12 +173,24 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         }
     }
 
-    public void Copy()
+    public GameObject Copy()
     {
         Vector3 target_pos = new Vector3(width, 0f, 0f);
         GameObject cp = Instantiate(graph_holder, graph_holder.transform.position + target_pos, Quaternion.identity, graph_holder.transform.parent.transform);
         cp.GetComponent<GraphElementScript>().video_graph = false;
         cp.GetComponent<GraphElementScript>().checkHitAndMove(target_pos);
+        Paintable.graph_count++;
+        cp.name = "graph_" + Paintable.graph_count.ToString();
+        cp.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
+
+        // to make them moveable
+        Transform node_parent = cp.transform.GetChild(0);
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            node_parent.GetChild(i).GetComponent<iconicElementScript>().video_icon = false;
+        }
+
+        return cp;
     }
 
     public void OnSliderValueChanged(PointerEventData eventData)
@@ -291,6 +303,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             graph_holder.GetComponent<GraphElementScript>().video_graph = true;
             graph_holder.GetComponent<GraphElementScript>().abstraction_layer = "graph";
             graph_holder.GetComponent<GraphElementScript>().paintable = paintable;
+            graph_holder.GetComponent<GraphElementScript>().parent_video_or_image = transform.gameObject;
             Paintable.graph_count++;
             graph_holder.name = "graph_" + Paintable.graph_count.ToString();
             graph_holder.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
@@ -348,6 +361,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     graph_holder.GetComponent<GraphElementScript>().nodeMaps.Add(/*num*/cur_obj.id.ToString(), temp.transform);
 
                     temp.GetComponent<TrailRenderer>().enabled = false;
+                    temp.GetComponent<LineRenderer>().enabled = false;
                     temp.GetComponent<MeshRenderer>().enabled = false;
 
                     List<Vector3> points = new List<Vector3>();
@@ -408,7 +422,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     BoxCollider box_cl = temp.AddComponent<BoxCollider>();
                     box_cl.center = edge_pos;//Vector3.zero;
-                    box_cl.size = size * 10;
+                    box_cl.size = size * 5;
                 }
             }
             else if (videoplayer.frame % frequency == 0 || videoplayer.frame == 5)
@@ -502,7 +516,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     BoxCollider box_cl = temp.AddComponent<BoxCollider>();
                     box_cl.center = edge_pos;//Vector3.zero;
-                    box_cl.size = size * 10;
+                    box_cl.size = size * 5;
 
                     cur_rect_iter++;
                 }
