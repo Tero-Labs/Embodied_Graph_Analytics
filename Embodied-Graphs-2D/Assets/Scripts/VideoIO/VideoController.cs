@@ -77,7 +77,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
     void ChangeVisualVariable(TMP_Dropdown dropdown)
     {
-        visual_var_val = dropdown.value;
+        visual_var_val = dropdown.value;       
         GraphCreation();
     }
 
@@ -315,7 +315,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             {
                 //if (cur_texture == null)
                 cur_texture = DumpRenderTexture(/*"Assets/Resources/dump" + videoplayer.frame.ToString() + ".png"*/);
-                all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture, copy_graph: copy_graph);
+                all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture, contour_count: contour_cnt, copy_graph: copy_graph, visual_var: visual_var_val);
                 // instead of creating different conditions for visual variables, I treated them similarly as proximity graph
                 if (none.isOn) node_radius_val = float.MaxValue;
             }
@@ -468,11 +468,15 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     all_icons.Add(temp);
 
                     // size
-                    if (visual_var_val == 1)
+                    if (Paintable.visual_variable_dict[visual_var_val] == "size")
                         temp.GetComponent<iconicElementScript>().visual_variable = ((float)cur_obj.size.width + (float)cur_obj.size.height) / 2;
                     // angle
-                    else if (visual_var_val == 2)
+                    else if (Paintable.visual_variable_dict[visual_var_val] == "angle")
                         temp.GetComponent<iconicElementScript>().visual_variable = (float)cur_obj.angle;
+                    // brightness
+                    else if (Paintable.visual_variable_dict[visual_var_val] == "brightness")
+                        temp.GetComponent<iconicElementScript>().visual_variable =
+                            transform.GetComponent<ContourandRotatedRectDetection>().all_intensities[cur_rect_iter];
 
                     // getting the center of the bounding box
                     edge_pos = edge_pos / points.Count;

@@ -916,7 +916,7 @@ MonoBehaviour:
   color_picker_script: {fileID: 1345689511676050618}
   blobsizeSlider: {fileID: 7421034766271815845}
   all_icons: []
-  node_radius: 0
+  node_radius_val: 0
   graph_type: 
   auto_track: 0
   copy_graph: 0

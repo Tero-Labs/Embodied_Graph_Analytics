@@ -1085,6 +1085,8 @@ MonoBehaviour:
       m_Image: {fileID: 0}
     - m_Text: Brightness
       m_Image: {fileID: 0}
+    - m_Text: Color
+      m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

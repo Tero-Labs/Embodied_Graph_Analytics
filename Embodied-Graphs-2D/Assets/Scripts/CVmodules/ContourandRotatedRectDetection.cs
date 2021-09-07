@@ -13,6 +13,7 @@ using System.Linq;
 public class ContourandRotatedRectDetection : MonoBehaviour
 {
     public List<OpenCVForUnity.CoreModule.Rect> all_horizontal_rects;
+    public List<float> all_intensities;
 
     // Start is called before the first frame update
     void Start()
@@ -70,31 +71,36 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         Utils.setDebugMode(false);
     }
 
-    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture)
+    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, int visual_var = 0)
     {
         Utils.setDebugMode(false);
 
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
+        if (Paintable.visual_variable_dict[visual_var] == "brightness") all_intensities = new List<float>();
 
         Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
 
         Utils.texture2DToMat(imgTexture, imgMat);
+        Imgproc.cvtColor(imgMat, imgMat, Imgproc.COLOR_BGR2HSV);
         // Debug.Log("imgMat.ToString() " + imgMat.ToString());
-
-        // trying out contours
+               
         List<MatOfPoint> contours = new List<MatOfPoint>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(imgMat, contours, hierarchy, 1/*Imgproc.CV_RETR_LIST*/, 1/*Imgproc.CV_CHAIN_APPROX_NONE*/);
         // Debug.Log("no of contours (from texture):" + contours.Count.ToString());
         // visualization purpose
         //Imgproc.drawContours(imgMat, contours, -1, new Scalar(0, 255, 0), 2);
+        // sorting by length
+        contours = contours.OrderByDescending(x => x.toList().Count).ToList();
 
         // trying out rotatedrect
         // https://docs.opencv.org/3.4/de/d62/tutorial_bounding_rotated_ellipses.html
+        int num_iter = 0;
         foreach (MatOfPoint contour in contours)
         {
             // IMPORTANT: THE MatOfPoint CAN NOT BE DIRECTLY CASTED TO MatOfPoint2f HENCE WE GOT THE POINT ARRAY FROM MatOfPoint
-            MatOfPoint2f cur_points = new MatOfPoint2f(contour.toArray());
+            Point[] points = contour.toArray();
+            MatOfPoint2f cur_points = new MatOfPoint2f(points);
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
             // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
 
@@ -109,6 +115,15 @@ public class ContourandRotatedRectDetection : MonoBehaviour
                 Imgproc.line(imgMat, rect_points[j], rect_points[(j + 1) % 4], new Scalar(255, 0, 0));
             }*/
 
+            if (Paintable.visual_variable_dict[visual_var] == "brightness")
+            {
+                all_intensities.Add(FindIntensity(points, imgTexture));
+            }
+
+            num_iter++;
+            if (num_iter == contour_count)
+                break;
+
         }
 
 
@@ -117,16 +132,20 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         return all_bounding_rects;
     }
 
-    public List<RotatedRect> FindResultFromVideoTexture(Texture2D vidTexture, int contour_count = 7, bool copy_graph = false)
+    public List<RotatedRect> FindResultFromVideoTexture(Texture2D vidTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0)
     {
         Utils.setDebugMode(false);
 
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
         if (copy_graph) all_horizontal_rects = new List<OpenCVForUnity.CoreModule.Rect>();
+        if (Paintable.visual_variable_dict[visual_var] == "brightness") all_intensities = new List<float>();
 
         Mat vidMat = new Mat(vidTexture.height, vidTexture.width, CvType.CV_8UC1);
 
         Utils.texture2DToMat(vidTexture, vidMat);
+
+        //Mat gray_image = new Mat(vidTexture.height, vidTexture.width, CvType.CV_8UC1);
+        Imgproc.cvtColor(vidMat, vidMat, Imgproc.COLOR_BGR2HSV);
         // Debug.Log("vidMat.ToString() " + vidMat.ToString());
 
         // trying out contours
@@ -145,7 +164,8 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         foreach (MatOfPoint contour in contours)
         {
             // IMPORTANT: THE MatOfPoint CAN NOT BE DIRECTLY CASTED TO MatOfPoint2f HENCE WE GOT THE POINT ARRAY FROM MatOfPoint
-            MatOfPoint2f cur_points = new MatOfPoint2f(contour.toArray());
+            Point[] points = contour.toArray();
+            MatOfPoint2f cur_points = new MatOfPoint2f(points);
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
             // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
 
@@ -162,8 +182,12 @@ public class ContourandRotatedRectDetection : MonoBehaviour
                 Imgproc.line(vidMat, rect_points[j], rect_points[(j + 1) % 4], new Scalar(255, 0, 0));
             }*/
 
-            num_iter++;
+            if (Paintable.visual_variable_dict[visual_var] == "brightness")
+            {
+                all_intensities.Add(FindIntensity(points, vidTexture));
+            }
 
+            num_iter++;
             if (num_iter == contour_count)
                 break;
         }
@@ -174,4 +198,28 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         return all_bounding_rects;
     }
 
+    public float FindIntensity(Point[] points, Texture2D imgTexture)
+    {
+        float avg_intensity = 0f;
+
+        /*
+        MatOfPoint2f cur_points = new MatOfPoint2f(imgMat);
+        int cn = imgMat.channels();
+        long pixel_values = imgMat.dataAddr();
+        byte[] yuv = new byte[(int)(imgMat.total() * imgMat.channels())];
+        imgMat.get(0, 0, yuv);
+        Texture2D tex2D = new Texture2D(imgMat.width(), imgMat.height());
+        Utils.matToTexture2D(imgMat, tex2D);*/
+
+        int iter = 0;
+        foreach (Point pnt in points)
+        {
+            float h, s, v;
+            Color.RGBToHSV(imgTexture.GetPixel((int)pnt.x, (int)pnt.y), out h, out s, out v);
+            avg_intensity += v;
+            iter++;
+        }
+
+        return avg_intensity/iter;
+    }
 }

@@ -87,6 +87,7 @@ public class ImageCVDetectionandController : MonoBehaviour
         max_visual_var = 360f;
 
         node_radius_val = 20f;
+        contour_cnt = 7;
         UIlayout();
     }
     
@@ -98,7 +99,7 @@ public class ImageCVDetectionandController : MonoBehaviour
         //https://stackoverflow.com/a/43736203       
 
         Vector3 temp_pos = new Vector3(quad.transform.position.x,
-                                                    quad.transform.position.y - (height / 2) - 45,
+                                                    quad.transform.position.y - 45,
                                                     0f);
 
         Vector3 screen_temp_pos = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos);
@@ -109,8 +110,8 @@ public class ImageCVDetectionandController : MonoBehaviour
 
         control_menu.GetComponent<RectTransform>().anchoredPosition = rect_Try;
 
-        Vector3 temp_pos_2 = new Vector3(quad.transform.position.x + (width / 2) + 72,
-                                                   quad.transform.position.y,
+        Vector3 temp_pos_2 = new Vector3(quad.transform.position.x + width + 80,
+                                                   quad.transform.position.y + (height/2),
                                                    0f);
 
         Vector3 screen_temp_pos_2 = RectTransformUtility.WorldToScreenPoint(Camera.main, temp_pos_2);
@@ -156,6 +157,9 @@ public class ImageCVDetectionandController : MonoBehaviour
     void ChangeVisualVariable(TMP_Dropdown dropdown)
     {
         visual_var_val = dropdown.value;
+        if (Paintable.visual_variable_dict[visual_var_val] == "brightness")
+            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, contour_count: contour_cnt, visual_var: visual_var_val);
+
         StartCoroutine(GraphCreation());
     }
 
@@ -189,6 +193,7 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (inputField.name == "contourInputField" && inputField.text.Length > 0)
         {
             int.TryParse(inputField.text, out contour_cnt);
+            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, contour_count: contour_cnt, visual_var: visual_var_val);
             StartCoroutine(GraphCreation());
         }
     }
@@ -421,6 +426,7 @@ public class ImageCVDetectionandController : MonoBehaviour
         graph_holder.GetComponent<GraphElementScript>().graph = new Graph();
         graph_holder.GetComponent<GraphElementScript>().graph.nodes = new List<int>();
 
+        int cur_rect_iter = 0;
         foreach (RotatedRect cur_rect in all_bounding_rects)
         {
             Vector3 edge_pos = Vector3.zero;
@@ -456,12 +462,15 @@ public class ImageCVDetectionandController : MonoBehaviour
             }
                         
             // size
-            if (visual_var_val == 1)
+            if (Paintable.visual_variable_dict[visual_var_val] == "size")
                 temp.GetComponent<iconicElementScript>().visual_variable = ((float)cur_rect.size.width + (float)cur_rect.size.height) / 2;
             // angle
-            else if (visual_var_val == 2)
+            else if (Paintable.visual_variable_dict[visual_var_val] == "angle")
                 temp.GetComponent<iconicElementScript>().visual_variable = (float)cur_rect.angle;
-
+            // brightness
+            else if (Paintable.visual_variable_dict[visual_var_val] == "brightness")
+                temp.GetComponent<iconicElementScript>().visual_variable = 
+                    transform.GetComponent<ContourandRotatedRectDetection>().all_intensities[cur_rect_iter];
 
             // connect the end and statr position as well
             /*LineRenderer l = temp.GetComponent<LineRenderer>();
@@ -497,9 +506,11 @@ public class ImageCVDetectionandController : MonoBehaviour
             BoxCollider box_cl = temp.AddComponent<BoxCollider>();
             box_cl.center = edge_pos;//Vector3.zero;
             box_cl.size = size;
+
+            cur_rect_iter++;
         }
 
-        Debug.Log("all_icons: " + all_icons.Count.ToString());
+        // Debug.Log("all_icons: " + all_icons.Count.ToString());
         graph_holder.GetComponent<GraphElementScript>().points = graph_points;
         graph_holder.GetComponent<GraphElementScript>().graph.edges = new List<Edge>();      
 

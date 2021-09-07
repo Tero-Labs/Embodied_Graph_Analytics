@@ -185,11 +185,13 @@ public class Paintable : MonoBehaviour
         ["custom"] = 1
     };
 
-    public static Dictionary<string, int> visual_variable_dict = new Dictionary<string, int>()
+    public static Dictionary<int, string> visual_variable_dict = new Dictionary<int, string>()
     {
-        ["size"] = 0,
-        ["angle"] = 1,
-        ["brightness"] = 2
+        [0] = "none",
+        [1] = "size",
+        [2] = "angle",
+        [3] = "brightness",
+        [4] = "color"
     };
 
     // Start is called before the first frame update
