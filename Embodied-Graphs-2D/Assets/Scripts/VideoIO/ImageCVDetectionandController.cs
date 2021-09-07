@@ -89,8 +89,7 @@ public class ImageCVDetectionandController : MonoBehaviour
 
         UIlayout();
     }
-
-
+    
     public void UIlayout()
     {
         //http://www.robotmonkeybrain.com/convert-unity-ui-screen-space-position-to-world-position/
@@ -157,6 +156,7 @@ public class ImageCVDetectionandController : MonoBehaviour
     void ChangeVisualVariable(TMP_Dropdown dropdown)
     {
         visual_var_val = dropdown.value;
+        StartCoroutine(GraphCreation());
     }
 
     void TrackVisualInputField(InputField inputField)
@@ -166,16 +166,19 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (inputField.name == "minInputField" && inputField.text.Length > 0)
         {
             float.TryParse(inputField.text, out min_visual_var);
+            StartCoroutine(GraphCreation());
         }
 
         if (inputField.name == "maxInputField" && inputField.text.Length > 0)
         {
             float.TryParse(inputField.text, out max_visual_var);
+            StartCoroutine(GraphCreation());
         }
 
         if (inputField.name == "contourInputField" && inputField.text.Length > 0)
         {
             int.TryParse(inputField.text, out contour_cnt);
+            StartCoroutine(GraphCreation());
         }
     }
 
@@ -186,14 +189,15 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (inputField.name == "contourInputField" && inputField.text.Length > 0)
         {
             int.TryParse(inputField.text, out contour_cnt);
+            StartCoroutine(GraphCreation());
         }
     }
 
     void SliderValueChanged(Slider slider)
     {
         contour_size = slider.value;
+        StartCoroutine(GraphCreation());
     }
-
 
     void LockInput(InputField input)
     {
@@ -206,6 +210,7 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (input.text.Length > 0)
         {
             float.TryParse(input.text, out node_radius_val);
+            StartCoroutine(GraphCreation());
         }
     }    
 
@@ -215,6 +220,11 @@ public class ImageCVDetectionandController : MonoBehaviour
         else graph_type = "NodeRadius";
 
         mainInputField.interactable = node_radius.isOn;
+
+        // instead of creating different conditions for visual variables, I treated them similarly as proximity graph
+        if (none.isOn) node_radius_val = float.MaxValue;
+
+        StartCoroutine(GraphCreation());
     }
 
     void TrackType(Toggle toggle)
@@ -444,11 +454,12 @@ public class ImageCVDetectionandController : MonoBehaviour
                 edge_pos += pos_vec;
                 points.Add(pos_vec);
             }
-
+                        
             // size
-            if (visual_var_val == 0)
+            if (visual_var_val == 1)
                 temp.GetComponent<iconicElementScript>().visual_variable = ((float)cur_rect.size.width + (float)cur_rect.size.height) / 2;
-            else if (visual_var_val == 1)
+            // angle
+            else if (visual_var_val == 2)
                 temp.GetComponent<iconicElementScript>().visual_variable = (float)cur_rect.angle;
 
 
@@ -498,7 +509,8 @@ public class ImageCVDetectionandController : MonoBehaviour
             for (int i = 0; i < all_icons.Count; i++)
             {
                 // the node can not make edges if it is greater than the max or smaller than the min in visual variables  
-                if (all_icons[i].GetComponent<iconicElementScript>().visual_variable < min_visual_var || all_icons[i].GetComponent<iconicElementScript>().visual_variable > max_visual_var)
+                if (visual_var_val != 0 &&
+                            (all_icons[i].GetComponent<iconicElementScript>().visual_variable < min_visual_var || all_icons[i].GetComponent<iconicElementScript>().visual_variable > max_visual_var))
                 {
                     //Debug.Log("discarding for edge creation");
                     continue;
@@ -508,8 +520,15 @@ public class ImageCVDetectionandController : MonoBehaviour
 
                 for (int j = (i + 1); j < all_icons.Count; j++)
                 {
+                    if (visual_var_val != 0 &&
+                            (all_icons[j].GetComponent<iconicElementScript>().visual_variable < min_visual_var || all_icons[j].GetComponent<iconicElementScript>().visual_variable > max_visual_var))
+                    {
+                        //Debug.Log("discarding for edge creation");
+                        continue;
+                    }
+
                     if (Vector3.Distance(all_icons[i].GetComponent<iconicElementScript>().edge_position,
-                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < 500f)
+                        all_icons[j].GetComponent<iconicElementScript>().edge_position) < node_radius_val)
                     {
                         GameObject temp = Instantiate(edge_prefab, Vector3.zero, Quaternion.identity, graph_holder.transform.GetChild(1));
 

@@ -33,6 +33,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
     public GameObject paintable;
     public GameObject graph_holder;
 
+    public Toggle none;
     // visual Variable UI
     public TMP_Dropdown visual_var_type;
     public InputField max_limit, min_limit;
@@ -233,7 +234,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     //if (cur_texture == null)
                     cur_texture = DumpRenderTexture(/*"Assets/Resources/dump" + videoplayer.frame.ToString() + ".png"*/);
                     all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture, copy_graph: copy_graph);
-                    node_radius = 550f;// float.MaxValue;
+                    // instead of creating different conditions for visual variables, I treated them similarly as proximity graph
+                    if (none.isOn) node_radius = float.MaxValue;
                 }
 
 
@@ -377,9 +379,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         all_icons.Add(temp);        
 
                         // size
-                        if (visual_var_val == 0)
+                        if (visual_var_val == 1)
                             temp.GetComponent<iconicElementScript>().visual_variable = ((float)cur_obj.size.width + (float)cur_obj.size.height) / 2;
-                        else if (visual_var_val == 1)
+                        // angle
+                        else if (visual_var_val == 2)
                             temp.GetComponent<iconicElementScript>().visual_variable = (float)cur_obj.angle;
 
                         // getting the center of the bounding box
@@ -420,6 +423,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             }
 
             // create graph based on node radius
+            // this also handles the visual variables!
             if (graph_type == "NodeRadius")
             {
                 for (int i = 0; i < all_icons.Count; i++)
@@ -427,7 +431,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     // the node can not make edges if it is greater than the max or smaller than the min in visual variables  
                     if (frames_annotation == null)
                     { 
-                        if (all_icons[i].GetComponent<iconicElementScript>().visual_variable < min_visual_var || all_icons[i].GetComponent<iconicElementScript>().visual_variable > max_visual_var)
+                        if (visual_var_val != 0 && 
+                            (all_icons[i].GetComponent<iconicElementScript>().visual_variable < min_visual_var || all_icons[i].GetComponent<iconicElementScript>().visual_variable > max_visual_var))
                         {
                             //Debug.Log("discarding for edge creation");
                             continue;
@@ -438,6 +443,13 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     for (int j = (i + 1); j < all_icons.Count; j++)
                     {
+                        if (visual_var_val != 0 &&
+                            (all_icons[j].GetComponent<iconicElementScript>().visual_variable < min_visual_var || all_icons[j].GetComponent<iconicElementScript>().visual_variable > max_visual_var))
+                        {
+                            //Debug.Log("discarding for edge creation");
+                            continue;
+                        }
+
                         if (Vector3.Distance(all_icons[i].GetComponent<iconicElementScript>().edge_position,
                             all_icons[j].GetComponent<iconicElementScript>().edge_position) < node_radius)
                         {
