@@ -368,6 +368,20 @@ public class ImageCVDetectionandController : MonoBehaviour
 
     }
 
+    bool checkInsideIgnoreLasso(Vector3 pnt)
+    {
+        bool flag = false;
+
+        foreach (GameObject lasso in Paintable.ignore_lassos)
+        {
+            if (lasso == null) continue;
+            // is inside a cut lasso
+            if (lasso.GetComponent<iconicElementScript>().isInsidePolygon(pnt)) return true;
+        }
+
+        return flag;
+    }
+
     public IEnumerator GraphCreation()
     {
         yield return null;
@@ -436,22 +450,6 @@ public class ImageCVDetectionandController : MonoBehaviour
         foreach (RotatedRect cur_rect in all_bounding_rects)
         {
             Vector3 edge_pos = Vector3.zero;
-            GameObject temp = Instantiate(icon_prefab, Vector3.zero, Quaternion.identity, graph_holder.transform.GetChild(0));
-
-            num++;
-            temp.tag = "iconic";
-            temp.name = "iconic_" + num;
-            temp.GetComponent<iconicElementScript>().icon_number = num;
-            temp.GetComponent<iconicElementScript>().video_icon = true;
-            all_icons.Add(temp);
-
-            graph_holder.GetComponent<GraphElementScript>().graph.nodes.Add(num);
-            graph_holder.GetComponent<GraphElementScript>().nodeMaps.Add(num.ToString(), temp.transform);
-
-            temp.GetComponent<TrailRenderer>().enabled = false;
-            temp.GetComponent<LineRenderer>().enabled = false;
-            temp.GetComponent<MeshRenderer>().enabled = false;
-
             List<Vector3> points = new List<Vector3>();
 
             Point[] rect_points = new Point[4];
@@ -467,6 +465,28 @@ public class ImageCVDetectionandController : MonoBehaviour
                 edge_pos += pos_vec;
                 points.Add(pos_vec);
             }
+
+            // getting the center of the bounding box
+            edge_pos = edge_pos / points.Count;
+
+            // inside an ignore lasso, so discard it
+            if (checkInsideIgnoreLasso(edge_pos)) continue;
+
+            GameObject temp = Instantiate(icon_prefab, Vector3.zero, Quaternion.identity, graph_holder.transform.GetChild(0));
+
+            num++;
+            temp.tag = "iconic";
+            temp.name = "iconic_" + num;
+            temp.GetComponent<iconicElementScript>().icon_number = num;
+            temp.GetComponent<iconicElementScript>().video_icon = true;
+            all_icons.Add(temp);
+
+            graph_holder.GetComponent<GraphElementScript>().graph.nodes.Add(num);
+            graph_holder.GetComponent<GraphElementScript>().nodeMaps.Add(num.ToString(), temp.transform);
+
+            temp.GetComponent<TrailRenderer>().enabled = false;
+            temp.GetComponent<LineRenderer>().enabled = false;
+            temp.GetComponent<MeshRenderer>().enabled = false;
                         
             // size
             if (Paintable.visual_variable_dict[visual_var_val] == "size")
@@ -488,9 +508,7 @@ public class ImageCVDetectionandController : MonoBehaviour
             // if we don't manually change the position count, it only takes the first two positions
             l.positionCount = points.Count;
             l.SetPositions(points.ToArray());*/
-
-            // getting the center of the bounding box
-            edge_pos = edge_pos / points.Count;
+                        
             temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
             temp.GetComponent<iconicElementScript>().bounds_center = edge_pos;
 

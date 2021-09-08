@@ -274,7 +274,15 @@ public class AllButtonsBehaviors : MonoBehaviour
             }                
 
         }
-
+               
+        else if (this.name == "CutIcon")
+        {
+            // allow drawing over existing pen/set etc. objects without interfering
+            disableAllPenObjectColliders();
+            disablesimplicialColliders();
+            paint_canvas.GetComponent<Paintable>().color_picker.SetActive(true);
+            paint_canvas.GetComponent<Paintable>().color_picker_script.color = Color.white;
+        }
 
         // deselect all other buttons
         for (int i = 0; i < buttons.Length; i++)
@@ -297,7 +305,7 @@ public class AllButtonsBehaviors : MonoBehaviour
 		transform.localScale = new Vector3(1f, 1f, 1f);
 
         // when a new button is selected, a templine might still exist. We need to destroy that as well.
-        if (this.name == "IconicPen" || this.name == "Annotation")
+        if (this.name == "IconicPen" || this.name == "Annotation" || this.name == "CutIcon")
         {
             if (paint_canvas.GetComponent<Paintable>().templine != null)
             {
@@ -542,7 +550,42 @@ public class AllButtonsBehaviors : MonoBehaviour
                 Destroy(cur);
             }
         }
+                
+        /*foreach (GameObject cur in Paintable.ignore_lassos)
+        {
+            if (cur == null)
+            {
+                try
+                {
+                    Paintable.ignore_lassos.Remove(cur);
+                }
+                catch
+                {
 
+                }
+
+                continue;
+            }
+
+            if (cur.GetComponent<iconicElementScript>() != null)
+            {
+                if (cur.GetComponent<iconicElementScript>().points.Count < paint_canvas.GetComponent<Paintable>().min_point_count)
+                {
+                    Destroy(cur);
+                }
+            }
+
+            else if (cur.GetComponent<BoxCollider>() == null)
+            {
+                Destroy(cur);
+            }
+
+            else if (cur.GetComponent<MeshFilter>().sharedMesh == null)
+            {
+                Destroy(cur);
+            }
+        }
+        */
         yield return null;
         paint_canvas.GetComponent<Paintable>().new_drawn_icons.Clear();
     }

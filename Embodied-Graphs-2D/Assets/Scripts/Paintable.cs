@@ -60,6 +60,7 @@ public class Paintable : MonoBehaviour
     public GameObject ImagePlayer;
 
     // Canvas buttons
+    public GameObject cutlassoButton;
     public GameObject staticElementButton;
     public GameObject iconicElementButton;
     public static GameObject pan_button;
@@ -156,6 +157,7 @@ public class Paintable : MonoBehaviour
     public List<GameObject> new_drawn_function_lines = new List<GameObject>();
     public static List<GameObject> video_players = new List<GameObject>();
     public static List<GameObject> image_players = new List<GameObject>();
+    public static List<GameObject> ignore_lassos = new List<GameObject>();
 
     // extra check for inputfields
     public static bool click_on_inputfield;
@@ -268,8 +270,8 @@ public class Paintable : MonoBehaviour
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) &&
-                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"
-                   || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
+                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"
+                   || Hit.collider.gameObject.tag == "cut" || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
                 {                    
                     Vector3 vec = Hit.point + new Vector3(0, 0, -40); 
                     
@@ -303,8 +305,8 @@ public class Paintable : MonoBehaviour
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) &&
-                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"
-                    || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"
+                    || Hit.collider.gameObject.tag == "cut" || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
                 {
 
                     Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
@@ -327,12 +329,113 @@ public class Paintable : MonoBehaviour
                 RaycastHit Hit;
 
                 if (Physics.Raycast(ray, out Hit) &&
-                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"
-                    || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"
+                    || Hit.collider.gameObject.tag == "cut" || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
                 {
                     if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
                     {
 
+                        templine = transform.GetComponent<CreatePrimitives>().FinishStaticLine(templine);
+                        Destroy(templine.GetComponent<iconicElementScript>());
+                        templine = null;
+
+                    }
+                    else
+                    {
+                        Destroy(templine);
+                        templine = null;
+                    }
+                }
+                else
+                {
+                    Destroy(templine);
+                    templine = null;
+                }
+
+            }
+
+        }
+
+        #endregion
+
+        #region ignore lasso brush
+
+        if (cutlassoButton.GetComponent<AllButtonsBehaviors>().selected)
+        //!iconicElementButton.GetComponent<AllButtonsBehaviors>().isPredictivePen)
+        {
+
+            //Debug.Log("entered");
+            if (PenTouchInfo.PressedThisFrame)//currentPen.tip.wasPressedThisFrame)
+            {
+                // start drawing a new line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) &&
+                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"
+                   || Hit.collider.gameObject.tag == "cut" || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
+                {
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -40);
+
+                    templine = Instantiate(IconicElement, vec, Quaternion.identity, Objects_parent.transform);
+
+                    templine.name = "cut_";
+                    templine.tag = "cut";
+
+                    templine.GetComponent<iconicElementScript>().points.Add(vec);
+
+                    templine.transform.GetComponent<LineRenderer>().material.SetColor("_Color", color_picker_script.color);
+                    templine.transform.GetComponent<TrailRenderer>().material.SetColor("_Color", color_picker_script.color);
+                    //Debug.Log("colorpicker_color:" + color_picker_script.color.ToString());
+
+
+                    templine.GetComponent<TrailRenderer>().widthMultiplier = 2;
+                    //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+
+                    templine.GetComponent<LineRenderer>().widthMultiplier = 2;
+                    //pencil_button.GetComponent<AllButtonsBehavior>().penWidthSliderInstance.GetComponent<Slider>().value;
+                    new_drawn_icons.Add(templine);
+                    ignore_lassos.Add(templine);
+                }
+            }
+
+            else if (templine != null &&
+                PenTouchInfo.PressedNow //currentPen.tip.isPressed
+                && (PenTouchInfo.penPosition -
+                (Vector2)templine.GetComponent<iconicElementScript>().points[templine.GetComponent<iconicElementScript>().points.Count - 1]).magnitude > 0f)
+            {
+                // add points to the last line
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
+                RaycastHit Hit;
+                if (Physics.Raycast(ray, out Hit) &&
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"
+                    || Hit.collider.gameObject.tag == "cut" || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
+                {
+
+                    Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
+
+                    templine.GetComponent<TrailRenderer>().transform.position = vec;
+                    templine.GetComponent<iconicElementScript>().points.Add(vec);
+
+                    // pressure based pen width
+                    templine.GetComponent<iconicElementScript>().updateLengthFromPoints();
+                    templine.GetComponent<iconicElementScript>().addPressureValue(PenTouchInfo.pressureValue);
+                    templine.GetComponent<iconicElementScript>().reNormalizeCurveWidth();
+                    templine.GetComponent<TrailRenderer>().widthCurve = templine.GetComponent<iconicElementScript>().widthcurve;
+
+                }
+            }
+
+            else if (templine != null && PenTouchInfo.ReleasedThisFrame)
+            {
+                var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition); //currentPen.position.ReadValue());// Input.GetTouch(0).position);
+                RaycastHit Hit;
+
+                if (Physics.Raycast(ray, out Hit) &&
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"
+                    || Hit.collider.gameObject.tag == "cut" || Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "iconic"))
+                {
+                    if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
+                    {
                         templine = transform.GetComponent<CreatePrimitives>().FinishStaticLine(templine);
                         templine = null;
 
@@ -353,9 +456,7 @@ public class Paintable : MonoBehaviour
 
         }
 
-
         #endregion
-
 
         #region iconic element brush
 
@@ -370,7 +471,7 @@ public class Paintable : MonoBehaviour
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) &&
-                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                   (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"))
                 {
                     //Debug.Log("instantiated_templine");
 
@@ -411,7 +512,7 @@ public class Paintable : MonoBehaviour
                 var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                 RaycastHit Hit;
                 if (Physics.Raycast(ray, out Hit) &&
-                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"))
                 {
 
                     Vector3 vec = Hit.point + new Vector3(0, 0, -40); // Vector3.up * 0.1f;
@@ -440,7 +541,7 @@ public class Paintable : MonoBehaviour
                 RaycastHit Hit;
 
                 if (Physics.Raycast(ray, out Hit) &&
-                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                    (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"))
                 {
                     if (templine.GetComponent<iconicElementScript>().points.Count > min_point_count)
                     {
@@ -941,8 +1042,7 @@ public class Paintable : MonoBehaviour
 
         }
         #endregion
-
-        // ERASER BRUSH
+                
         #region eraser
         if (PenTouchInfo.PressedNow && eraser_button.GetComponent<AllButtonsBehaviors>().selected)
         {
@@ -1002,7 +1102,7 @@ public class Paintable : MonoBehaviour
                         StartCoroutine(ClearGraphData("hyper", temp.gameObject));
                    // temp.parent.GetComponent<GraphElementScript>().hyperedges_init();
                 }
-                else if (Hit.collider.gameObject.tag == "static")
+                else if (Hit.collider.gameObject.tag == "static" || Hit.collider.gameObject.tag == "cut")
                 {                    
                     Destroy(Hit.collider.gameObject);
                 }
@@ -1199,7 +1299,7 @@ public class Paintable : MonoBehaviour
                         RaycastHit Hit;
                         //Debug.Log("here");
                         if (Physics.Raycast(ray, out Hit) &&
-                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"))
                         {
                             Debug.Log("instantiated_templine");
 
@@ -1225,7 +1325,7 @@ public class Paintable : MonoBehaviour
                         var ray = Camera.main.ScreenPointToRay(PenTouchInfo.penPosition);
                         RaycastHit Hit;
                         if (Physics.Raycast(ray, out Hit) &&
-                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"))
                         {
 
                             Vector3 vec = Hit.point + new Vector3(0, 0, -5f); // Vector3.up * 0.1f;
@@ -1251,7 +1351,7 @@ public class Paintable : MonoBehaviour
                         /*if (potential_tapped_graph == null)
                         {*/
                             if (Physics.Raycast(ray, out Hit) &&
-                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player"))
+                            (Hit.collider.gameObject.name == "Paintable" || Hit.collider.gameObject.tag == "video_player" || Hit.collider.gameObject.tag == "image_player"))
                             {
                                 if (functionline.GetComponent<FunctionElementScript>().points.Count > min_point_count)
                                 {

@@ -1137,10 +1137,10 @@ public class EdgeElementScript : MonoBehaviour
     {
         spline_dist = UnityEngine.Random.Range(2, 4);
 
-        if (paintable_object.GetComponent<Paintable>().color_picker.activeSelf)
-            transform.GetComponent<LineRenderer>().material.SetColor("_Color", paintable_object.GetComponent<Paintable>().color_picker_script.color);
-        else if (video)
+        if (video)
             transform.GetComponent<LineRenderer>().material.SetColor("_Color", Color.red);
+        else if (paintable_object.GetComponent<Paintable>().color_picker.activeSelf)
+            transform.GetComponent<LineRenderer>().material.SetColor("_Color", paintable_object.GetComponent<Paintable>().color_picker_script.color); 
         else
             transform.GetComponent<LineRenderer>().material.SetColor("_Color", Color.gray);
 

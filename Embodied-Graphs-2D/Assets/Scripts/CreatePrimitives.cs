@@ -133,7 +133,7 @@ public class CreatePrimitives : MonoBehaviour
         // get rid of the line renderer?
         Destroy(templine.GetComponent<LineRenderer>());
         Destroy(templine.GetComponent<TrailRenderer>());
-        Destroy(templine.GetComponent<iconicElementScript>());
+        //Destroy(templine.GetComponent<iconicElementScript>());
 
         // add a collider        
         templine.AddComponent<BoxCollider>();

@@ -252,6 +252,20 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
         return tex_small;
     }
 
+    bool checkInsideIgnoreLasso(Vector3 pnt)
+    {
+        bool flag = false;
+
+        foreach(GameObject lasso in Paintable.ignore_lassos)
+        {
+            if (lasso == null) continue;
+            // is inside a cut lasso
+            if (lasso.GetComponent<iconicElementScript>().isInsidePolygon(pnt)) return true;
+        }
+
+        return flag;
+    }
+
     public void GraphCreation()
     {
         if (graph_holder != null)
@@ -350,6 +364,25 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 foreach (tracked_object cur_obj in all_objects)
                 {
                     Vector3 edge_pos = Vector3.zero;
+                    List<Vector3> points = new List<Vector3>();
+
+                    foreach (bounds first_obj in cur_obj.bounds)
+                    {
+                        float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, frames_annotation.width, first_obj.x));
+                        float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, frames_annotation.height, first_obj.y));
+
+                        Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
+                        edge_pos += pos_vec;
+
+                        points.Add(pos_vec);
+                    }
+
+                    // getting the center of the bounding box
+                    edge_pos = edge_pos / points.Count;
+
+                    // inside an ignore lasso, so discard it
+                    if (checkInsideIgnoreLasso(edge_pos)) continue;
+
                     GameObject temp = Instantiate(icon_prefab, Vector3.zero, Quaternion.identity, graph_holder.transform.GetChild(0));
 
                     num++;
@@ -364,25 +397,11 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
                     temp.GetComponent<TrailRenderer>().enabled = false;
                     temp.GetComponent<LineRenderer>().enabled = false;
-                    temp.GetComponent<MeshRenderer>().enabled = false;
-
-                    List<Vector3> points = new List<Vector3>();
-
-                    foreach (bounds first_obj in cur_obj.bounds)
-                    {
-                        float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, frames_annotation.width, first_obj.x));
-                        float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, frames_annotation.height, first_obj.y));
-
-                        Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
-                        edge_pos += pos_vec;
-
-                        points.Add(pos_vec);
-                    }
+                    temp.GetComponent<MeshRenderer>().enabled = false;                                      
 
                     /*float bound_box_avg_size = (Vector3.Distance(points[0], points[1]) + Vector3.Distance(points[1], points[2])) / 2;
                     temp.GetComponent<iconicElementScript>().visual_variable = bound_box_avg_size;*/
                     //Debug.Log("size: " + bound_box_avg_size.ToString());
-
 
                     // connect the end and statr position as well
                     /*LineRenderer l = temp.GetComponent<LineRenderer>();
@@ -394,8 +413,6 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     l.positionCount = points.Count;
                     l.SetPositions(points.ToArray());*/
 
-                    // getting the center of the bounding box
-                    edge_pos = edge_pos / points.Count;
                     temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
                     temp.GetComponent<iconicElementScript>().bounds_center = edge_pos;
 
@@ -433,6 +450,21 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                 foreach (RotatedRect cur_obj in all_rects)
                 {
                     Vector3 edge_pos = Vector3.zero;
+                    List<Vector3> points = new List<Vector3>();
+
+                    float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, cur_texture.width, (float)cur_obj.center.x));
+                    float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, cur_texture.height, (float)cur_obj.center.y));
+
+                    Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
+                    edge_pos += pos_vec;
+                    points.Add(pos_vec);
+                    
+                    // getting the center of the bounding box
+                    edge_pos = edge_pos / points.Count;
+
+                    // inside an ignore lasso, so discard it
+                    if (checkInsideIgnoreLasso(edge_pos)) continue;
+                    
                     GameObject temp = Instantiate(icon_prefab, Vector3.zero, Quaternion.identity, graph_holder.transform.GetChild(0));
 
                     num++;
@@ -449,19 +481,10 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                         temp.GetComponent<TrailRenderer>().enabled = false;
                         temp.GetComponent<MeshRenderer>().enabled = false;
                     }
-                    catch (Exception exc)
+                    catch
                     {
                         //Debug.Log("no renderer attached");
-                    }
-
-                    List<Vector3> points = new List<Vector3>();
-
-                    float lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), Mathf.InverseLerp(1, cur_texture.width, (float)cur_obj.center.x));
-                    float lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), Mathf.InverseLerp(1, cur_texture.height, (float)cur_obj.center.y));
-
-                    Vector3 pos_vec = new Vector3(lerped_x, lerped_y, -40f);
-                    edge_pos += pos_vec;
-                    points.Add(pos_vec);
+                    }                    
 
                     /*temp.GetComponent<iconicElementScript>().image_icon = true;
                     int bottom_x, bottom_y, rect_width, rect_height;
@@ -494,9 +517,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     else if (Paintable.visual_variable_dict[visual_var_val] == "brightness")
                         temp.GetComponent<iconicElementScript>().visual_variable =
                             transform.GetComponent<ContourandRotatedRectDetection>().all_intensities[cur_rect_iter];
-
-                    // getting the center of the bounding box
-                    edge_pos = edge_pos / points.Count;
+                                        
                     temp.GetComponent<iconicElementScript>().edge_position = edge_pos;
                     temp.GetComponent<iconicElementScript>().bounds_center = edge_pos;
 

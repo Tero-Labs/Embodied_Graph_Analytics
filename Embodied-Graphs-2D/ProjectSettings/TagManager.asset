@@ -22,6 +22,7 @@ TagManager:
   - video_player
   - static
   - image_player
+  - cut
   layers:
   - Default
   - TransparentFX
