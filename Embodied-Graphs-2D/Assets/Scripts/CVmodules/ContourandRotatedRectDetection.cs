@@ -9,6 +9,8 @@ using OpenCVForUnity.Features2dModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.ImgprocModule;
 using System.Linq;
+using OpenCVForUnity.UnityUtils.Helper;
+using System.IO;
 
 public class ContourandRotatedRectDetection : MonoBehaviour
 {
@@ -71,6 +73,29 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         Utils.setDebugMode(false);
     }
 
+    /// <summary>
+    /// Morphs the ops.
+    /// </summary>
+    /// <param name="thresh">Thresh.</param>
+    private void morphOps(Mat thresh)
+    {
+        //create structuring element that will be used to "dilate" and "erode" image.
+        //the element chosen here is a 3px by 3px rectangle
+        Mat erodeElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8, 8));
+        //dilate with larger element so make sure object is nicely visible
+        Mat dilateElement = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(8, 8));
+
+
+        // https://www.opencv-srf.com/2010/09/object-detection-using-color-seperation.html
+        //morphological closing (fill small holes in the foreground)
+        Imgproc.dilate(thresh, thresh, dilateElement);
+        Imgproc.erode(thresh, thresh, erodeElement);
+
+        //morphological opening (remove small objects from the foreground)
+        //Imgproc.erode(thresh, thresh, erodeElement);
+        //Imgproc.dilate(thresh, thresh, dilateElement);
+    }
+
     public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, int visual_var = 0)
     {
         Utils.setDebugMode(false);
@@ -81,9 +106,25 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
 
         Utils.texture2DToMat(imgTexture, imgMat);
-        Imgproc.cvtColor(imgMat, imgMat, Imgproc.COLOR_BGR2HSV);
+
+        if (Paintable.visual_variable_dict[visual_var] == "color")
+        {
+            Debug.Log("mat channel count: " + imgMat.channels().ToString());
+            Imgproc.cvtColor(imgMat, imgMat, Imgproc.COLOR_BGR2HSV);
+            Debug.Log("imgMat.ToString() " + imgMat.ToString());
+
+            // Mat imgThresholded = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
+            Core.inRange(imgMat, new Scalar(40, 100, 100), new Scalar(50, 255, 255), imgMat); //Threshold the image
+            morphOps(imgMat);
+
+            Texture2D temp_texture = new Texture2D(imgMat.cols(), imgMat.rows(), TextureFormat.RGBA32, false);
+            Utils.matToTexture2D(imgMat, temp_texture);
+            File.WriteAllBytes("F:/tero_lab_stuff/" + "dump.png", temp_texture.EncodeToPNG());
+        }
+            
         // Debug.Log("imgMat.ToString() " + imgMat.ToString());
-               
+        
+
         List<MatOfPoint> contours = new List<MatOfPoint>();
         Mat hierarchy = new Mat();
         Imgproc.findContours(imgMat, contours, hierarchy, 1/*Imgproc.CV_RETR_LIST*/, 1/*Imgproc.CV_CHAIN_APPROX_NONE*/);

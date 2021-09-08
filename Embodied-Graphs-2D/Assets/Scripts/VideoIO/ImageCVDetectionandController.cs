@@ -157,8 +157,7 @@ public class ImageCVDetectionandController : MonoBehaviour
     void ChangeVisualVariable(TMP_Dropdown dropdown)
     {
         visual_var_val = dropdown.value;
-        if (Paintable.visual_variable_dict[visual_var_val] == "brightness")
-            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, contour_count: contour_cnt, visual_var: visual_var_val);
+        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, contour_count: contour_cnt, visual_var: visual_var_val);
 
         StartCoroutine(GraphCreation());
     }

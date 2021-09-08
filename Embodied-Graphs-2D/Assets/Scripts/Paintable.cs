@@ -43,7 +43,7 @@ public class Paintable : MonoBehaviour
     public bool edge_add = false;
     public bool edge_del = false;
     public bool free_hand_edge = false;
-    public bool image_CV_operation = false;
+    public static bool image_CV_operation = true;
 
     private Vector2 prev_move_pos;
     public Vector3 touchDelta;
@@ -2735,7 +2735,7 @@ public class Paintable : MonoBehaviour
         yield return null;
         yield return null;
         yield return null;
-        Debug.Log(temp.name);
+
         if (temp != null && temp.transform.parent.GetComponent<GraphElementScript>().video_graph)
         {
             try

@@ -523,7 +523,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
             }
 
-            Debug.Log("all_icons: " + all_icons.Count.ToString());
+            // Debug.Log("all_icons: " + all_icons.Count.ToString());
 
             graph_holder.GetComponent<GraphElementScript>().points = graph_points;
             graph_holder.GetComponent<GraphElementScript>().graph.edges = new List<Edge>();
