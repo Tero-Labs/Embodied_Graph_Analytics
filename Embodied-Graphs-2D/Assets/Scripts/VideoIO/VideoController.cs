@@ -67,6 +67,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
 
         copy_graph = false;
         contour_cnt = 7;
+        contour_size = 0;
 
         // visual variable setup
         visual_var_type.onValueChanged.AddListener(delegate { ChangeVisualVariable(visual_var_type); });
@@ -329,7 +330,8 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
             {
                 //if (cur_texture == null)
                 cur_texture = DumpRenderTexture(/*"Assets/Resources/dump" + videoplayer.frame.ToString() + ".png"*/);
-                all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture, contour_count: contour_cnt, copy_graph: copy_graph, visual_var: visual_var_val);
+                all_rects = transform.GetComponent<ContourandRotatedRectDetection>().FindResultFromVideoTexture(cur_texture, 
+                    contour_count: contour_cnt, copy_graph: copy_graph, visual_var: visual_var_val, blob_size: (int)contour_size);
                 // instead of creating different conditions for visual variables, I treated them similarly as proximity graph
                 if (none.isOn) node_radius_val = float.MaxValue;
             }

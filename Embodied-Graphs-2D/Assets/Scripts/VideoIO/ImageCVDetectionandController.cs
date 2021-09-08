@@ -88,6 +88,7 @@ public class ImageCVDetectionandController : MonoBehaviour
 
         node_radius_val = 20f;
         contour_cnt = 7;
+        contour_size = 0;
         UIlayout();
     }
     
@@ -157,7 +158,8 @@ public class ImageCVDetectionandController : MonoBehaviour
     void ChangeVisualVariable(TMP_Dropdown dropdown)
     {
         visual_var_val = dropdown.value;
-        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, contour_count: contour_cnt, visual_var: visual_var_val);
+        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, 
+            contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
 
         StartCoroutine(GraphCreation());
     }
@@ -192,7 +194,8 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (inputField.name == "contourInputField" && inputField.text.Length > 0)
         {
             int.TryParse(inputField.text, out contour_cnt);
-            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, contour_count: contour_cnt, visual_var: visual_var_val);
+            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, 
+                contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
             StartCoroutine(GraphCreation());
         }
     }
@@ -200,6 +203,9 @@ public class ImageCVDetectionandController : MonoBehaviour
     void SliderValueChanged(Slider slider)
     {
         contour_size = slider.value;
+        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
+            contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+
         StartCoroutine(GraphCreation());
     }
 

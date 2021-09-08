@@ -1627,8 +1627,8 @@ public class Paintable : MonoBehaviour
     {
         GameObject temp = Instantiate(ImagePlayer, new Vector3(0, 0, -2f), Quaternion.identity
                         /*transform.GetComponent<Paintable>().canvas_radial.transform*/);
-        temp.GetComponent<ImageCVDetectionandController>().LoadNewSprite(FilePath);
         temp.GetComponent<ImageCVDetectionandController>().paintable = transform.gameObject;
+        temp.GetComponent<ImageCVDetectionandController>().LoadNewSprite(FilePath);        
         image_players.Add(temp);
     }
 

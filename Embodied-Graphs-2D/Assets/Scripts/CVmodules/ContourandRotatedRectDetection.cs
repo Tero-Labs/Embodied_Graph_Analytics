@@ -96,43 +96,47 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         //Imgproc.dilate(thresh, thresh, dilateElement);
     }
 
-    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, int visual_var = 0)
+    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, int visual_var = 0, int blob_size = 0)
     {
-        Utils.setDebugMode(false);
-
+        Utils.setDebugMode(true);
+        Debug.Log("Texture format: " + imgTexture.format.ToString());
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
         if (Paintable.visual_variable_dict[visual_var] == "brightness") all_intensities = new List<float>();
 
-        Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
-
+        Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC3);
         Utils.texture2DToMat(imgTexture, imgMat);
 
         if (Paintable.visual_variable_dict[visual_var] == "color")
         {
             Debug.Log("mat channel count: " + imgMat.channels().ToString());
-            Imgproc.cvtColor(imgMat, imgMat, Imgproc.COLOR_BGR2HSV);
-            Debug.Log("imgMat.ToString() " + imgMat.ToString());
+            Imgproc.cvtColor(imgMat, imgMat, Imgproc.COLOR_RGB2GRAY/*COLOR_BGR2HSV*/);
+            Debug.Log("mat channel count after COLOR_BGR2HSV: " + imgMat.channels().ToString());            
 
-            // Mat imgThresholded = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC1);
-            Core.inRange(imgMat, new Scalar(40, 100, 100), new Scalar(50, 255, 255), imgMat); //Threshold the image
-            morphOps(imgMat);
-
-            Texture2D temp_texture = new Texture2D(imgMat.cols(), imgMat.rows(), TextureFormat.RGBA32, false);
-            Utils.matToTexture2D(imgMat, temp_texture);
-            File.WriteAllBytes("F:/tero_lab_stuff/" + "dump.png", temp_texture.EncodeToPNG());
+            Core.inRange(imgMat, /*new Scalar(25, 50, 50)*/new Scalar(76, 135, 141), /*new Scalar(75, 255, 255)*/new Scalar(104, 178, 153), imgMat); //Threshold the image
+            morphOps(imgMat);                        
+            Debug.Log("mat channel count after masking: " + imgMat.channels().ToString());                       
         }
-            
-        // Debug.Log("imgMat.ToString() " + imgMat.ToString());
-        
+        else
+            Imgproc.cvtColor(imgMat, imgMat, Imgproc.COLOR_RGB2GRAY);
+
+        /*Texture2D temp_texture = new Texture2D(imgMat.cols(), imgMat.rows(), TextureFormat.RGB24, false);
+        Utils.matToTexture2D(imgMat, temp_texture, flip: false, flipAfter: true);
+        File.WriteAllBytes("F:/tero_lab_stuff/" + "contour_input.jpg", temp_texture.EncodeToJPG());*/
 
         List<MatOfPoint> contours = new List<MatOfPoint>();
-        Mat hierarchy = new Mat();
+        Mat hierarchy = new Mat();        
         Imgproc.findContours(imgMat, contours, hierarchy, 1/*Imgproc.CV_RETR_LIST*/, 1/*Imgproc.CV_CHAIN_APPROX_NONE*/);
         // Debug.Log("no of contours (from texture):" + contours.Count.ToString());
         // visualization purpose
         //Imgproc.drawContours(imgMat, contours, -1, new Scalar(0, 255, 0), 2);
         // sorting by length
         contours = contours.OrderByDescending(x => x.toList().Count).ToList();
+                
+        // scaling with current target
+        if (blob_size > 0)
+        {
+            blob_size = (int)Mathf.Lerp(contours[contours.Count - 1].toList().Count, contours[0].toList().Count, Mathf.InverseLerp(1, 50, blob_size));
+        }
 
         // trying out rotatedrect
         // https://docs.opencv.org/3.4/de/d62/tutorial_bounding_rotated_ellipses.html
@@ -141,6 +145,9 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         {
             // IMPORTANT: THE MatOfPoint CAN NOT BE DIRECTLY CASTED TO MatOfPoint2f HENCE WE GOT THE POINT ARRAY FROM MatOfPoint
             Point[] points = contour.toArray();
+            // if less than predefined value- break and discard it
+            if (points.Length < blob_size) break;
+
             MatOfPoint2f cur_points = new MatOfPoint2f(points);
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
             // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
@@ -173,7 +180,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         return all_bounding_rects;
     }
 
-    public List<RotatedRect> FindResultFromVideoTexture(Texture2D vidTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0)
+    public List<RotatedRect> FindResultFromVideoTexture(Texture2D vidTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0, int blob_size = 0)
     {
         Utils.setDebugMode(false);
 
@@ -181,13 +188,19 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         if (copy_graph) all_horizontal_rects = new List<OpenCVForUnity.CoreModule.Rect>();
         if (Paintable.visual_variable_dict[visual_var] == "brightness") all_intensities = new List<float>();
 
-        Mat vidMat = new Mat(vidTexture.height, vidTexture.width, CvType.CV_8UC1);
-
-        Utils.texture2DToMat(vidTexture, vidMat);
+        Mat vidMat = new Mat(vidTexture.height, vidTexture.width, CvType.CV_8UC3);
+        Utils.texture2DToMat(vidTexture, vidMat);               
 
         //Mat gray_image = new Mat(vidTexture.height, vidTexture.width, CvType.CV_8UC1);
-        Imgproc.cvtColor(vidMat, vidMat, Imgproc.COLOR_BGR2HSV);
+        Imgproc.cvtColor(vidMat, vidMat, Imgproc.COLOR_RGB2GRAY);
         // Debug.Log("vidMat.ToString() " + vidMat.ToString());
+
+        if (Paintable.visual_variable_dict[visual_var] == "color")
+        {            
+            Core.inRange(vidMat, /*new Scalar(25, 50, 50)*/new Scalar(76, 135, 141), /*new Scalar(75, 255, 255)*/new Scalar(104, 178, 153), vidMat); //Threshold the image
+            morphOps(vidMat);
+        }
+
 
         // trying out contours
         List<MatOfPoint> contours = new List<MatOfPoint>();
@@ -199,6 +212,12 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         // sorting by length
         contours = contours.OrderByDescending(x => x.toList().Count).ToList();
 
+        // scaling with current target
+        if (blob_size > 0)
+        {
+            blob_size = (int)Mathf.Lerp(contours[contours.Count - 1].toList().Count, contours[0].toList().Count, Mathf.InverseLerp(1, 50, blob_size));
+        }
+
         int num_iter = 0;
         // trying out rotatedrect
         // https://docs.opencv.org/3.4/de/d62/tutorial_bounding_rotated_ellipses.html
@@ -206,6 +225,9 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         {
             // IMPORTANT: THE MatOfPoint CAN NOT BE DIRECTLY CASTED TO MatOfPoint2f HENCE WE GOT THE POINT ARRAY FROM MatOfPoint
             Point[] points = contour.toArray();
+            // if less than predefined value- break and discard it
+            if (points.Length < blob_size) break;
+
             MatOfPoint2f cur_points = new MatOfPoint2f(points);
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
             // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
