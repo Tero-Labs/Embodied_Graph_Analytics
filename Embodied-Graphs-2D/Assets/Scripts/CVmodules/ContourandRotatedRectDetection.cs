@@ -96,7 +96,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         //Imgproc.dilate(thresh, thresh, dilateElement);
     }
 
-    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0, int blob_size = 0)
+    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0, int blob_size = 0, float max_visual_var = 0, float min_visual_var = 0)
     {
         Utils.setDebugMode(true);
         // Debug.Log("Texture format: " + imgTexture.format.ToString());
@@ -151,7 +151,30 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
             MatOfPoint2f cur_points = new MatOfPoint2f(points);
             RotatedRect minRect = Imgproc.minAreaRect(cur_points);
+
             // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
+
+            // size
+            if (Paintable.visual_variable_dict[visual_var] == "size")
+            {
+                float value = ((float)minRect.size.width + (float)minRect.size.height) / 2;
+                if (value < min_visual_var || value > max_visual_var)
+                    continue;
+            }                
+            // angle
+            else if (Paintable.visual_variable_dict[visual_var] == "angle")
+            {
+                if ((float)minRect.angle < min_visual_var || (float)minRect.angle > max_visual_var)
+                    continue;
+            }
+            // brightness
+            else if (Paintable.visual_variable_dict[visual_var] == "brightness")
+            {
+                float value = FindIntensity(points, imgTexture);
+                if (value < min_visual_var || value > max_visual_var)
+                    continue;
+                all_intensities.Add(value);
+            }                
 
             all_bounding_rects.Add(minRect);
 
@@ -164,12 +187,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
             for (int j = 0; j < 4; j++)
             {
                 Imgproc.line(imgMat, rect_points[j], rect_points[(j + 1) % 4], new Scalar(255, 0, 0));
-            }*/
-
-            if (Paintable.visual_variable_dict[visual_var] == "brightness")
-            {
-                all_intensities.Add(FindIntensity(points, imgTexture));
-            }
+            }*/            
 
             num_iter++;
             if (num_iter == contour_count)

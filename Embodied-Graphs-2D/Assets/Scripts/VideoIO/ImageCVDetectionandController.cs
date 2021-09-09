@@ -163,7 +163,8 @@ public class ImageCVDetectionandController : MonoBehaviour
     {
         visual_var_val = dropdown.value;
         all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, 
-            copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+            copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size,
+            max_visual_var: max_visual_var, min_visual_var: min_visual_var);
 
         StartCoroutine(GraphCreation());
     }
@@ -175,18 +176,19 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (inputField.name == "minInputField" && inputField.text.Length > 0)
         {
             float.TryParse(inputField.text, out min_visual_var);
+            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
+            copy_graph: true, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size,
+            max_visual_var: max_visual_var, min_visual_var: min_visual_var);
+
             StartCoroutine(GraphCreation());
         }
 
         if (inputField.name == "maxInputField" && inputField.text.Length > 0)
         {
             float.TryParse(inputField.text, out max_visual_var);
-            StartCoroutine(GraphCreation());
-        }
-
-        if (inputField.name == "contourInputField" && inputField.text.Length > 0)
-        {
-            int.TryParse(inputField.text, out contour_cnt);
+            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
+            copy_graph: true, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size,
+            max_visual_var: max_visual_var, min_visual_var: min_visual_var);
             StartCoroutine(GraphCreation());
         }
     }
@@ -199,7 +201,8 @@ public class ImageCVDetectionandController : MonoBehaviour
         {
             int.TryParse(inputField.text, out contour_cnt);
             all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
-                copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+                copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size,
+                max_visual_var: max_visual_var, min_visual_var: min_visual_var);
             StartCoroutine(GraphCreation());
         }
     }
@@ -208,7 +211,8 @@ public class ImageCVDetectionandController : MonoBehaviour
     {
         contour_size = slider.value;
         all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
-            copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+            copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size,
+            max_visual_var: max_visual_var, min_visual_var: min_visual_var);
 
         StartCoroutine(GraphCreation());
     }
@@ -639,7 +643,8 @@ public class ImageCVDetectionandController : MonoBehaviour
 
         // get values with rect dicts
         all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
-            copy_graph: true, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+            copy_graph: true, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size,
+            max_visual_var: max_visual_var, min_visual_var: min_visual_var);
 
         if (node_parent != null)
         {
