@@ -96,11 +96,12 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         //Imgproc.dilate(thresh, thresh, dilateElement);
     }
 
-    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, int visual_var = 0, int blob_size = 0)
+    public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0, int blob_size = 0)
     {
         Utils.setDebugMode(true);
-        Debug.Log("Texture format: " + imgTexture.format.ToString());
+        // Debug.Log("Texture format: " + imgTexture.format.ToString());
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
+        if (copy_graph) all_horizontal_rects = new List<OpenCVForUnity.CoreModule.Rect>();
         if (Paintable.visual_variable_dict[visual_var] == "brightness") all_intensities = new List<float>();
 
         Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC3);
@@ -153,6 +154,8 @@ public class ContourandRotatedRectDetection : MonoBehaviour
             // Debug.Log("angle of current rect (from texture):" + minRect.angle.ToString());
 
             all_bounding_rects.Add(minRect);
+
+            if (copy_graph) all_horizontal_rects.Add(Imgproc.boundingRect(cur_points));
 
             // visualization purpose
             /*Point[] rect_points = new Point[4];

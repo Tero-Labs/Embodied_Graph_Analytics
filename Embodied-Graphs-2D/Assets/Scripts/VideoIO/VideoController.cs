@@ -484,26 +484,7 @@ public class VideoController : MonoBehaviour, IDragHandler, IPointerDownHandler
                     catch
                     {
                         //Debug.Log("no renderer attached");
-                    }                    
-
-                    /*temp.GetComponent<iconicElementScript>().image_icon = true;
-                    int bottom_x, bottom_y, rect_width, rect_height;
-                    bottom_x = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].x;
-                    bottom_y = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].y; 
-                    rect_width = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].width;
-                    rect_height = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[cur_rect_iter].height;
-
-                    lerped_x = Mathf.Lerp(videoplayer.transform.position.x - (width / 2), videoplayer.transform.position.x + (width / 2), 
-                        Mathf.InverseLerp(1, cur_texture.width, bottom_x));
-                    lerped_y = Mathf.Lerp(videoplayer.transform.position.y + (height / 2), videoplayer.transform.position.y - (height / 2), 
-                        Mathf.InverseLerp(1, cur_texture.height, bottom_y + rect_height));                                               
-
-                    Texture2D target_Tex = CropRenderTexture(cur_texture, bottom_x, bottom_y, rect_width, rect_height);
-
-                    temp.GetComponent<iconicElementScript>().LoadNewSprite("FilePath", input_texture: target_Tex);
-                    // ToDo: not correctly positioned
-                    temp.transform.position = new Vector3(lerped_x, lerped_y, -40f); //edge_pos; 
-                    */
+                    }                   
 
                     all_icons.Add(temp);
 

@@ -195,7 +195,8 @@ public class Paintable : MonoBehaviour
         [1] = "size",
         [2] = "angle",
         [3] = "brightness",
-        [4] = "color"
+        [4] = "color",
+        [5] = "category"
     };
 
     // Start is called before the first frame update

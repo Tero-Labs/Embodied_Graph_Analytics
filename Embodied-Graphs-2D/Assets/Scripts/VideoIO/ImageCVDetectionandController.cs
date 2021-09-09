@@ -7,6 +7,7 @@ using TMPro;
 using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.ImgprocModule;
+using System;
 
 // this script is basically a copy of iconicElementScript.cs, VideoPlayerChildrenAccess.cs and VideoController.cs
 public class ImageCVDetectionandController : MonoBehaviour
@@ -50,6 +51,9 @@ public class ImageCVDetectionandController : MonoBehaviour
     public int visual_var_val;
     public float min_visual_var, max_visual_var, contour_size;
     public int contour_cnt;
+
+    // for texture copy
+    bool copy_graph_val;
 
     void Start()
     {
@@ -159,7 +163,7 @@ public class ImageCVDetectionandController : MonoBehaviour
     {
         visual_var_val = dropdown.value;
         all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, 
-            contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+            copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
 
         StartCoroutine(GraphCreation());
     }
@@ -194,8 +198,8 @@ public class ImageCVDetectionandController : MonoBehaviour
         if (inputField.name == "contourInputField" && inputField.text.Length > 0)
         {
             int.TryParse(inputField.text, out contour_cnt);
-            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture, 
-                contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+            all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
+                copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
             StartCoroutine(GraphCreation());
         }
     }
@@ -204,7 +208,7 @@ public class ImageCVDetectionandController : MonoBehaviour
     {
         contour_size = slider.value;
         all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
-            contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+            copy_graph: copy_graph_val, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
 
         StartCoroutine(GraphCreation());
     }
@@ -601,13 +605,88 @@ public class ImageCVDetectionandController : MonoBehaviour
         cp.name = "graph_" + Paintable.graph_count.ToString();
         cp.GetComponent<GraphElementScript>().graph_name = "G" + Paintable.graph_count.ToString();
 
+        //StartCoroutine(GraphCopyTextureCreation(cp));
         // to make them moveable
         Transform node_parent = cp.transform.GetChild(0);
         for (int i = 0; i < node_parent.childCount; i++)
         {
             node_parent.GetChild(i).GetComponent<iconicElementScript>().video_icon = false;
         }
-
         return cp;
     }
+
+    IEnumerator GraphCopyTextureCreation(GameObject cp)
+    {
+        // to make them moveable
+        Transform node_parent = cp.transform.GetChild(0);
+        for (int i = 0; i < node_parent.childCount; i++)
+        {
+            node_parent.GetChild(i).GetComponent<iconicElementScript>().video_icon = false;
+            try
+            {
+                Destroy(node_parent.GetChild(i).GetComponent<MeshRenderer>());
+                Destroy(node_parent.GetChild(i).GetComponent<MeshFilter>());
+                Destroy(node_parent.GetChild(i).GetComponent<LineRenderer>());
+                Destroy(node_parent.GetChild(i).GetComponent<TrailRenderer>());
+            }
+            catch
+            {
+
+            }
+        }
+
+        yield return null;
+
+        // get values with rect dicts
+        all_bounding_rects = gameObject.GetComponent<ContourandRotatedRectDetection>().FindResultFromImageTexture(SpriteTexture,
+            copy_graph: true, contour_count: contour_cnt, visual_var: visual_var_val, blob_size: (int)contour_size);
+
+        if (node_parent != null)
+        {
+            for (int i = 0; i < node_parent.childCount; i++)
+            {                
+                try
+                {
+                    GameObject temp = node_parent.GetChild(i).gameObject;
+                    temp.GetComponent<iconicElementScript>().image_icon = true;
+
+                    int bottom_x, bottom_y, rect_width, rect_height;
+                    bottom_x = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[i].x;
+                    bottom_y = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[i].y; 
+                    rect_width = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[i].width;
+                    rect_height = transform.GetComponent<ContourandRotatedRectDetection>().all_horizontal_rects[i].height;
+
+                    // a little different than the videoplayer; because the transform position is set differently for sprite
+                    float lerped_x = Mathf.Lerp(quad.transform.position.x /*- (width / 2)*/, quad.transform.position.x + (width /*/ 2*/), Mathf.InverseLerp(1, SpriteTexture.width, bottom_x));
+                    float lerped_y = Mathf.Lerp(quad.transform.position.y + (height /*/ 2*/), quad.transform.position.y /*- (height / ) 2*/, Mathf.InverseLerp(1, SpriteTexture.height, bottom_y + rect_height));
+
+
+                    /*int lerped_x = (int)Mathf.Lerp(transform.position.x - (width / 2), transform.position.x + (width / 2), 
+                        Mathf.InverseLerp(1, SpriteTexture.width, bottom_x));
+                    int lerped_y = (int)Mathf.Lerp(transform.position.y + (height / 2), transform.position.y - (height / 2), 
+                        Mathf.InverseLerp(1, SpriteTexture.height, bottom_y + rect_height));                */                               
+
+                    Texture2D target_Tex = CropRenderTexture(SpriteTexture, bottom_x, bottom_y, rect_width, rect_height);
+
+                    temp.GetComponent<iconicElementScript>().LoadNewSprite("FilePath", input_texture: target_Tex);
+                    // ToDo: not correctly positioned
+                    temp.transform.position = new Vector3(lerped_x + width, lerped_y, -40f); //edge_pos; 
+                }
+                catch(Exception e)
+                {
+                    Debug.Log(e.ToString());
+                }
+            }
+        }
+    }
+
+    public Texture2D CropRenderTexture(Texture2D InputTex, int bottom_x, int bottom_y, int width, int height)
+    {
+        Debug.Log(" bottom_x: " + bottom_x.ToString() + " bottom_y: " + bottom_y.ToString() + " width: " + width.ToString() + " height: " + height.ToString());
+        var tex_small = new Texture2D((int)width, (int)height);
+        tex_small.SetPixels(InputTex.GetPixels((int)bottom_x, (int)bottom_y, (int)width, (int)height));
+        tex_small.Apply();
+        return tex_small;
+    }
+
 }
