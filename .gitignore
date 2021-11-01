@@ -5,6 +5,9 @@
 [Bb]uilds/
 Assets/AssetStoreTools*
 
+# Exclude OpenCV
+Assets/OpenCVForUnity/
+
 # Visual Studio cache directory
 .vs/
 
