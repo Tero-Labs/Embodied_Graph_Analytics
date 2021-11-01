@@ -8,6 +8,9 @@ Assets/AssetStoreTools*
 # Exclude OpenCV
 Embodied-Graphs-2D/Assets/OpenCVForUnity/
 
+# Exclude StreamingAsset
+Embodied-Graphs-2D/Assets/StreamingAssets/
+
 # Visual Studio cache directory
 .vs/
 
