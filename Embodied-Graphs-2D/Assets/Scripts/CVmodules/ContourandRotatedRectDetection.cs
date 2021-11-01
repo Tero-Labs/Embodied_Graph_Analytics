@@ -355,7 +355,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         tm.stop();
         Debug.Log("Inference time, ms: " + tm.getTimeMilli());
 
-        postprocess(img, outs, Paintable.net);
+        List<RotatedRect> all_bounding_rects = postprocess(img, outs, Paintable.net);
 
         for (int i = 0; i < outs.Count; i++)
         {
@@ -366,17 +366,20 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         Paintable.net.Dispose();
         Utils.setDebugMode(false);
 
-        List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
+        // List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
         return all_bounding_rects;
     }
 
-    private void postprocess(Mat frame, List<Mat> outs, Net net)
+    private List<RotatedRect> postprocess(Mat frame, List<Mat> outs, Net net)
     {
         string outLayerType = Paintable.outBlobTypes[0];
 
         List<int> classIdsList = new List<int>();
         List<float> confidencesList = new List<float>();
-        List<OpenCVForUnity.CoreModule.Rect> boxesList = new List<OpenCVForUnity.CoreModule.Rect>();
+
+        List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
+        List<OpenCVForUnity.CoreModule.Rect> all_box_rects = new List<OpenCVForUnity.CoreModule.Rect>();
+
         if (net.getLayer(new DictValue(0)).outputNameToIndex("im_info") != -1)
         {  // Faster-RCNN or R-FCN
             // Network produces output blob with a shape 1x1xNx7 where N is a number of
@@ -414,7 +417,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
                         classIdsList.Add((int)(class_id) - 0);
                         confidencesList.Add((float)confidence);
-                        boxesList.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
+                        all_box_rects.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
                     }
                 }
             }
@@ -456,7 +459,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
                         classIdsList.Add((int)(class_id) - 0);
                         confidencesList.Add((float)confidence);
-                        boxesList.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
+                        all_box_rects.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
                     }
                 }
             }
@@ -498,7 +501,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
                         classIdsList.Add(maxIdx);
                         confidencesList.Add((float)confidence);
-                        boxesList.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
+                        all_box_rects.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
 
                     }
                 }
@@ -511,22 +514,27 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
 
         MatOfRect boxes = new MatOfRect();
-        boxes.fromList(boxesList);
+        boxes.fromList(all_box_rects);
 
         MatOfFloat confidences = new MatOfFloat();
         confidences.fromList(confidencesList);
 
 
         MatOfInt indices = new MatOfInt();
+        // filters outputs
         Dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
+
+        all_horizontal_rects = new List<OpenCVForUnity.CoreModule.Rect>();
 
         for (int i = 0; i < indices.total(); ++i)
         {
             int idx = (int)indices.get(i, 0)[0];
-            OpenCVForUnity.CoreModule.Rect box = boxesList[idx];
+            OpenCVForUnity.CoreModule.Rect box = all_box_rects[idx];
 
             Debug.Log("Current Pred Result:" + Paintable.getPredClassName(classIdsList[idx], confidencesList[idx]));
 
+            all_horizontal_rects.Add(box);
+            all_bounding_rects.Add(new RotatedRect(new Point(box.x + box.width / 2, box.y + box.height / 2), new Size(box.width / 2, box.height / 2), 0f));
             /*drawPred(classIdsList[idx], confidencesList[idx], box.x, box.y,
                 box.x + box.width, box.y + box.height, frame);*/
         }
@@ -535,6 +543,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
         boxes.Dispose();
         confidences.Dispose();
 
+        return all_bounding_rects;
     }
 
 }
