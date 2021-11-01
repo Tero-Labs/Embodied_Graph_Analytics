@@ -11,6 +11,10 @@ using Jobberwocky.GeometryAlgorithms.Source.Parameters;
 using UnityEngine.EventSystems;
 using System;
 
+using OpenCVForUnity.CoreModule;
+using OpenCVForUnity.UnityUtils;
+using OpenCVForUnity.DnnModule;
+
 public class Paintable : MonoBehaviour
 {
 
@@ -199,6 +203,16 @@ public class Paintable : MonoBehaviour
         [5] = "category"
     };
 
+
+    // Dnn parameters moved to paintable to save memory
+    string classes_filepath;
+    string config_filepath;
+    string model_filepath;
+    public static List<string> model_classNames;
+    public static List<string> outBlobNames;
+    public static List<string> outBlobTypes;
+    public static Net net;
+
     // Start is called before the first frame update
     void Start()
 	{
@@ -225,6 +239,62 @@ public class Paintable : MonoBehaviour
 
         vertex_add = true;
 
+        // DNN
+        classes_filepath = OpenCVForUnity.UnityUtils.Utils.getFilePath("dnn/coco.names");        
+        config_filepath = OpenCVForUnity.UnityUtils.Utils.getFilePath("dnn/yolov3-tiny.cfg");
+        model_filepath = OpenCVForUnity.UnityUtils.Utils.getFilePath("dnn/yolov3-tiny.weights");
+        net = null;
+        Run();
+    }
+
+    // Loading DNN module
+    void Run()
+    {
+
+        //if true, The error log of the Native side OpenCV will be displayed on the Unity Editor Console.
+        OpenCVForUnity.UnityUtils.Utils.setDebugMode(true);
+
+        model_classNames = DnnObjectDetectionExample.readClassNames(classes_filepath);
+        if (model_classNames == null)
+        {
+            Debug.LogError(classes_filepath + " is not loaded. Please see \"StreamingAssets/dnn/setup_dnn_module.pdf\". ");
+        }
+
+        if (string.IsNullOrEmpty(config_filepath) || string.IsNullOrEmpty(model_filepath))
+        {
+            Debug.LogError(config_filepath + " or " + model_filepath + " is not loaded. Please see \"StreamingAssets/dnn/setup_dnn_module.pdf\". ");
+        }
+        else
+        {
+            //! [Initialize network]
+            net = Dnn.readNet(model_filepath, config_filepath);
+            //! [Initialize network]
+        }
+        if (net == null)
+        {
+            Debug.Log("model not loaded");
+        }
+        else
+        {
+            outBlobNames = DnnObjectDetectionExample.getOutputsNames(net);
+            outBlobTypes = DnnObjectDetectionExample.getOutputsTypes(net);
+            Debug.Log("model loaded!");
+        }
+
+        OpenCVForUnity.UnityUtils.Utils.setDebugMode(false);
+    }
+
+    public static string getPredClassName(int classId, float conf)
+    {
+        string label = conf.ToString();
+        if (model_classNames != null && model_classNames.Count != 0)
+        {
+            if (classId < (int)model_classNames.Count)
+            {
+                label = model_classNames[classId] + ": " + label;
+            }
+        }
+        return label;
     }
 
     // Update is called once per frame

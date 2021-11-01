@@ -8,6 +8,8 @@ using OpenCVForUnity.CoreModule;
 using OpenCVForUnity.Features2dModule;
 using OpenCVForUnity.UnityUtils;
 using OpenCVForUnity.ImgprocModule;
+using OpenCVForUnity.DnnModule;
+using OpenCVForUnity.ImgcodecsModule;
 using System.Linq;
 using OpenCVForUnity.UnityUtils.Helper;
 using System.IO;
@@ -16,6 +18,14 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 {
     public List<OpenCVForUnity.CoreModule.Rect> all_horizontal_rects;
     public List<float> all_intensities;
+
+    static int inpWidth = 416;
+    static int inpHeight = 416;
+    static float scale = 1f / 255f;
+    static Scalar mean = new Scalar (0, 0, 0);
+    static bool swapRB = false;
+    static float confThreshold = 0.24f;
+    static float nmsThreshold = 0.24f;
 
     // Start is called before the first frame update
     void Start()
@@ -97,7 +107,7 @@ public class ContourandRotatedRectDetection : MonoBehaviour
     }
 
     public List<RotatedRect> FindResultFromImageTexture(Texture2D imgTexture, int contour_count = 7, bool copy_graph = false, int visual_var = 0, int blob_size = 0, float max_visual_var = 0, float min_visual_var = 0)
-    {
+    {     
         Utils.setDebugMode(true);
         // Debug.Log("Texture format: " + imgTexture.format.ToString());
         List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
@@ -106,6 +116,11 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
         Mat imgMat = new Mat(imgTexture.height, imgTexture.width, CvType.CV_8UC3);
         Utils.texture2DToMat(imgTexture, imgMat);
+
+        if (Paintable.visual_variable_dict[visual_var] == "category")
+        {
+            return GetYoloPreds(imgMat);
+        }
 
         if (Paintable.visual_variable_dict[visual_var] == "color")
         {
@@ -306,4 +321,220 @@ public class ContourandRotatedRectDetection : MonoBehaviour
 
         return avg_intensity/iter;
     }
+
+    public List<RotatedRect> GetYoloPreds(Mat img)
+    {
+        // Create a 4D blob from a frame.
+        Size inpSize = new Size(inpWidth > 0 ? inpWidth : img.cols(),
+                            inpHeight > 0 ? inpHeight : img.rows());
+        Mat blob = Dnn.blobFromImage(img, scale, inpSize, mean, swapRB, false);
+
+
+        // Run a model.
+        Paintable.net.setInput(blob);
+
+        if (Paintable.net.getLayer(new DictValue(0)).outputNameToIndex("im_info") != -1)
+        {  // Faster-RCNN or R-FCN
+            Imgproc.resize(img, img, inpSize);
+            Mat imInfo = new Mat(1, 3, CvType.CV_32FC1);
+            imInfo.put(0, 0, new float[] {
+                    (float)inpSize.height,
+                    (float)inpSize.width,
+                    1.6f
+                });
+            Paintable.net.setInput(imInfo, "im_info");
+        }
+
+
+        TickMeter tm = new TickMeter();
+        tm.start();
+
+        List<Mat> outs = new List<Mat>();
+        Paintable.net.forward(outs, Paintable.outBlobNames);
+
+        tm.stop();
+        Debug.Log("Inference time, ms: " + tm.getTimeMilli());
+
+        postprocess(img, outs, Paintable.net);
+
+        for (int i = 0; i < outs.Count; i++)
+        {
+            outs[i].Dispose();
+        }
+
+        blob.Dispose();
+        Paintable.net.Dispose();
+        Utils.setDebugMode(false);
+
+        List<RotatedRect> all_bounding_rects = new List<RotatedRect>();
+        return all_bounding_rects;
+    }
+
+    private void postprocess(Mat frame, List<Mat> outs, Net net)
+    {
+        string outLayerType = Paintable.outBlobTypes[0];
+
+        List<int> classIdsList = new List<int>();
+        List<float> confidencesList = new List<float>();
+        List<OpenCVForUnity.CoreModule.Rect> boxesList = new List<OpenCVForUnity.CoreModule.Rect>();
+        if (net.getLayer(new DictValue(0)).outputNameToIndex("im_info") != -1)
+        {  // Faster-RCNN or R-FCN
+            // Network produces output blob with a shape 1x1xNx7 where N is a number of
+            // detections and an every detection is a vector of values
+            // [batchId, classId, confidence, left, top, right, bottom]
+
+            if (outs.Count == 1)
+            {
+
+                outs[0] = outs[0].reshape(1, (int)outs[0].total() / 7);
+
+                //                    Debug.Log ("outs[i].ToString() " + outs [0].ToString ());
+
+                float[] data = new float[7];
+
+                for (int i = 0; i < outs[0].rows(); i++)
+                {
+
+                    outs[0].get(i, 0, data);
+
+                    float confidence = data[2];
+
+                    if (confidence > confThreshold)
+                    {
+                        int class_id = (int)(data[1]);
+
+
+                        int left = (int)(data[3] * frame.cols());
+                        int top = (int)(data[4] * frame.rows());
+                        int right = (int)(data[5] * frame.cols());
+                        int bottom = (int)(data[6] * frame.rows());
+                        int width = right - left + 1;
+                        int height = bottom - top + 1;
+
+
+                        classIdsList.Add((int)(class_id) - 0);
+                        confidencesList.Add((float)confidence);
+                        boxesList.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
+                    }
+                }
+            }
+        }
+        else if (outLayerType == "DetectionOutput")
+        {
+            // Network produces output blob with a shape 1x1xNx7 where N is a number of
+            // detections and an every detection is a vector of values
+            // [batchId, classId, confidence, left, top, right, bottom]
+
+            if (outs.Count == 1)
+            {
+
+                outs[0] = outs[0].reshape(1, (int)outs[0].total() / 7);
+
+                //                    Debug.Log ("outs[i].ToString() " + outs [0].ToString ());
+
+                float[] data = new float[7];
+
+                for (int i = 0; i < outs[0].rows(); i++)
+                {
+
+                    outs[0].get(i, 0, data);
+
+                    float confidence = data[2];
+
+                    if (confidence > confThreshold)
+                    {
+                        int class_id = (int)(data[1]);
+
+
+                        int left = (int)(data[3] * frame.cols());
+                        int top = (int)(data[4] * frame.rows());
+                        int right = (int)(data[5] * frame.cols());
+                        int bottom = (int)(data[6] * frame.rows());
+                        int width = right - left + 1;
+                        int height = bottom - top + 1;
+
+
+                        classIdsList.Add((int)(class_id) - 0);
+                        confidencesList.Add((float)confidence);
+                        boxesList.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
+                    }
+                }
+            }
+        }
+        else if (outLayerType == "Region")
+        {
+            for (int i = 0; i < outs.Count; ++i)
+            {
+                // Network produces output blob with a shape NxC where N is a number of
+                // detected objects and C is a number of classes + 4 where the first 4
+                // numbers are [center_x, center_y, width, height]
+
+                //                        Debug.Log ("outs[i].ToString() "+outs[i].ToString());
+
+                float[] positionData = new float[5];
+                float[] confidenceData = new float[outs[i].cols() - 5];
+
+                for (int p = 0; p < outs[i].rows(); p++)
+                {
+
+
+
+                    outs[i].get(p, 0, positionData);
+
+                    outs[i].get(p, 5, confidenceData);
+
+                    int maxIdx = confidenceData.Select((val, idx) => new { V = val, I = idx }).Aggregate((max, working) => (max.V > working.V) ? max : working).I;
+                    float confidence = confidenceData[maxIdx];
+
+                    if (confidence > confThreshold)
+                    {
+
+                        int centerX = (int)(positionData[0] * frame.cols());
+                        int centerY = (int)(positionData[1] * frame.rows());
+                        int width = (int)(positionData[2] * frame.cols());
+                        int height = (int)(positionData[3] * frame.rows());
+                        int left = centerX - width / 2;
+                        int top = centerY - height / 2;
+
+                        classIdsList.Add(maxIdx);
+                        confidencesList.Add((float)confidence);
+                        boxesList.Add(new OpenCVForUnity.CoreModule.Rect(left, top, width, height));
+
+                    }
+                }
+            }
+        }
+        else
+        {
+            Debug.Log("Unknown output layer type: " + outLayerType);
+        }
+
+
+        MatOfRect boxes = new MatOfRect();
+        boxes.fromList(boxesList);
+
+        MatOfFloat confidences = new MatOfFloat();
+        confidences.fromList(confidencesList);
+
+
+        MatOfInt indices = new MatOfInt();
+        Dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold, indices);
+
+        for (int i = 0; i < indices.total(); ++i)
+        {
+            int idx = (int)indices.get(i, 0)[0];
+            OpenCVForUnity.CoreModule.Rect box = boxesList[idx];
+
+            Debug.Log("Current Pred Result:" + Paintable.getPredClassName(classIdsList[idx], confidencesList[idx]));
+
+            /*drawPred(classIdsList[idx], confidencesList[idx], box.x, box.y,
+                box.x + box.width, box.y + box.height, frame);*/
+        }
+
+        indices.Dispose();
+        boxes.Dispose();
+        confidences.Dispose();
+
+    }
+
 }
